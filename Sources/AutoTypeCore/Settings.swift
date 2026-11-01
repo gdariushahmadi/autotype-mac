@@ -8,8 +8,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
     public var mode: TypingMode = .automatic
     /// Which language wins for ambiguous words.
     public var priority: LanguagePriority = .automatic
-    /// Convert digits inside Persian sentences to Persian numerals.
-    public var usePersianDigits: Bool = false
+    /// Smart contextual digits: English at start/English text, Persian digits inside Persian text.
+    public var usePersianDigits: Bool = true
     /// Use `،` `؛` `؟` `٪` instead of their ASCII equivalents.
     public var usePersianPunctuation: Bool = true
     /// The key that types plain English while held down.
@@ -22,6 +22,10 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
     public var lockLanguageFromSentenceStart: Bool = true
     /// Prevent accidental Enter dispatch if suspicious typos, broken words or grammar issues are detected.
     public var interceptSuspiciousEnter: Bool = true
+    /// Prevent accidental Enter dispatch if sentence contains forbidden words.
+    public var checkForForbiddenWords: Bool = true
+    /// What to do when forbidden words are detected on Enter (require confirmation or block completely).
+    public var forbiddenWordsAction: ForbiddenWordsAction = .requireConfirmation
     /// Automatic AI translation on Enter.
     public var translation: TranslationSettings = TranslationSettings()
 
@@ -37,13 +41,15 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
         mode = try container.decodeIfPresent(TypingMode.self, forKey: .mode) ?? .automatic
         priority = try container.decodeIfPresent(LanguagePriority.self, forKey: .priority) ?? .automatic
-        usePersianDigits = try container.decodeIfPresent(Bool.self, forKey: .usePersianDigits) ?? false
+        usePersianDigits = try container.decodeIfPresent(Bool.self, forKey: .usePersianDigits) ?? true
         usePersianPunctuation = try container.decodeIfPresent(Bool.self, forKey: .usePersianPunctuation) ?? true
         englishModifier = try container.decodeIfPresent(EnglishModifier.self, forKey: .englishModifier) ?? .rightCommand
         convertSelection = try container.decodeIfPresent(Bool.self, forKey: .convertSelection) ?? true
         showPreview = try container.decodeIfPresent(Bool.self, forKey: .showPreview) ?? false
         lockLanguageFromSentenceStart = try container.decodeIfPresent(Bool.self, forKey: .lockLanguageFromSentenceStart) ?? true
         interceptSuspiciousEnter = try container.decodeIfPresent(Bool.self, forKey: .interceptSuspiciousEnter) ?? true
+        checkForForbiddenWords = try container.decodeIfPresent(Bool.self, forKey: .checkForForbiddenWords) ?? true
+        forbiddenWordsAction = try container.decodeIfPresent(ForbiddenWordsAction.self, forKey: .forbiddenWordsAction) ?? .requireConfirmation
         translation = try container.decodeIfPresent(TranslationSettings.self, forKey: .translation) ?? TranslationSettings()
     }
 
@@ -51,13 +57,15 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         isEnabled: Bool = true,
         mode: TypingMode = .automatic,
         priority: LanguagePriority = .automatic,
-        usePersianDigits: Bool = false,
+        usePersianDigits: Bool = true,
         usePersianPunctuation: Bool = true,
         englishModifier: EnglishModifier = .rightCommand,
         convertSelection: Bool = true,
         showPreview: Bool = false,
         lockLanguageFromSentenceStart: Bool = true,
         interceptSuspiciousEnter: Bool = true,
+        checkForForbiddenWords: Bool = true,
+        forbiddenWordsAction: ForbiddenWordsAction = .requireConfirmation,
         translation: TranslationSettings = TranslationSettings()
     ) {
         self.isEnabled = isEnabled
@@ -70,7 +78,24 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         self.showPreview = showPreview
         self.lockLanguageFromSentenceStart = lockLanguageFromSentenceStart
         self.interceptSuspiciousEnter = interceptSuspiciousEnter
+        self.checkForForbiddenWords = checkForForbiddenWords
+        self.forbiddenWordsAction = forbiddenWordsAction
         self.translation = translation
+    }
+}
+
+/// Action to take when a sentence contains forbidden words upon pressing Enter.
+public enum ForbiddenWordsAction: String, Codable, CaseIterable, Sendable {
+    /// Require a second Enter press to confirm sending.
+    case requireConfirmation = "requireConfirmation"
+    /// Prevent sending completely (Enter is ignored and beep alert is played).
+    case block = "block"
+
+    public var displayName: String {
+        switch self {
+        case .requireConfirmation: return "نیاز به تایید با فشردن مجدد اینتر (Require 2nd Enter)"
+        case .block: return "جلوگیری کامل از ارسال (Block completely)"
+        }
     }
 }
 
@@ -108,18 +133,149 @@ public enum TranslationProvider: String, Codable, CaseIterable, Sendable {
     }
 }
 
-/// Settings for AI translation on Enter.
+/// Where the trigger keyword must be positioned in the sentence.
+public enum TriggerPosition: String, Codable, CaseIterable, Sendable {
+    case start = "start"
+    case end = "end"
+    case either = "either"
+
+    public var displayName: String {
+        switch self {
+        case .start: return "ابتدای جمله (Start)"
+        case .end: return "انتهای جمله (End)"
+        case .either: return "ابتدا یا انتها (Start or End)"
+        }
+    }
+
+    public var shortLabel: String {
+        switch self {
+        case .start: return "ابتدا"
+        case .end: return "انتها"
+        case .either: return "ابتدا یا انتها"
+        }
+    }
+}
+
+/// A custom AI action triggered on Enter by specific keywords and configured with a prompt.
+public struct AIAction: Codable, Equatable, Identifiable, Sendable {
+    public var id: UUID
+    public var name: String
+    public var trigger: String
+    public var position: TriggerPosition
+    public var systemPrompt: String
+    public var isEnabled: Bool
+
+    public init(
+        id: UUID = UUID(),
+        name: String,
+        trigger: String,
+        position: TriggerPosition = .either,
+        systemPrompt: String,
+        isEnabled: Bool = true
+    ) {
+        self.id = id
+        self.name = name
+        self.trigger = trigger
+        self.position = position
+        self.systemPrompt = systemPrompt
+        self.isEnabled = isEnabled
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decodeIfPresent(UUID.self, forKey: .id) ?? UUID()
+        name = try container.decodeIfPresent(String.self, forKey: .name) ?? "Action"
+        trigger = try container.decodeIfPresent(String.self, forKey: .trigger) ?? ""
+        position = try container.decodeIfPresent(TriggerPosition.self, forKey: .position) ?? .either
+        systemPrompt = try container.decodeIfPresent(String.self, forKey: .systemPrompt) ?? ""
+        isEnabled = try container.decodeIfPresent(Bool.self, forKey: .isEnabled) ?? true
+    }
+}
+
+/// The result of extracting an AI action and the clean body text from a line.
+public struct ExtractionResult: Equatable, Sendable {
+    public let body: String
+    public let action: AIAction
+    public let matchedTrigger: String
+    public let position: TriggerPosition
+
+    public init(body: String, action: AIAction, matchedTrigger: String, position: TriggerPosition) {
+        self.body = body
+        self.action = action
+        self.matchedTrigger = matchedTrigger
+        self.position = position
+    }
+}
+
+/// Settings for AI translation and actions on Enter.
 public struct TranslationSettings: Codable, Equatable, Sendable {
     public static let defaultPrompt = "You are a professional translator. Translate the given Persian text into fluent, natural English. Output ONLY the translated text without explanations, quotes, or notes."
 
+    public static let defaultProofreadPrompt = "You are an expert Persian editor. Proofread and correct the given text for spelling errors, typography, half-spaces (نیم‌فاصله), and grammar. Keep the tone natural and meaning intact. Output ONLY the corrected text without explanations, notes, or quotation marks."
+
+    public static var defaultActions: [AIAction] {
+        [
+            AIAction(
+                name: "ترجمه (Translate)",
+                trigger: "ترجمه",
+                position: .either,
+                systemPrompt: defaultPrompt,
+                isEnabled: true
+            ),
+            AIAction(
+                name: "اصلاح و ویرایش (Proofread)",
+                trigger: "اصلاح, ویرایش",
+                position: .either,
+                systemPrompt: defaultProofreadPrompt,
+                isEnabled: true
+            ),
+            AIAction(
+                name: "خلاصه سازی (Summarize)",
+                trigger: "خلاصه",
+                position: .either,
+                systemPrompt: "You are an expert Persian summarizer. Provide a clear, concise, and structured summary of the given text in Persian. Output ONLY the summary without explanations or commentary.",
+                isEnabled: true
+            ),
+            AIAction(
+                name: "لحن اداری و رسمی (Formal)",
+                trigger: "رسمی, اداری",
+                position: .either,
+                systemPrompt: "You are an expert in Persian professional communication. Rewrite the given Persian text in a polite, professional, and formal tone. Output ONLY the rewritten text without explanations.",
+                isEnabled: true
+            ),
+            AIAction(
+                name: "لحن دوستانه و صمیمی (Casual)",
+                trigger: "دوستانه, صمیمی",
+                position: .either,
+                systemPrompt: "You are an expert Persian writer. Rewrite the given Persian text in a friendly, warm, and natural conversational tone. Output ONLY the rewritten text without explanations.",
+                isEnabled: true
+            )
+        ]
+    }
+
     public var isEnabled: Bool = false
     public var requireTriggerPrefix: Bool = true
-    public var triggerPrefix: String = "ترجمه"
+    public var triggerPrefix: String = "ترجمه" {
+        didSet {
+            // Keep first action trigger in sync if updated
+            if !actions.isEmpty && actions[0].name.contains("ترجمه") {
+                actions[0].trigger = triggerPrefix
+            }
+        }
+    }
+    public var actions: [AIAction] = TranslationSettings.defaultActions
     public var provider: TranslationProvider = .minimax
     public var endpoint: String = TranslationProvider.minimax.defaultEndpoint
     public var apiKey: String = ""
     public var model: String = TranslationProvider.minimax.defaultModel
-    public var systemPrompt: String = TranslationSettings.defaultPrompt
+    public var systemPrompt: String = TranslationSettings.defaultPrompt {
+        didSet {
+            // Keep first action systemPrompt in sync if updated
+            if !actions.isEmpty && actions[0].name.contains("ترجمه") {
+                actions[0].systemPrompt = systemPrompt
+            }
+        }
+    }
 
     public init() {}
 
@@ -127,6 +283,7 @@ public struct TranslationSettings: Codable, Equatable, Sendable {
         isEnabled: Bool = false,
         requireTriggerPrefix: Bool = true,
         triggerPrefix: String = "ترجمه",
+        actions: [AIAction] = TranslationSettings.defaultActions,
         provider: TranslationProvider = .minimax,
         endpoint: String = TranslationProvider.minimax.defaultEndpoint,
         apiKey: String = "",
@@ -136,6 +293,7 @@ public struct TranslationSettings: Codable, Equatable, Sendable {
         self.isEnabled = isEnabled
         self.requireTriggerPrefix = requireTriggerPrefix
         self.triggerPrefix = triggerPrefix
+        self.actions = actions
         self.provider = provider
         self.endpoint = endpoint
         self.apiKey = apiKey
@@ -158,84 +316,192 @@ public struct TranslationSettings: Codable, Equatable, Sendable {
         apiKey = try container.decodeIfPresent(String.self, forKey: .apiKey) ?? ""
         model = try container.decodeIfPresent(String.self, forKey: .model) ?? provider.defaultModel
         systemPrompt = try container.decodeIfPresent(String.self, forKey: .systemPrompt) ?? TranslationSettings.defaultPrompt
+
+        if let decodedActions = try container.decodeIfPresent([AIAction].self, forKey: .actions), !decodedActions.isEmpty {
+            actions = decodedActions
+        } else {
+            var defaults = TranslationSettings.defaultActions
+            if triggerPrefix != "ترجمه" || systemPrompt != TranslationSettings.defaultPrompt {
+                defaults[0].trigger = triggerPrefix
+                defaults[0].systemPrompt = systemPrompt
+            }
+            actions = defaults
+        }
     }
 
-    /// Checks whether `line` matches the configured trigger prefix (if enabled)
-    /// and returns the cleaned text to translate, or `nil` if the line should not be translated.
-    public func extractTranslatableBody(from line: String) -> String? {
+    /// Checks whether `line` matches an active AI action based on configured keywords and position (start, end, or either).
+    /// Returns the extraction result (cleaned body, matched action, trigger, and position), or `nil` if not applicable.
+    public func extractActionAndBody(from line: String) -> ExtractionResult? {
         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return nil }
 
+        let activeActions = actions.filter { $0.isEnabled }
+
         guard requireTriggerPrefix else {
-            return PersianText.containsPersian(trimmed) ? trimmed : nil
+            // When trigger keywords are not required, run the first enabled action on Persian text
+            guard let firstAction = activeActions.first else { return nil }
+            return PersianText.containsPersian(trimmed)
+                ? ExtractionResult(body: trimmed, action: firstAction, matchedTrigger: "", position: .start)
+                : nil
         }
 
-        let configured = triggerPrefix.trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !configured.isEmpty else {
-            return PersianText.containsPersian(trimmed) ? trimmed : nil
-        }
+        guard !activeActions.isEmpty else { return nil }
 
-        // Support comma/semicolon-separated multiple prefixes, plus their Latin/Persian keyboard equivalents
-        let rawPrefixes = configured
-            .components(separatedBy: CharacterSet(charactersIn: ",،;|"))
-            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+        let separators = CharacterSet.whitespacesAndNewlines.union(CharacterSet(charactersIn: ":：-—،,;؛|"))
 
-        var prefixes: [String] = []
-        for p in rawPrefixes {
-            if !prefixes.contains(p) { prefixes.append(p) }
-            if let converted = PersianLayout.convert(p), !prefixes.contains(converted) {
-                prefixes.append(converted)
+        for action in activeActions {
+            let rawTriggers = action.trigger
+                .components(separatedBy: CharacterSet(charactersIn: ",،;|\n"))
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+
+            guard !rawTriggers.isEmpty else { continue }
+
+            var prefixes: [String] = []
+            for p in rawTriggers {
+                if !prefixes.contains(p) { prefixes.append(p) }
+                if let converted = PersianLayout.convert(p), !prefixes.contains(converted) {
+                    prefixes.append(converted)
+                }
+                if let latin = PersianLayout.convertToLatin(p), !prefixes.contains(latin) {
+                    prefixes.append(latin)
+                }
             }
-            if let latin = PersianLayout.convertToLatin(p), !prefixes.contains(latin) {
-                prefixes.append(latin)
-            }
-        }
-        if configured == "ترجمه" {
-            for alias in ["jv[li", "/tr", "tr:"] where !prefixes.contains(alias) {
-                prefixes.append(alias)
-            }
-        }
 
-        for prefix in prefixes {
-            let lowerTrimmed = trimmed.lowercased()
-            let lowerPrefix = prefix.lowercased()
-            if lowerTrimmed.hasPrefix(lowerPrefix) {
-                let afterPrefixIndex = trimmed.index(trimmed.startIndex, offsetBy: prefix.count)
-                let remainder = trimmed[afterPrefixIndex...]
-                // Ensure the prefix is followed by whitespace or punctuation (like ':' or '-') so it matches a whole word/prefix
-                if let firstRem = remainder.first {
-                    let separators = CharacterSet.whitespaces.union(CharacterSet(charactersIn: ":：-—،,"))
-                    guard firstRem.unicodeScalars.allSatisfy({ separators.contains($0) }) else {
-                        continue
+            // Keyboard aliases for well-known triggers
+            for p in rawTriggers {
+                if p == "ترجمه" {
+                    for alias in ["jv[li", "/tr", "tr:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "اصلاح" {
+                    for alias in ["hwghp", "/fix", "fix:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "ویرایش" {
+                    for alias in [",dvhda", "/edit", "edit:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "خلاصه" {
+                    for alias in ["oghwi", "/sum", "sum:", "/summary"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "رسمی" {
+                    for alias in ["vsld", "/formal", "formal:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "اداری" {
+                    for alias in ["hnhvd", "/formal"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "دوستانه" {
+                    for alias in ["n,sjhik", "/casual", "casual:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "عربی" {
+                    for alias in ["uvfd", "/ar", "ar:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "عبری" {
+                    for alias in ["ufvd", "/he", "he:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
+                    }
+                } else if p == "آلمانی" || p == "المانی" {
+                    for alias in ["Hglhkd", "hglhkd", "/de", "de:"] where !prefixes.contains(alias) {
+                        prefixes.append(alias)
                     }
                 }
-                let cleaned = remainder
-                    .trimmingCharacters(in: CharacterSet.whitespaces.union(CharacterSet(charactersIn: ":：-—،,")))
-                guard !cleaned.isEmpty, PersianText.containsPersian(cleaned) else {
-                    return nil
+            }
+
+            // Prefer longer triggers first
+            prefixes.sort { $0.count > $1.count }
+
+            let canCheckStart = (action.position == .start || action.position == .either)
+            let canCheckEnd = (action.position == .end || action.position == .either)
+
+            // 1) Check Start of sentence
+            if canCheckStart {
+                for trigger in prefixes {
+                    let lowerTrimmed = trimmed.lowercased()
+                    let lowerTrigger = trigger.lowercased()
+                    if lowerTrimmed.hasPrefix(lowerTrigger) {
+                        let afterIndex = trimmed.index(trimmed.startIndex, offsetBy: trigger.count)
+                        if afterIndex < trimmed.endIndex {
+                            let nextChar = trimmed[afterIndex]
+                            guard nextChar.unicodeScalars.allSatisfy({ separators.contains($0) }) else {
+                                continue
+                            }
+                        }
+                        let remainder = trimmed[afterIndex...].trimmingCharacters(in: separators)
+                        guard !remainder.isEmpty else { continue }
+                        return ExtractionResult(
+                            body: remainder,
+                            action: action,
+                            matchedTrigger: trigger,
+                            position: .start
+                        )
+                    }
                 }
-                return cleaned
+            }
+
+            // 2) Check End of sentence
+            if canCheckEnd {
+                for trigger in prefixes {
+                    let lowerTrimmed = trimmed.lowercased()
+                    let lowerTrigger = trigger.lowercased()
+                    if lowerTrimmed.hasSuffix(lowerTrigger) {
+                        let beforeIndex = trimmed.index(trimmed.endIndex, offsetBy: -trigger.count)
+                        if beforeIndex > trimmed.startIndex {
+                            let prevChar = trimmed[trimmed.index(before: beforeIndex)]
+                            guard prevChar.unicodeScalars.allSatisfy({ separators.contains($0) }) else {
+                                continue
+                            }
+                        }
+                        let remainder = trimmed[..<beforeIndex].trimmingCharacters(in: separators)
+                        guard !remainder.isEmpty else { continue }
+                        return ExtractionResult(
+                            body: remainder,
+                            action: action,
+                            matchedTrigger: trigger,
+                            position: .end
+                        )
+                    }
+                }
             }
         }
 
         return nil
     }
+
+    /// Backward-compatible extraction: returns the cleaned body text to translate, or `nil`.
+    public func extractTranslatableBody(from line: String) -> String? {
+        return extractActionAndBody(from: line)?.body
+    }
 }
 
 /// The user's own dictionary: Persian words that must always convert, and
-/// English words that must never convert.
+/// English words that must never convert, plus forbidden words.
 public struct PersonalDictionary: Codable, Equatable, Sendable {
     public var persianWords: [String] = []
     public var englishWords: [String] = []
+    public var forbiddenWords: [String] = []
 
-    public init() {}
+    public init(
+        persianWords: [String] = [],
+        englishWords: [String] = [],
+        forbiddenWords: [String] = []
+    ) {
+        self.persianWords = persianWords
+        self.englishWords = englishWords
+        self.forbiddenWords = forbiddenWords
+    }
 
     /// Reads the dictionary, ignoring keys that are missing.
     public init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         persianWords = try container.decodeIfPresent([String].self, forKey: .persianWords) ?? []
         englishWords = try container.decodeIfPresent([String].self, forKey: .englishWords) ?? []
+        forbiddenWords = try container.decodeIfPresent([String].self, forKey: .forbiddenWords) ?? []
     }
 }
 

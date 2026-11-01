@@ -182,7 +182,42 @@ checker.expect(PersianText.containsZeroWidthNonJoiner("کتاب\u{200C}ها"), "
 checker.expect(!PersianText.containsZeroWidthNonJoiner("کتابها"), "no ZWNJ is reported when there is none")
 checker.expectEqual(PersianText.normalize("ي"), "ی", "Arabic yeh folds to Persian yeh")
 checker.expectEqual(PersianText.persianDigits("1403"), "۱۴۰۳", "digits convert to Persian numerals")
+checker.expectEqual(PersianText.persianDigit(for: "5"), "۵", "single digit converts to Persian numeral")
 checker.expectEqual(PersianText.persianPunctuation("سلام، خوب؟"), "سلام، خوب؟", "Persian punctuation is kept")
+
+checker.group("Smart contextual numbers")
+
+do {
+    var smartSettings = ConversionSettings()
+    smartSettings.usePersianDigits = true
+    let smartEngine = ConversionEngine(lexicon: engine.lexicon, settings: smartSettings)
+
+    // 1. At start (no context) -> English
+    let atStart = smartEngine.resolve(token: "1403", context: ConversionContext())
+    checker.expectEqual(atStart.output, "1403", "number at start stays English")
+    checker.expect(atStart.context.sentenceLanguage != SentenceLanguage.english, "number at start does not lock sentence to English")
+
+    // 2. Next Persian word after initial number converts to Persian
+    let afterNum = smartEngine.resolve(token: ";jhf", context: atStart.context)
+    checker.expectEqual(afterNum.output, "کتاب", "Persian word after starting number converts to Persian")
+
+    // 3. Inside Persian context -> Persian numerals
+    let inPersianContext = ConversionContext(previousWasPersian: true, previousPersianWord: "سلام", sentenceLanguage: .persian)
+    let insidePersian = smartEngine.resolve(token: "1403", context: inPersianContext)
+    checker.expectEqual(insidePersian.output, "۱۴۰۳", "number inside Persian text becomes Persian numerals")
+
+    // 4. Inside English context -> English digits
+    let inEnglishContext = ConversionContext(previousWasPersian: false, sentenceLanguage: .english)
+    let insideEnglish = smartEngine.resolve(token: "1403", context: inEnglishContext)
+    checker.expectEqual(insideEnglish.output, "1403", "number inside English text stays English")
+
+    // 5. When disabled -> English digits everywhere
+    var offSettings = ConversionSettings()
+    offSettings.usePersianDigits = false
+    let offEngine = ConversionEngine(lexicon: engine.lexicon, settings: offSettings)
+    let disabledInsidePersian = offEngine.resolve(token: "1403", context: inPersianContext)
+    checker.expectEqual(disabledInsidePersian.output, "1403", "number inside Persian text stays English when option is disabled")
+}
 
 checker.group("Settings round-trip")
 
@@ -223,12 +258,98 @@ trSettings.requireTriggerPrefix = false
 checker.expectEqual(trSettings.extractTranslatableBody(from: "سلام دنیا"), "سلام دنیا", "translates any Persian sentence when prefix is not required")
 
 checker.group("Sentence language locking")
-let ctxPersian = ConversionContext(previousWasPersian: true, sentenceLanguageIsPersian: true)
-let ctxEnglish = ConversionContext(previousWasPersian: false, sentenceLanguageIsPersian: false)
+let ctxPersian = ConversionContext(previousWasPersian: true, sentenceLanguage: .persian)
+let ctxEnglish = ConversionContext(previousWasPersian: false, sentenceLanguage: .english)
 // "fun" converts to Persian "بعد" (f->ب, u->ع, n->د)
 checker.expectEqual(engine.decide(token: "fun", context: ctxPersian), .convertToPersian("بعد"), "locks to Persian when sentence started with Persian")
 checker.expectEqual(engine.decide(token: "fun", context: ctxEnglish), .keepAsTyped("fun"), "locks to English when sentence started with English")
 checker.expectEqual(engine.decide(token: ";jhf\u{200C}ih", context: ctxPersian), .convertToPersian("کتاب‌ها"), "converts word containing ZWNJ cleanly to Persian")
+
+checker.group("Function words and single letters")
+checker.expectEqual(convert("d;"), "یک", "d; → یک")
+checker.expectEqual(convert("fi"), "به", "fi → به")
+checker.expectEqual(convert(","), "و", ", → و")
+checker.expectEqual(convert("h,"), "او", "h, → او")
+checker.expectEqual(convert("]i"), "چه", "]i → چه")
+checker.expectEqual(convert("fd"), "بی", "fd → بی")
+checker.expectEqual(convert("d"), "ی", "single letter d → ی")
+checker.expectEqual(convert("h"), "ا", "single letter h → ا")
+checker.expectEqual(convert("f"), "ب", "single letter f → ب")
+checker.expectEqual(convert("n"), "د", "single letter n → د")
+checker.expectEqual(convert("l"), "م", "single letter l → م")
+checker.expectEqual(convert("a", context: ctxPersian), "ش", "a inside Persian context → ش")
+checker.expectEqual(convert("i", context: ctxPersian), "ه", "i inside Persian context → ه")
+checker.expectEqual(convert("a"), "a", "standalone a outside Persian context → a")
+checker.expectEqual(convert("i"), "i", "standalone i outside Persian context → i")
+checker.expectEqual(engine.convertText("d; ;jhf"), "یک کتاب", "یک کتاب converts")
+checker.expectEqual(engine.convertText("fi khl onh"), "به نام خدا", "به نام خدا converts")
+checker.expectEqual(engine.convertText("lk , j,"), "من و تو", "من و تو converts")
+checker.expectEqual(engine.convertText("fd ;jhf"), "بی کتاب", "بی کتاب converts")
+checker.expectEqual(engine.convertText("mv hc"), "پر از", "پر از converts")
+checker.expectEqual(engine.convertText("hello d;"), "hello یک", "d; after English converts to یک")
+checker.expectEqual(engine.convertText("sghl an"), "سلام شد", "an in Persian sentence converts to شد")
+
+checker.group("Persian words without an English equivalent")
+// The everyday Persian function words whose Latin spelling is also an
+// English entry (an abbreviation, a state code, a musical note). They have
+// no English meaning, so they stay Persian wherever they stand.
+for (latin, persian) in [("hc", "از"), ("fi", "به"), ("dh", "یا"), ("nv", "در"),
+                         ("iv", "هر"), ("ms", "پس"), ("il", "هم"), ("jh", "تا"),
+                         ("fh", "با"), ("ld", "می"), ("lk", "من"), ("lh", "ما"),
+                         ("ki", "نه"), ("si", "سه"), ("ng", "دل"), ("hf", "اب")] {
+    checker.expectEqual(engine.decide(token: latin), .convertToPersian(persian),
+                        "\(latin) at the start of a sentence is «\(persian)»")
+    checker.expectEqual(engine.decide(token: latin, context: ctxEnglish), .convertToPersian(persian),
+                        "\(latin) inside an English sentence is still «\(persian)»")
+}
+// "of" is a real English word, so the sentence decides.
+checker.expectEqual(engine.decide(token: "of", context: ctxPersian), .convertToPersian("خب"),
+                    "«of» is «خب» inside a Persian sentence")
+checker.expectEqual(engine.decide(token: "of", context: ctxEnglish), .keepAsTyped("of"),
+                    "«of» stays English inside an English sentence")
+
+checker.group("The first word decides the language of the sentence")
+// A sentence that starts with Persian stays Persian.
+checker.expectEqual(engine.convertText("hc hdk ;jhf"), "از این کتاب", "a Persian sentence stays Persian")
+// A sentence that starts with English stays English.
+checker.expectEqual(engine.convertText("hello fun"), "hello fun",
+                    "a sentence that starts with English stays English")
+checker.expectEqual(engine.convertText("hello sghl"), "hello سلام",
+                    "a Persian-only word is the evidence that switches the sentence to Persian")
+// …and the sentence follows the switch.
+checker.expectEqual(engine.convertText("hello sghl fun"), "hello سلام بعد",
+                    "the words after the switch are read as Persian")
+// A Persian sentence keeps the English words that have no Persian equivalent.
+checker.expectEqual(engine.convertText("hc google"), "از google",
+                    "an English-only word stays English inside a Persian sentence")
+// An address is English, and it decides the sentence like any other word.
+checker.expectEqual(engine.convertText("www.google.com sghl"), "www.google.com سلام",
+                    "an address does not turn the sentence into Persian")
+
+checker.group("The context that the next word is judged in")
+let afterPersian = engine.resolve(token: "hc", context: ConversionContext())
+checker.expectEqual(afterPersian.context.sentenceLanguage, .persian, "a Persian-only word makes the sentence Persian")
+checker.expectEqual(afterPersian.decision.output, "از", "the word itself is Persian")
+let afterEnglish = engine.resolve(token: "hello", context: ConversionContext())
+checker.expectEqual(afterEnglish.context.sentenceLanguage, .english, "an English-only word makes the sentence English")
+let afterAmbiguous = engine.resolve(token: "fun", context: ConversionContext())
+checker.expectEqual(afterAmbiguous.context.sentenceLanguage, .unknown, "an ambiguous word decides nothing")
+let afterAddress = engine.resolve(token: "https://example.com", context: ConversionContext())
+checker.expectEqual(afterAddress.context.sentenceLanguage, .english, "an address makes the sentence English")
+let afterSwitch = engine.resolve(token: "sghl", context: ConversionContext(sentenceLanguage: .english))
+checker.expectEqual(afterSwitch.context.sentenceLanguage, .persian, "a Persian-only word switches an English sentence")
+checker.expectEqual(afterSwitch.decision.output, "سلام", "the word that carries the evidence is Persian")
+
+checker.group("Punctuation")
+// A trailing comma belongs to the word it follows, not to the word.
+checker.expectEqual(engine.decide(token: "sghl,", context: ctxPersian), .convertToPersian("سلام,"),
+                    "a trailing comma stays with the Persian word it follows")
+checker.expectEqual(engine.decide(token: "hello,", context: ctxEnglish), .keepAsTyped("hello,"),
+                    "a trailing comma stays with the English word it follows")
+// The question mark and the percent sign are written the Persian way.
+checker.expectEqual(PersianText.persianPunctuationMark(for: "?"), "؟", "? becomes ؟")
+checker.expectEqual(PersianText.persianPunctuationMark(for: "%"), "٪", "% becomes ٪")
+checker.expectEqual(PersianText.persianPunctuationMark(for: "a"), nil, "an ordinary letter has no Persian mark")
 
 checker.group("Typo and Enter Interception Guard")
 let badText = "این پروژع با موفغیت انجلم شود"
@@ -241,5 +362,28 @@ checker.expectEqual(analysis.suggestions["انجلم"], "انجام", "suggests 
 let cleanText = "این پروژه با موفقیت انجام شد"
 let cleanAnalysis = TypoDetector.analyze(cleanText)
 checker.expect(!cleanAnalysis.hasSuspiciousTokens, "passes clean Persian sentence without false alerts")
+
+checker.group("Forbidden Words Detection & Send Interception")
+let forbiddenList = ["محرمانه", "رمز عبور", "password", "احمق"]
+
+let forbiddenText1 = "این یک گزارش کاملاً محرمانه است."
+let matches1 = ForbiddenWordsDetector.findMatches(in: forbiddenText1, forbiddenWords: forbiddenList)
+checker.expectEqual(matches1, ["محرمانه"], "finds Persian single forbidden word in sentence")
+
+let forbiddenText2 = "لطفا رمز عبور را ارسال کنید"
+let matches2 = ForbiddenWordsDetector.findMatches(in: forbiddenText2, forbiddenWords: forbiddenList)
+checker.expectEqual(matches2, ["رمز عبور"], "finds multi-word forbidden phrase in sentence")
+
+let forbiddenText3 = "My password is secure"
+let matches3 = ForbiddenWordsDetector.findMatches(in: forbiddenText3, forbiddenWords: forbiddenList)
+checker.expectEqual(matches3, ["password"], "finds English forbidden word in sentence")
+
+let forbiddenText4 = "این احمق‌ها را نگاه کن"
+let matches4 = ForbiddenWordsDetector.findMatches(in: forbiddenText4, forbiddenWords: forbiddenList)
+checker.expectEqual(matches4, ["احمق"], "matches clitic plural variation of forbidden word")
+
+let safeText = "خرید کتاب در خرداد ماه"
+let safeMatches = ForbiddenWordsDetector.findMatches(in: safeText, forbiddenWords: ["خر"])
+checker.expect(safeMatches.isEmpty, "does not falsely match substring in خرداد or خرید")
 
 exit(checker.report())

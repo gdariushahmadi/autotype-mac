@@ -69,6 +69,15 @@ public enum PersianText {
 
     private static let persianDigits: [Character] = ["۰", "۱", "۲", "۳", "۴", "۵", "۶", "۷", "۸", "۹"]
 
+    /// Converts a single ASCII digit to a Persian digit, or returns nil if not an ASCII digit.
+    public static func persianDigit(for character: Character) -> Character? {
+        guard character.isASCII, character.isNumber,
+              let ascii = character.asciiValue, ascii >= 48, ascii <= 57 else {
+            return nil
+        }
+        return persianDigits[Int(ascii - 48)]
+    }
+
     /// Converts ASCII digits inside a string to Persian digits.
     public static func persianDigits(_ text: String) -> String {
         var result = ""

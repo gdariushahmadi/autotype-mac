@@ -35,6 +35,7 @@ final class Controller: IMKInputController {
     }
 
     private var translationState: TranslationState = .idle
+    private var awaitingForbiddenConfirmation: (detectedWords: [String], line: String)? = nil
     private var sessionLineBuffer = ""
 
     private struct Conversion {
@@ -126,6 +127,7 @@ final class Controller: IMKInputController {
         markedRange = NSRange(location: NSNotFound, length: 0)
         context = ConversionContext()
         translationState = .idle
+        awaitingForbiddenConfirmation = nil
         sessionLineBuffer = ""
     }
 
@@ -133,7 +135,9 @@ final class Controller: IMKInputController {
         flushBuffer(client: sender as? IMKTextInput)
         buffer = ""
         markedRange = NSRange(location: NSNotFound, length: 0)
+        context = ConversionContext()
         translationState = .idle
+        awaitingForbiddenConfirmation = nil
         sessionLineBuffer = ""
     }
 
@@ -195,6 +199,12 @@ final class Controller: IMKInputController {
         if case .readyToSend = translationState {
             if keyCode != 36 && keyCode != 76 && keyCode != 53 {
                 translationState = .idle
+            }
+        }
+
+        if awaitingForbiddenConfirmation != nil {
+            if keyCode != 36 && keyCode != 76 && keyCode != 53 {
+                awaitingForbiddenConfirmation = nil
             }
         }
 
@@ -341,12 +351,23 @@ final class Controller: IMKInputController {
             if !buffer.isEmpty {
                 flushBuffer(client: client)
             }
+            if character.isNumber {
+                return handleDigitInput(character, client: client)
+            }
             if let letter = PersianLayout.convert(character) {
                 client.insertText(String(letter), replacementRange: NSRange(location: NSNotFound, length: 0))
                 sessionLineBuffer.append(letter)
                 return true
             }
             return false
+        }
+
+        // Handle numeric digits according to context (start/English -> English digits; inside Persian -> Persian digits)
+        if character.isNumber {
+            if !buffer.isEmpty {
+                flushBuffer(client: client)
+            }
+            return handleDigitInput(character, client: client)
         }
 
         // A word can only end at a word boundary, so a character that can be
@@ -362,6 +383,19 @@ final class Controller: IMKInputController {
         if !buffer.isEmpty {
             flushBuffer(client: client)
         }
+
+        // When the text around the caret is Persian, the punctuation that
+        // belongs to it is written the Persian way: `?` becomes `؟`.
+        if settings.usePersianPunctuation, context.isPersian,
+           let mark = PersianText.persianPunctuationMark(for: character) {
+            client.insertText(String(mark), replacementRange: NSRange(location: NSNotFound, length: 0))
+            sessionLineBuffer.append(mark)
+            if character == "?" {
+                context = ConversionContext()
+            }
+            return true
+        }
+
         if character == "." || character == "!" || character == "?" || character == "؟" || character == "\n" {
             context = ConversionContext()
         }
@@ -418,21 +452,89 @@ final class Controller: IMKInputController {
     /// The Persian-only keys (`[ ] ; ' ,`) are included because they carry the
     /// Persian letters `ج چ ک گ و`.
     private func isWordCharacter(_ character: Character) -> Bool {
-        if character.isLetter || character.isNumber { return true }
+        if character.isLetter { return true }
         if PersianLayout.persianOnlyKeys.contains(character) { return true }
         if character == "\u{200C}" { return true }
+        return false
+    }
+
+    /// Handles digit key input according to the smart numbers setting and language context.
+    private func handleDigitInput(_ character: Character, client: IMKTextInput) -> Bool {
+        let settings = makeEngine().settings
+        let targetRange = NSRange(location: NSNotFound, length: 0)
+
+        // When smart numbers is enabled and we are inside Persian text, type Persian numerals (۱۲۳).
+        // When at the start of text, in English context, or when disabled, type English digits (123).
+        if settings.usePersianDigits && isPersianContext(client: client) {
+            let digit = PersianText.persianDigit(for: character) ?? character
+            client.insertText(String(digit), replacementRange: targetRange)
+            sessionLineBuffer.append(digit)
+            context.previousWasPersian = true
+            return true
+        } else {
+            client.insertText(String(character), replacementRange: targetRange)
+            sessionLineBuffer.append(character)
+            if !context.isPersian {
+                context.previousWasPersian = false
+            }
+            return true
+        }
+    }
+
+    /// Determines whether the current insertion point is within Persian text.
+    private func isPersianContext(client: IMKTextInput?) -> Bool {
+        // 1. If sentence language is established:
+        if context.sentenceLanguage == .persian { return true }
+        if context.sentenceLanguage == .english { return false }
+
+        // 2. If the previous word was Persian:
+        if context.previousWasPersian { return true }
+
+        // 3. Inspect recent characters in sessionLineBuffer:
+        if let lastMeaningfulChar = sessionLineBuffer.reversed().first(where: {
+            !$0.isWhitespace && !$0.isNumber && $0 != "." && $0 != "," && $0 != "/" && $0 != "-"
+        }) {
+            if PersianLayout.isPersianUnicode(lastMeaningfulChar) {
+                return true
+            }
+            if lastMeaningfulChar.isASCII && lastMeaningfulChar.isLetter {
+                return false
+            }
+        }
+
+        // 4. If sessionLineBuffer is empty or only whitespace/numbers, inspect client text before caret:
+        if let client = client {
+            let caret = client.selectedRange().location
+            if caret != NSNotFound && caret > 0 {
+                let searchLength = min(caret, 100)
+                let searchStart = caret - searchLength
+                if let attrStr = client.attributedSubstring(from: NSRange(location: searchStart, length: searchLength)) {
+                    let text = attrStr.string
+                    if let lastChar = text.reversed().first(where: {
+                        !$0.isWhitespace && !$0.isNumber && $0 != "." && $0 != "," && $0 != "/" && $0 != "-" && $0 != "\n"
+                    }) {
+                        if PersianLayout.isPersianUnicode(lastChar) {
+                            return true
+                        }
+                        if lastChar.isASCII && lastChar.isLetter {
+                            return false
+                        }
+                    }
+                }
+            }
+        }
+
+        // 5. Standalone, at the start of a line/sentence, or no Persian context:
         return false
     }
 
     // MARK: - Committing
 
     private func updateMarkedText(client: IMKTextInput) {
-        let displayText: String
-        if let persian = PersianLayout.convert(buffer) {
-            displayText = persian
-        } else {
-            displayText = buffer
-        }
+        // The preview shows the word the way it is going to be committed, so
+        // an English word is never shown as Persian letters and a Persian word
+        // is shown as Persian while it is being typed.
+        let displayText = makeEngine().decide(token: buffer, context: context).output
         let length = (displayText as NSString).length
         client.setMarkedText(
             displayText,
@@ -451,8 +553,11 @@ final class Controller: IMKInputController {
         guard let client else { return }
 
         let settings = makeEngine().settings
-        let previousWasPersian = context.previousWasPersian
-        let decision = makeEngine().decide(token: token, context: context)
+        // Whether the text around the word is Persian — the digits and the
+        // punctuation that belong to it follow the sentence, not the word.
+        let persianContext = context.isPersian
+        let outcome = makeEngine().resolve(token: token, context: context)
+        let decision = outcome.decision
         let targetRange = NSRange(location: NSNotFound, length: 0)
         logDebug("flushBuffer: token=\(token), decision=\(decision), mode=\(settings.mode)")
 
@@ -467,29 +572,19 @@ final class Controller: IMKInputController {
             }
             client.insertText(output, replacementRange: targetRange)
             sessionLineBuffer.append(output)
-            let locked = context.sentenceLanguageIsPersian ?? true
-            context = ConversionContext(
-                previousWasPersian: true,
-                previousPersianWord: output,
-                sentenceLanguageIsPersian: locked
-            )
+            context = outcome.context
             lastConversion = nil
         case .keepAsTyped(let text):
             var output = text
-            if settings.usePersianDigits, previousWasPersian {
+            if settings.usePersianDigits, persianContext {
                 output = PersianText.persianDigits(output)
             }
-            if settings.usePersianPunctuation, previousWasPersian {
+            if settings.usePersianPunctuation, persianContext {
                 output = persianPunctuation(inSuffix: output)
             }
             client.insertText(output, replacementRange: targetRange)
             sessionLineBuffer.append(output)
-            let locked = context.sentenceLanguageIsPersian ?? false
-            context = ConversionContext(
-                previousWasPersian: false,
-                previousPersianWord: nil,
-                sentenceLanguageIsPersian: locked
-            )
+            context = outcome.context
             lastConversion = nil
         }
     }
@@ -520,7 +615,7 @@ final class Controller: IMKInputController {
         return true
     }
 
-    // MARK: - Translation on Enter
+    // MARK: - Translation & Send Interception on Enter
 
     private func handleReturn(client: IMKTextInput) -> Bool {
         // Second Enter: user verified the translation and confirms sending.
@@ -539,7 +634,39 @@ final class Controller: IMKInputController {
             flushBuffer(client: client)
         }
 
+        let lineText = extractCurrentLineText(client: client)
         let settings = makeEngine().settings
+        let dictionary = settingsStore.dictionary
+
+        // Check for forbidden words to prevent accidental sending
+        if settings.checkForForbiddenWords && !dictionary.forbiddenWords.isEmpty {
+            let matched = ForbiddenWordsDetector.findMatches(in: lineText, forbiddenWords: dictionary.forbiddenWords)
+            if !matched.isEmpty {
+                logDebug("handleReturn: forbidden words detected: \(matched), action=\(settings.forbiddenWordsAction), line='\(lineText)'")
+                switch settings.forbiddenWordsAction {
+                case .block:
+                    NSSound.beep()
+                    return true // Block completely
+                case .requireConfirmation:
+                    if let pending = awaitingForbiddenConfirmation, pending.line == lineText {
+                        // Second Enter: user confirmed sending despite forbidden words!
+                        logDebug("handleReturn: forbidden words confirmed on second Enter for: \(matched)")
+                        awaitingForbiddenConfirmation = nil
+                        // Proceed below to translation or dispatch
+                    } else {
+                        // First Enter: intercept and require a second Enter
+                        awaitingForbiddenConfirmation = (detectedWords: matched, line: lineText)
+                        NSSound.beep()
+                        return true
+                    }
+                }
+            } else {
+                awaitingForbiddenConfirmation = nil
+            }
+        } else {
+            awaitingForbiddenConfirmation = nil
+        }
+
         guard settings.translation.isEnabled,
               !settings.translation.apiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
             sessionLineBuffer = ""
@@ -555,15 +682,17 @@ final class Controller: IMKInputController {
         let textToTranslate = candidate.text
         let originalLineText = candidate.originalLine
         let rangeToReplace = candidate.range
-        logDebug("handleReturn: translating '\(textToTranslate)', range=\(rangeToReplace)")
+        let action = candidate.action
+        logDebug("handleReturn: executing AI action '\(action.name)' on '\(textToTranslate)', range=\(rangeToReplace)")
 
         translationState = .translating
 
         Task { @MainActor [weak self, weak client] in
             guard let self = self else { return }
             do {
-                let translated = try await TranslationService.shared.translate(
+                let processed = try await TranslationService.shared.process(
                     text: textToTranslate,
+                    systemPrompt: action.systemPrompt,
                     settings: settings.translation
                 )
                 guard case .translating = self.translationState else { return }
@@ -572,10 +701,10 @@ final class Controller: IMKInputController {
                     return
                 }
 
-                self.logDebug("handleReturn: translation succeeded -> '\(translated)', replacing range=\(rangeToReplace)")
-                currentClient.insertText(translated, replacementRange: rangeToReplace)
+                self.logDebug("handleReturn: action '\(action.name)' succeeded -> '\(processed)', replacing range=\(rangeToReplace)")
+                currentClient.insertText(processed, replacementRange: rangeToReplace)
 
-                let newLength = (translated as NSString).length
+                let newLength = (processed as NSString).length
                 let newLocation: Int
                 if rangeToReplace.location != NSNotFound {
                     newLocation = rangeToReplace.location
@@ -587,13 +716,13 @@ final class Controller: IMKInputController {
 
                 self.translationState = .readyToSend(
                     originalText: originalLineText,
-                    translatedText: translated,
+                    translatedText: processed,
                     range: newRange
                 )
-                self.sessionLineBuffer = translated
+                self.sessionLineBuffer = processed
             } catch {
-                self.logDebug("handleReturn: translation failed: \(error.localizedDescription)")
-                NSLog("AutoType: translation failed: \(error.localizedDescription)")
+                self.logDebug("handleReturn: action failed: \(error.localizedDescription)")
+                NSLog("AutoType: action failed: \(error.localizedDescription)")
                 self.translationState = .idle
                 NSSound.beep()
             }
@@ -604,6 +733,10 @@ final class Controller: IMKInputController {
     }
 
     private func handleEscape(client: IMKTextInput) -> Bool {
+        if awaitingForbiddenConfirmation != nil {
+            awaitingForbiddenConfirmation = nil
+            return true
+        }
         if case .translating = translationState {
             translationState = .idle
             return true
@@ -617,10 +750,31 @@ final class Controller: IMKInputController {
         return false
     }
 
+    private func extractCurrentLineText(client: IMKTextInput) -> String {
+        let caret = client.selectedRange().location
+        if caret != NSNotFound && caret > 0 {
+            let maxSearch = min(caret, 2000)
+            let searchStart = caret - maxSearch
+            if let attrString = client.attributedSubstring(from: NSRange(location: searchStart, length: maxSearch)) {
+                let fullPrefix = attrString.string
+                var lineStartIndex = fullPrefix.startIndex
+                if let lastNewline = fullPrefix.rangeOfCharacter(from: .newlines, options: .backwards) {
+                    lineStartIndex = lastNewline.upperBound
+                }
+                let lineSubstring = fullPrefix[lineStartIndex...]
+                let lineText = String(lineSubstring).trimmingCharacters(in: .newlines)
+                if !lineText.isEmpty {
+                    return lineText
+                }
+            }
+        }
+        return sessionLineBuffer.trimmingCharacters(in: .newlines)
+    }
+
     private func extractTextForTranslation(
         client: IMKTextInput,
         translationSettings: TranslationSettings
-    ) -> (text: String, originalLine: String, range: NSRange)? {
+    ) -> (text: String, originalLine: String, range: NSRange, action: AIAction)? {
         let caret = client.selectedRange().location
         logDebug("extractTextForTranslation: caret=\(caret), sessionLineBuffer='\(sessionLineBuffer)'")
         if caret != NSNotFound && caret > 0 {
@@ -634,21 +788,21 @@ final class Controller: IMKInputController {
                 }
                 let lineSubstring = fullPrefix[lineStartIndex...]
                 let lineText = String(lineSubstring).trimmingCharacters(in: .newlines)
-                if let translatable = translationSettings.extractTranslatableBody(from: lineText) {
+                if let extraction = translationSettings.extractActionAndBody(from: lineText) {
                     let offsetInPrefix = (String(fullPrefix[..<lineStartIndex]) as NSString).length
                     let absoluteLocation = searchStart + offsetInPrefix
                     let length = (String(lineSubstring) as NSString).length
-                    return (translatable, lineText, NSRange(location: absoluteLocation, length: length))
+                    return (extraction.body, lineText, NSRange(location: absoluteLocation, length: length), extraction.action)
                 }
             }
         }
 
         // Fallback to sessionLineBuffer if attributedSubstring is unavailable
         let trimmedBuffer = sessionLineBuffer.trimmingCharacters(in: .whitespacesAndNewlines)
-        if let translatable = translationSettings.extractTranslatableBody(from: trimmedBuffer) {
+        if let extraction = translationSettings.extractActionAndBody(from: trimmedBuffer) {
             let length = (sessionLineBuffer as NSString).length
             let location = (caret != NSNotFound && caret >= length) ? caret - length : NSNotFound
-            return (translatable, trimmedBuffer, NSRange(location: location, length: length))
+            return (extraction.body, trimmedBuffer, NSRange(location: location, length: length), extraction.action)
         }
 
         return nil

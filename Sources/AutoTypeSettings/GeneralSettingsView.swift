@@ -60,6 +60,16 @@ struct GeneralSettingsView: View {
                 }
 
                 Section {
+                    Label {
+                        Text("The first word of a sentence decides its language: a Persian sentence stays Persian, an English one stays English. A word that has no equivalent in the other language — «از», «در», «یا» — is always Persian, and a word that only exists in English stays English inside a Persian sentence.")
+                            .font(.callout)
+                            .foregroundStyle(.secondary)
+                    } icon: {
+                        Image(systemName: "text.bubble")
+                    }
+                }
+
+                Section {
                     Picker("Hold to type plain English", selection: $model.settings.englishModifier) {
                         ForEach(EnglishModifier.allCases, id: \.self) { modifier in
                             Text(modifier.displayName).tag(modifier)
@@ -72,12 +82,33 @@ struct GeneralSettingsView: View {
                 }
 
                 Section {
-                    Toggle("Persian numerals ۱۲۳", isOn: $model.settings.usePersianDigits)
+                    Toggle("Smart numbers (۱۲۳ in Persian, 123 at start)", isOn: $model.settings.usePersianDigits)
                     Toggle("Persian punctuation ، ؛ ؟ ٪", isOn: $model.settings.usePersianPunctuation)
                 } header: {
                     Text("Persian text")
                 } footer: {
-                    InlineHelp("Numbers and punctuation inside a Persian sentence are written the Persian way.")
+                    InlineHelp("When starting or in English, numbers are typed as 123. Inside Persian text, numbers match the language (۱۲۳).")
+                }
+
+                Section {
+                    Toggle("Prevent accidental sending of forbidden words",
+                           isOn: $model.settings.checkForForbiddenWords)
+
+                    if model.settings.checkForForbiddenWords {
+                        Picker("When forbidden words are found", selection: $model.settings.forbiddenWordsAction) {
+                            Text("Require 2nd Enter to confirm").tag(ForbiddenWordsAction.requireConfirmation)
+                            Text("Block sending completely").tag(ForbiddenWordsAction.block)
+                        }
+
+                        LabeledContent("Configured forbidden words") {
+                            Text("\(model.dictionary.forbiddenWords.count) words in Dictionary")
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                } header: {
+                    Text("Send Protection (جلوگیری از ارسال ناخواسته)")
+                } footer: {
+                    InlineHelp("Intercepts the Enter key when the typed sentence contains forbidden words. You can manage the forbidden words list in the Dictionary tab.")
                 }
             }
         }

@@ -12,10 +12,11 @@ struct DictionarySettingsView: View {
     @State private var search = ""
     @State private var list: WordList = .persian
 
-    /// The two lists of the dictionary.
+    /// The lists of the dictionary.
     enum WordList: String, CaseIterable, Identifiable {
         case persian
         case english
+        case forbidden
 
         var id: String { rawValue }
 
@@ -23,6 +24,7 @@ struct DictionarySettingsView: View {
             switch self {
             case .persian: return "Always Persian"
             case .english: return "Always English"
+            case .forbidden: return "Forbidden Words"
             }
         }
 
@@ -30,6 +32,7 @@ struct DictionarySettingsView: View {
             switch self {
             case .persian: return "character.book.closed"
             case .english: return "character.bubble"
+            case .forbidden: return "hand.raised.fill"
             }
         }
 
@@ -37,6 +40,7 @@ struct DictionarySettingsView: View {
             switch self {
             case .persian: return "These words are converted even when they look like English."
             case .english: return "These words are never converted."
+            case .forbidden: return "Messages containing these words are intercepted on Enter to prevent accidental sending."
             }
         }
 
@@ -44,6 +48,7 @@ struct DictionarySettingsView: View {
             switch self {
             case .persian: return "Add a Persian word"
             case .english: return "Add an English word"
+            case .forbidden: return "Add a forbidden word or phrase"
             }
         }
     }
@@ -72,6 +77,10 @@ struct DictionarySettingsView: View {
             .padding(.horizontal, AutoTypeMetrics.gutter)
             .padding(.bottom, 10)
 
+            if list == .forbidden {
+                forbiddenConfigCard
+            }
+
             header
 
             content
@@ -79,6 +88,37 @@ struct DictionarySettingsView: View {
             addRow
         }
         .onAppear { model.reload() }
+    }
+
+    // MARK: - Forbidden Words Settings
+
+    private var forbiddenConfigCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Toggle("Check for forbidden words on Enter", isOn: $model.settings.checkForForbiddenWords)
+                .font(.headline)
+
+            if model.settings.checkForForbiddenWords {
+                Picker("Action when detected:", selection: $model.settings.forbiddenWordsAction) {
+                    Text("Require 2nd Enter to confirm").tag(ForbiddenWordsAction.requireConfirmation)
+                    Text("Block sending completely").tag(ForbiddenWordsAction.block)
+                }
+                .pickerStyle(.radioGroup)
+                .padding(.leading, 4)
+
+                Text(model.settings.forbiddenWordsAction == .requireConfirmation
+                     ? "First Enter will beep and pause sending. Pressing Enter a second time will confirm and send."
+                     : "Sending is completely blocked while forbidden words are present in the sentence.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                    .padding(.leading, 4)
+            }
+        }
+        .padding(12)
+        .background(Color(NSColor.controlBackgroundColor).opacity(0.6))
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .overlay(RoundedRectangle(cornerRadius: 8).stroke(Color.secondary.opacity(0.2), lineWidth: 1))
+        .padding(.horizontal, AutoTypeMetrics.gutter)
+        .padding(.bottom, 10)
     }
 
     // MARK: - Header
@@ -149,7 +189,9 @@ struct DictionarySettingsView: View {
                 .font(.headline)
 
             Text(search.isEmpty
-                 ? "Add a word below and AutoType always converts it."
+                 ? (list == .forbidden
+                    ? "Add forbidden words or phrases below to prevent accidental dispatch on Enter."
+                    : "Add a word below and AutoType always converts it.")
                  : "No word contains “\(search)”.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -182,6 +224,7 @@ struct DictionarySettingsView: View {
         switch list {
         case .persian: return model.dictionary.persianWords
         case .english: return model.dictionary.englishWords
+        case .forbidden: return model.dictionary.forbiddenWords
         }
     }
 
@@ -199,6 +242,8 @@ struct DictionarySettingsView: View {
             model.addPersianWord(newWord)
         case .english:
             model.addEnglishWord(newWord)
+        case .forbidden:
+            model.addForbiddenWord(newWord)
         }
         newWord = ""
     }
@@ -209,6 +254,8 @@ struct DictionarySettingsView: View {
             model.removePersianWord(word)
         case .english:
             model.removeEnglishWord(word)
+        case .forbidden:
+            model.removeForbiddenWord(word)
         }
     }
 }

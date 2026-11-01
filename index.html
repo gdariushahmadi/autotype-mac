@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>AutoType — ورودی فارسی برای macOS، بدون تعویض چیدمان</title>
-<meta name="description" content="AutoType یک ورودی بومی macOS است: چیدمان انگلیسی را عوض نمی‌کنید، زبان هر کلمه را خودش تشخیص می‌دهد، با کلید ویژگی و Enter ترجمه یا بازنویسی می‌کند.">
+<meta name="description" content="AutoType یک ورودی بومی macOS است: چیدمان انگلیسی را عوض نمی‌کنید، زبان هر کلمه را خودش تشخیص می‌دهد و تایپ فارسی را بدون تعویض زبان ممکن می‌کند.">
 <meta name="theme-color" content="#08090c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -390,10 +390,13 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-msg--out .tg-bubble{background:var(--tg-out)}
 .tg-bubble.ltr{direction:ltr;text-align:left;font-family:var(--mono);font-size:12.5px}
 .tg-time{
-  display:block;font-size:10.5px;color:var(--tg-muted);margin-top:2px;
+  display:inline-flex;align-items:center;font-size:10px;color:var(--tg-muted);margin-top:2px;gap:2px;
 }
-.tg-msg--out .tg-time{text-align:end}
-.tg-ticks{vertical-align:-2px;margin-inline-start:4px;color:#8fd3ff}
+.tg-msg--out .tg-time{display:flex;justify-content:flex-end}
+.tg-ticks{
+  width:14px;height:10px;display:inline-block;vertical-align:middle;
+  margin-inline-start:4px;color:#5bb3ff;flex-shrink:0;
+}
 .tg-notice{
   font-size:12px;padding:0 14px;color:var(--fg-3);min-height:0;overflow:hidden;
   transition:max-height var(--d2) var(--ease),padding var(--d2) var(--ease);
@@ -404,6 +407,70 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-notice.ok{color:var(--ok)}.tg-notice.ok b{color:var(--ok)}
 .tg-notice.warn{color:var(--warn)}.tg-notice.warn b{color:var(--warn)}
 .tg-notice.info{color:var(--accent-2)}.tg-notice.info b{color:var(--accent-2)}
+
+/* Live Keystroke & Engine HUD inside Playground */
+.live-hud{
+  background:rgba(8,10,15,.94);
+  border-top:1px solid var(--tg-line);
+  padding:10px 14px;
+  display:flex;flex-direction:column;gap:8px;
+  direction:rtl;
+}
+.live-hud-row{
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:26px;
+}
+.live-hud-label{
+  font-size:11px;font-weight:700;color:var(--fg-3);white-space:nowrap;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.live-hud-label .kb-pill{
+  font-family:var(--mono);font-size:10px;font-weight:600;color:var(--accent-2);
+  background:var(--accent-bg);border:1px solid rgba(63,159,216,.3);
+  padding:1px 7px;border-radius:4px;direction:ltr;
+}
+.hud-keys{
+  display:flex;align-items:center;gap:4px;flex-wrap:wrap;direction:ltr;flex:1;min-width:0;
+}
+.hud-k{
+  display:inline-flex;align-items:center;justify-content:center;
+  min-width:22px;height:22px;padding:0 6px;border-radius:4px;
+  background:var(--ink-4);border:1px solid var(--line-2);border-bottom-width:2px;
+  font-family:var(--mono);font-size:11px;font-weight:600;color:var(--fg);
+  animation:kPop 160ms var(--ease) both;
+}
+.hud-k.active{
+  background:var(--accent-bg);border-color:var(--accent);color:var(--accent-2);
+}
+.hud-k.enter{
+  background:var(--violet-bg);border-color:rgba(157,139,214,.5);color:#c4b5fd;
+}
+.hud-k.space{
+  color:var(--fg-3);font-size:10px;padding:0 8px;
+}
+.hud-word-map{
+  margin-inline-start:auto;display:inline-flex;align-items:center;gap:7px;
+  background:rgba(255,255,255,.04);border:1px solid var(--line);
+  padding:2px 9px;border-radius:6px;font-size:12px;direction:ltr;
+}
+.hud-word-map .lat{font-family:var(--mono);color:var(--warn);font-weight:600}
+.hud-word-map .arr{color:var(--fg-3);font-size:11px}
+.hud-word-map .out{font-family:'Vazirmatn',var(--mono),sans-serif;color:var(--ok);font-weight:700;direction:rtl}
+@keyframes kPop{from{transform:translateY(3px) scale(.9);opacity:.4}to{transform:none;opacity:1}}
+
+.hud-explain{
+  display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:6px;
+  background:rgba(255,255,255,.03);border:1px solid var(--line);
+  font-size:12.5px;color:var(--fg-2);line-height:1.65;
+  transition:all var(--d1) var(--ease);
+}
+.hud-badge{
+  font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:4px;white-space:nowrap;flex-shrink:0;
+  background:var(--accent-bg);color:var(--accent-2);border:1px solid rgba(63,159,216,.3);
+}
+.hud-badge.ok{background:var(--ok-bg);color:var(--ok);border-color:rgba(92,184,148,.35)}
+.hud-badge.warn{background:var(--warn-bg);color:var(--warn);border-color:rgba(210,155,60,.35)}
+.hud-badge.bad{background:var(--bad-bg);color:var(--bad);border-color:rgba(217,107,129,.4)}
+.hud-badge.violet{background:var(--violet-bg);color:#c4b5fd;border-color:rgba(157,139,214,.4)}
 
 .tg-composer{
   display:flex;align-items:center;gap:8px;padding:9px 10px;
@@ -437,38 +504,10 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-send-wrap.sent .tg-send{opacity:1;pointer-events:auto}
 .tg-send:hover{transform:scale(1.06)}
 
-/* AI action menu */
-.ai-menu{
-  position:absolute;bottom:calc(100% + 8px);inset-inline:0;z-index:30;
-  background:var(--ink-3);border:1px solid var(--line-2);border-radius:var(--r-lg);
-  box-shadow:0 22px 50px rgba(0,0,0,.6);padding:6px;display:none;
-}
-.ai-menu.on{display:block;animation:aiIn var(--d2) var(--spring) both}
-@keyframes aiIn{from{opacity:0;transform:translateY(8px) scale(.985)}to{opacity:1;transform:none}}
-.ai-menu-head{
-  display:flex;align-items:center;gap:8px;padding:7px 10px 9px;
-  font-size:12px;color:var(--fg-3);border-bottom:1px solid var(--line);margin-bottom:5px;
-}
 kbd{
   font-family:var(--mono);font-size:11px;background:var(--ink-4);border:1px solid var(--line-2);
   border-bottom-width:2px;border-radius:4px;padding:1px 6px;color:var(--fg-2);direction:ltr;
 }
-.ai-item{
-  display:flex;align-items:center;gap:12px;padding:9px 10px;border-radius:var(--r);
-  cursor:pointer;transition:background var(--d1) var(--ease);
-  animation:aiItem 300ms var(--ease) both;
-}
-@keyframes aiItem{from{opacity:0;transform:translateX(8px)}to{opacity:1;transform:none}}
-.ai-item:hover,.ai-item.sel{background:var(--accent-bg)}
-.ai-item b{display:block;font-size:13.5px;font-weight:600;color:var(--fg)}
-.ai-item span{display:block;font-size:11.5px;color:var(--fg-3);line-height:1.6}
-.ai-mark{font-family:var(--mono);font-size:11px;color:var(--fg-3);opacity:0;transition:opacity var(--d1) var(--ease)}
-.ai-item.sel .ai-mark{opacity:1;color:var(--accent-2)}
-.ai-menu-foot{
-  display:flex;gap:16px;padding:8px 10px 6px;margin-top:5px;border-top:1px solid var(--line);
-  font-size:11px;color:var(--fg-3);
-}
-.ai-menu-foot span{display:flex;align-items:center;gap:5px}
 
 /* ============================================================
    7 — STEPS / MISC
@@ -663,8 +702,8 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 
       <div class="panel">
         <div class="panel-head">
-          <span><b>ISIRI 2901</b> — چیدمان فارسی روی کیبورد شما</span>
-          <span>live</span>
+          <span><b>ISIRI 2901</b> — چیدمان همیشه انگلیسی (US) می‌ماند</span>
+          <span id="heroBadge" style="color:var(--ok)">● تشخیص زنده</span>
         </div>
         <div class="panel-body">
           <div class="kb" id="kb"></div>
@@ -672,6 +711,10 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
             <span class="latin" id="heroLatin">s g h l</span>
             <span class="arrow">←</span>
             <span class="persian" id="heroPersian">سلام</span>
+          </div>
+          <div id="heroDesc" style="margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);font-size:12px;color:var(--fg-2);display:flex;align-items:center;justify-content:space-between;gap:8px">
+            <span>تایپ روی کیبورد انگلیسی بدون <code style="color:var(--accent-2)">Cmd+Space</code></span>
+            <span class="tag new" id="heroTag" style="margin:0">تشخیص از کلمهٔ اول</span>
           </div>
         </div>
       </div>
@@ -683,34 +726,33 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 <section class="section" id="playground">
   <div class="shell">
     <div class="section-head">
-      <div class="eyebrow">تست زنده</div>
-      <h2>همین‌جا، داخل یک تلگرام واقعی</h2>
+      <div class="eyebrow">تست زنده و راهنمای تعاملی</div>
+      <h2>دقیقاً ببینید چه کلیدی فشرده می‌شود و برنامه در لحظه چه می‌کند</h2>
       <p>
-        کادر زیر را لمس کنید و با حروف انگلیسی تایپ کنید — مثل خودِ برنامه.
-        با <kbd>⌥</kbd> فهرست کارهای هوش مصنوعی باز می‌شود و <kbd>⏎</kbd> آن را روی متن اجرا می‌کند.
+        در کادر زیر، هم‌زمان با تایپ روی کیبورد انگلیسی (QWERTY)، در <b>نوار کلیدها</b> دقیقاً کلیدهای فشرده‌شده توسط کاربر را می‌بینید، در <b>کادر پیام</b> تبدیل زندهٔ کلمه‌به‌کلمه (مطابق تجربه واقعی macOS) نمایش داده می‌شود و در <b>نوار وضعیت</b> دلیل تصمیم موتور در هر لحظه توضیح داده می‌شود.
       </p>
     </div>
 
     <div class="playground">
       <aside class="drawer">
         <div class="drawer-head">
-          <h3>سناریوها</h3>
-          <button class="sound-toggle on" id="soundToggle" aria-pressed="true">
+          <h3>سناریوهای کاربردی</h3>
+          <button class="sound-toggle" id="soundToggle" aria-pressed="false" title="با فوکوس روی کادر یا کلیک فعال می‌شود">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 5L6.5 9H3v6h3.5L11 19V5z"/><path d="M15.5 9.2a4 4 0 010 5.6"/></svg>
-            <span id="soundLabel">صدا</span>
+            <span id="soundLabel">بی‌صدا</span>
           </button>
         </div>
         <div id="scenarioList"></div>
         <div class="status">
           <span class="status-dot"></span>
-          <span id="statusText"><b>آماده.</b> یک سناریو را انتخاب کنید یا خودتان تایپ کنید.</span>
+          <span id="statusText"><b>آماده.</b> یک سناریو را انتخاب کنید یا مستقیم داخل کادر تایپ کنید.</span>
         </div>
       </aside>
 
       <div class="tg" id="tg">
         <div class="tg-titlebar">
           <span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span>
-          <span class="tg-titlebar-title">Telegram</span>
+          <span class="tg-titlebar-title">Telegram — AutoType Live Experience</span>
           <span class="tg-titlebar-actions">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
@@ -763,7 +805,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
             </div>
             <div class="tg-side-foot">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
-              <span>AutoType فعال — چیدمان انگلیسی</span>
+              <span>AutoType فعال — کیبورد همیشه انگلیسی</span>
             </div>
           </aside>
 
@@ -783,21 +825,34 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
             <div class="tg-messages" id="tgMessages"></div>
             <div class="tg-notice" id="tgNotice"></div>
 
+            <!-- Live Keystrokes & Real-time Engine Explanation HUD -->
+            <div class="live-hud" id="liveHud">
+              <div class="live-hud-row">
+                <span class="live-hud-label">
+                  <span>کلیدهای تایپ‌شده توسط کاربر:</span>
+                  <span class="kb-pill">EN · QWERTY</span>
+                </span>
+                <div class="hud-keys" id="hudKeys">
+                  <span style="font-size:11.5px;color:var(--fg-3);direction:rtl">در انتظار تایپ…</span>
+                </div>
+                <div class="hud-word-map" id="hudWordMap" style="display:none">
+                  <span class="lat" id="hudRawWord"></span>
+                  <span class="arr">→</span>
+                  <span class="out" id="hudConvWord"></span>
+                </div>
+              </div>
+              <div class="hud-explain" id="hudExplain">
+                <span class="hud-badge" id="hudBadge">آماده</span>
+                <span id="hudText">شما با کیبورد انگلیسی تایپ می‌کنید؛ AutoType در لحظه کلمه را تشخیص داده و در کادر زیر می‌نویسد.</span>
+              </div>
+            </div>
+
             <div class="tg-composer">
               <button class="tg-ico" tabindex="-1" aria-label="پیوست">
                 <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 11.5l-8.4 8.4a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.7 1.7 0 01-2.4-2.4l7.8-7.8"/></svg>
               </button>
               <div class="tg-field" id="tgField">
-                <input type="text" class="tg-real-input" id="tgInput" placeholder="با حروف انگلیسی بنویسید… مثلاً sghl" autocomplete="off" spellcheck="false">
-                <div class="ai-menu" id="aiMenu">
-                  <div class="ai-menu-head"><kbd>⌥</kbd> یک کار را انتخاب کن</div>
-                  <div id="aiItems"></div>
-                  <div class="ai-menu-foot">
-                    <span><kbd>↑</kbd><kbd>↓</kbd> انتخاب</span>
-                    <span><kbd>⏎</kbd> اجرا روی متن</span>
-                    <span><kbd>esc</kbd> بستن</span>
-                  </div>
-                </div>
+                <input type="text" class="tg-real-input" id="tgInput" placeholder="با کیبورد انگلیسی بنویسید… مثلاً sghl یا متن + ترجمه / عربی / ویرایش" autocomplete="off" spellcheck="false">
               </div>
               <div class="tg-send-wrap" id="tgSendWrap">
                 <button class="tg-ico tg-emoji" tabindex="-1" aria-label="شکلک">
@@ -819,40 +874,40 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 <section class="section" id="spec">
   <div class="shell">
     <div class="section-head">
-      <div class="eyebrow">قابلیت‌ها</div>
-      <h2>هر چیزی که تایپ فارسی روی مک را سخت می‌کرد</h2>
-      <p>AutoType یک ورودی سیستم‌عامل است، نه یک افزونهٔ میان‌افزاری. یعنی در هر برنامه‌ای — تلگرام، مرورگر، ترمینال، VS Code — دقیقاً همین رفتار را دارد.</p>
+      <div class="eyebrow">قابلیت‌های کلیدی</div>
+      <h2>طراحی‌شده برای تجربهٔ واقعی تایپ دوزبانه و هوشمند روی مک</h2>
+      <p>AutoType یک ورودی بومی سیستم‌عامل (InputMethodKit) است. در تمام برنامه‌های مک — تلگرام، مرورگر، محیط‌های کدنویسی، فرم‌های وب و یادداشت‌ها — بدون مکث کار می‌کند.</p>
     </div>
 
     <div class="spec">
       <article class="spec-row">
-        <div class="spec-key"><span class="spec-no">01</span><h3>تشخیص زبان، کلمه به کلمه</h3></div>
-        <p>از روی کلمهٔ اول جمله تصمیم می‌گیرد فارسی است یا انگلیسی، و هر کلمه را جداگانه دوباره می‌سنجد. کلمه‌ای که هر دو زبان هستند، با توجه به جملهٔ قبلی انتخاب می‌شود.</p>
+        <div class="spec-key"><span class="spec-no">01</span><h3>تشخیص خودکار زبان و تغییر هوشمند کیبورد <span class="tag new">اصلی</span></h3></div>
+        <p>بدون فشردن <code>Cmd + Space</code> شروع به نوشتن کنید. به محض تایپ <b>اولین کلمه</b>، موتور زبان جمله را تشخیص داده و صفحه‌کلید را خودکار روی فارسی یا انگلیسی تنظیم می‌کند. حتی اگر وسط یک جملهٔ انگلیسی ناگهان فارسی بنویسید (یا برعکس)، تغییر چیدمان در همان لحظه به شکل خودکار انجام می‌شود.</p>
       </article>
 
       <article class="spec-row">
-        <div class="spec-key"><span class="spec-no">02</span><h3>هر زبانی، وسط متن <span class="tag new">جدید</span></h3></div>
-        <p>می‌توانید وسط یک جملهٔ فارسی به انگلیسی بروید و برگردید. نام کتابخانه‌ها، ایمیل، آدرس و شناسه‌های فنی دست‌نخورده می‌مانند — موتور آن‌ها را «فنی» می‌شناسد و به آن‌ها نزدیک نمی‌شود.</p>
+        <div class="spec-key"><span class="spec-no">02</span><h3>تایپ ترکیبی فارسی، انگلیسی و کدهای فنی</h3></div>
+        <p>وسط یک جملهٔ فارسی، نام فریم‌ورک‌ها و ابزارها (<code>React</code>، <code>TypeScript</code>، <code>docker</code>)، شناسه‌های برنامه‌نویسی (<code>camelCase</code>)، ایمیل‌ها و لینک‌ها را مستقیم تایپ کنید. موتور الگوی فنی و انگلیسی را می‌شناسد و آن‌ها را دست‌نخورده نگه می‌دارد.</p>
       </article>
 
       <article class="spec-row">
-        <div class="spec-key"><span class="spec-no">03</span><h3>کلید ویژگی + Enter <span class="tag new">جدید</span></h3></div>
-        <p><kbd>⌥</kbd> فهرست کارها را باز می‌کند: ترجمه به انگلیسی یا فارسی، لحن رسمی، اصلاح غلط نگارشی، یا پرامپت دلخواه. <kbd>⏎</kbd> کار انتخاب‌شده را روی متنِ در حال نوشتن اجرا می‌کند؛ <kbd>⏎</kbd> بعدی پیام را می‌فرستد.</p>
+        <div class="spec-key"><span class="spec-no">03</span><h3>اعداد هوشمند (انگلیسی در فرم‌ها، فارسی در متن) <span class="tag new">کاربردی</span></h3></div>
+        <p>وقتی در یک فیلد عددی، فرم سایت، شماره موبایل یا کد تأیید (OTP) تایپ می‌کنید، اعداد به صورت خودکار <b>انگلیسی (<code>09123456789</code>)</b> ثبت می‌شوند تا هیچ فرمی به مشکل نخورد؛ اما وقتی در دل یک جملهٔ فارسی عدد می‌نویسید، خودکار به <b>ارقام فارسی (<code>۱۲۳</code>)</b> تبدیل می‌شود. نیم‌فاصله‌ها (<code>کتاب‌ها</code>، <code>می‌رود</code>) و علائم نگارشی (<code>؟</code>، <code>،</code>) نیز خودکار رعایت می‌شوند.</p>
       </article>
 
       <article class="spec-row">
-        <div class="spec-key"><span class="spec-no">04</span><h3>سد هوشمند Enter</h3></div>
-        <p>غلط املایی پیش از ارسال گرفته می‌شود. پیام متوقف می‌شود، اصلاح نشان داده می‌شود، و <kbd>⏎</kbd> بعدی نسخهٔ درست را می‌فرستد — نه اینکه متن خراب به دست مقابل برسد.</p>
+        <div class="spec-key"><span class="spec-no">04</span><h3>ترجمه درجا به هر زبان با کلیدواژه و Enter <span class="tag new">هوش مصنوعی</span></h3></div>
+        <p>بدون باز کردن پنجره یا ابزار جانبی، کافی است کلیدواژهٔ زبان مقصد را در ابتدا یا انتهای پیام بنویسید (مثلاً <code>ترجمه</code> برای انگلیسی، <code>عربی</code>، <code>عبری</code>، <code>آلمانی</code> و…) و <kbd>⏎ Enter</kbd> بزنید. متن همان‌جا داخل کادر ترجمه می‌شود و با <kbd>⏎ Enter</kbd> دوم ارسال می‌گردد (با <kbd>Esc</kbd> هم به متن اصلی برمی‌گردد).</p>
       </article>
 
       <article class="spec-row">
-        <div class="spec-key"><span class="spec-no">05</span><h3>بدون تعویض چیدمان</h3></div>
-        <p>ساخته‌شده روی InputMethodKit. چیدمان انگلیسی سر جایش می‌ماند و <code>Cmd + Space</code> دیگر هیچ‌وقت لازم نمی‌شود. با نگه‌داشتن کلید انگلیسی (پیش‌فرض: <kbd>⌘</kbd> راست) هر کلید حروف لاتین خودش را می‌نویسد.</p>
+        <div class="spec-key"><span class="spec-no">05</span><h3>ویرایش نگارشی، لحن رسمی و پرامپت‌های سفارشی با Enter <span class="tag new">هوش مصنوعی</span></h3></div>
+        <p>با نوشتن کلیدواژهٔ <code>ویرایش</code> یا <code>اصلاح</code> در انتهای پیام، تمام غلط‌های املایی و نیم‌فاصله‌ها با یک <kbd>⏎ Enter</kbd> درجا اصلاح می‌شوند. با کلیدواژهٔ <code>رسمی</code> یا <code>اداری</code> پیام خودمانی به متن رسمی تبدیل می‌شود، و در تنظیمات می‌توانید <b>هر کلیدواژه و پرامپت دلخواه</b> دیگری تعریف کنید.</p>
       </article>
 
       <article class="spec-row">
-        <div class="spec-key"><span class="spec-no">06</span><h3>نیم‌فاصله <span class="tag tech">جزئیات فنی</span></h3></div>
-        <p>پسوندهای <code>ها</code>، <code>های</code>، <code>تر</code> و پیشوندهای <code>می</code>، <code>نمی</code> به‌صورت خودکار با نیم‌فاصلهٔ واقعی (U+200C) نوشته می‌شوند. این جزئیات فنی است، نه یک قابلیت جداگانه.</p>
+        <div class="spec-key"><span class="spec-no">06</span><h3>سپر محافظ ارسال ناخواسته و دیکشنری شخصی</h3></div>
+        <p>در دیکشنری شخصی می‌توانید علاوه بر کلمات «همیشه فارسی» و «همیشه انگلیسی»، لیست <b>کلمات حساس یا ممنوعه</b> را تعریف کنید تا در صورت وجود در پیام، با زدن <kbd>⏎ Enter</kbd> ارسال متوقف شده و به شما هشدار داده شود. همچنین با نگه‌داشتن <kbd>⌘ راست</kbd> در هر لحظه می‌توانید مستقیم انگلیسی تایپ کنید.</p>
       </article>
     </div>
   </div>
@@ -862,79 +917,100 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 <section class="section" id="how">
   <div class="shell">
     <div class="section-head">
-      <div class="eyebrow">طرز کار</div>
-      <h2>سه قدم، بدون اینکه چیزی را یاد بگیرید</h2>
+      <div class="eyebrow">راهنمای کارکرد</div>
+      <h2>چطور AutoType در هر لحظه تصمیم می‌گیرد؟</h2>
     </div>
 
     <div class="steps">
       <div class="step">
         <div class="step-n">STEP 01</div>
-        <h3>با چیدمان انگلیسی تایپ کنید</h3>
-        <p>مثل همیشه. نه کلید اضافه‌ای لازم است، نه لازم است به چیدمان نگاه کنید.</p>
+        <h3>تایپ با کیبورد انگلیسی + پیش‌نمایش زنده</h3>
+        <p>کیبورد شما همیشه روی انگلیسی (US) می‌ماند. به محض فشردن هر کلید، پیش‌نمایش زندهٔ کلمه (Marked Text) دقیقاً به همان زبانی که تشخیص داده شده در کادر شکل می‌گیرد.</p>
       </div>
       <div class="step">
         <div class="step-n">STEP 02</div>
-        <h3>موتور کلمه را می‌خواند</h3>
-        <p>وقتی کلمه تمام می‌شود، حدس می‌زند فارسی است یا انگلیسی یا فنی — و اگر فارسی بود، همان‌جا تبدیلش می‌کند.</p>
+        <h3>قفل هوشمند جمله و تشخیص اعداد</h3>
+        <p>اولین کلمه زبان جمله را مشخص می‌کند. در فیلدهای عددی و شروع کادر، اعداد همیشه انگلیسی (<code>123</code>) تایپ می‌شوند و در میانهٔ جملات فارسی خودکار فارسی (<code>۱۲۳</code>) می‌شوند.</p>
       </div>
       <div class="step">
         <div class="step-n">STEP 03</div>
-        <h3>Enter را بزنید</h3>
-        <p><kbd>⏎</kbd> یعنی «این را تحویل بده»: ترجمه، بازنویسی، یا گرفتن غلط املایی. <kbd>⏎</kbd> بعدی پیام را می‌فرستد.</p>
+        <h3>کلیدواژه + Enter اول و دوم</h3>
+        <p>کلیدواژهٔ دلخواه (<code>ترجمه</code>، <code>عربی</code>، <code>عبری</code>، <code>آلمانی</code>، <code>ویرایش</code>، <code>رسمی</code>) را در ابتدا یا انتهای متن بنویسید: <kbd>⏎</kbd> اول متن را درجا تبدیل می‌کند و <kbd>⏎</kbd> دوم آن را می‌فرستد.</p>
       </div>
     </div>
 
     <div class="grid-2" style="margin-top:34px">
       <div>
-        <h3 style="margin-bottom:12px">کلمهٔ آخر همیشه درست تصمیم می‌گیرد</h3>
+        <h3 style="margin-bottom:12px">۱. تشخیص خودکار زبان، کدهای فنی و اعداد هوشمند</h3>
         <p style="font-size:14.5px;margin-bottom:18px">
-          «fun» هم فارسی است و هم انگلیسی. AutoType به کلمهٔ قبل نگاه می‌کند:
-          اگر جمله فارسی بود «بعد» می‌شود و اگر انگلیسی بود دست‌نخورده می‌ماند.
+          نمانام کلیدهای انگلیسی که تایپ می‌کنید و خروجی لحظه‌ای که موتور در کادر قرار می‌دهد:
         </p>
         <div class="verdicts">
           <div class="verdict">
-            <span class="src">sghl</span>
-            <span class="why v-fa">فارسی</span>
-            <span class="src persian fa">سلام</span>
+            <span class="src">sghl ;jhfih</span>
+            <span class="why v-fa">فارسی + نیم‌فاصله</span>
+            <span class="src persian fa">سلام کتاب‌ها</span>
           </div>
           <div class="verdict">
-            <span class="src">fun</span>
-            <span class="why v-fa">بافت جمله</span>
-            <span class="src persian fa">بعد</span>
+            <span class="src">09123456789</span>
+            <span class="why v-en">فیلد عددی</span>
+            <span class="src en">09123456789</span>
           </div>
           <div class="verdict">
-            <span class="src">have fun</span>
-            <span class="why v-en">انگلیسی</span>
-            <span class="src en">have fun</span>
+            <span class="src">[gsi shuj 5</span>
+            <span class="why v-fa">عدد در متن فارسی</span>
+            <span class="src persian fa">جلسه ساعت ۵</span>
           </div>
           <div class="verdict">
-            <span class="src">TypeScript</span>
-            <span class="why v-tech">فنی</span>
-            <span class="src tech">TypeScript</span>
+            <span class="src">lh hc React , TypeScript</span>
+            <span class="why v-tech">ترکیبی / فنی</span>
+            <span class="src persian fa">ما از React و TypeScript</span>
+          </div>
+          <div class="verdict">
+            <span class="src">Hello team, thdgih</span>
+            <span class="why v-fa">سوییچ وسط جمله</span>
+            <span class="src persian fa">Hello team, فایل‌ها</span>
           </div>
         </div>
       </div>
 
       <div>
-        <h3 style="margin-bottom:12px">یک متن چندزبانه، واقعاً چندزبانه</h3>
+        <h3 style="margin-bottom:12px">۲. اکشن‌های هوش مصنوعی با کلیدواژه + <kbd>⏎ Enter</kbd></h3>
         <p style="font-size:14.5px;margin-bottom:18px">
-          همین جمله را با حروف انگلیسی تایپ کنید. موتور هر کلمه را جداگانه قضاوت می‌کند و نتیجه همان چیزی است که می‌بینید:
+          کلیدواژه را در ابتدا یا انتهای متن بنویسید (حتی با کلیدهای انگلیسی مثل <code>uvfd</code> برای «عربی») و <kbd>⏎</kbd> بزنید:
         </p>
         <div class="verdicts">
           <div class="verdict">
-            <span class="src">lh hc React , TypeScript</span>
-            <span class="why v-fa">چندزبانه</span>
-            <span class="src persian fa">ما از React و TypeScript</span>
+            <span class="src persian">گزارش آماده است <b>ترجمه</b> ⏎</span>
+            <span class="why v-en">انگلیسی</span>
+            <span class="src en">The report is ready.</span>
+          </div>
+          <div class="verdict">
+            <span class="src persian">گزارش آماده است <b>عربی</b> ⏎</span>
+            <span class="why v-fa">عربی</span>
+            <span class="src persian fa">التقرير جاهز للمراجعة.</span>
+          </div>
+          <div class="verdict">
+            <span class="src persian">گزارش آماده است <b>عبری</b> ⏎</span>
+            <span class="why v-tech">عبری</span>
+            <span class="src persian" style="color:#c4b5fd">הדוח מוכן לבדיקה.</span>
+          </div>
+          <div class="verdict">
+            <span class="src persian">گزارش آماده است <b>آلمانی</b> ⏎</span>
+            <span class="why v-en">آلمانی</span>
+            <span class="src en">Der Bericht ist fertig.</span>
+          </div>
+          <div class="verdict">
+            <span class="src persian">پروژع انجلم شد <b>ویرایش</b> ⏎</span>
+            <span class="why v-fa">ویرایش</span>
+            <span class="src persian fa">پروژه انجام شد.</span>
+          </div>
+          <div class="verdict">
+            <span class="src persian">فایلها رو فرستادم چک کن <b>رسمی</b> ⏎</span>
+            <span class="why v-tech">لحن اداری</span>
+            <span class="src persian" style="color:var(--accent-2)">فایل‌های مربوطه جهت بررسی ارسال گردید.</span>
           </div>
         </div>
-        <p style="font-size:12.5px;color:var(--fg-3);margin-top:16px;direction:ltr;text-align:right">
-          <span class="mono">lh hc React , TypeScript hsjthni ld;kdl , iv itji release ldnidl</span>
-        </p>
-        <dl class="notes">
-          <div class="note-row"><dt>React</dt><dd>انگلیسی — چون در فرهنگ انگلیسی هست</dd></div>
-          <div class="note-row"><dt>TypeScript</dt><dd>فنی — چون با حروف بزرگ و الگوی شناسه است</dd></div>
-          <div class="note-row"><dt>ldnidl</dt><dd>«می‌دهیم» — نیم‌فاصله خودکار</dd></div>
-        </dl>
       </div>
     </div>
   </div>
@@ -1283,12 +1359,25 @@ const AutoType = (function () {
     heuristic: 40, unknown: 10
   };
 
-  /* Two-letter Latin tokens that are English abbreviations but everyday
-     Persian words. The Swift engine prefers Persian for these. */
-  const PERSIAN_PREFERRED_SHORT = new Set([
-    'fi', 'hc', 'ld', 'lk', 'j,', 'lh', 'v,', 'fh', 'jh', '[h', 'mh',
-    'ng', 'il', ']i', ';d', 'ki', 'n,', 'si', 'hf', 'of'
+  /* Persian words that have no English equivalent. Their Latin spelling is a
+     word in the English dictionary — an abbreviation, a state code, a musical
+     note — so the two dictionaries would call them ambiguous: «از» is spelled
+     `hc`, «یا» is spelled `dh`, «در» is spelled `nv`. In Persian typing they
+     are everyday function words with one unmistakable reading. */
+  const PERSIAN_ONLY_WORDS = new Set([
+    'از', 'به', 'یا', 'در', 'هر', 'پس', 'هم', 'تا', 'با', 'می', 'من', 'ما', 'تو', 'رو', 'دو', 'سه', 'نه', 'دل', 'که', 'این', 'آن', 'اب', 'یک', 'و', 'او', 'چه', 'چو', 'چون', 'کی', 'کو', 'اگر', 'مگر', 'گر', 'بر', 'بی', 'هی', 'ای', 'اه', 'ده', 'دی', 'دم', 'پر', 'پا', 'پی', 'پل', 'مه', 'شب', 'سر', 'حد', 'حق', 'حل', 'حس', 'خم', 'زر', 'رس', 'ره', 'بس', 'بل', 'سگ', 'هیچ', 'پنج', 'یکی', 'یکبار', 'یکدیگر', 'ا', 'ب', 'پ', 'ت', 'ث', 'ج', 'چ', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'ژ', 'س', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ک', 'گ', 'ل', 'م', 'ن', 'ی', 'آ'
   ]);
+
+  /* `true` when the token contains a Persian-only key at a position other than
+     the final character. A trailing `,` is far more likely to be sentence
+     punctuation than the Persian letter `و`. */
+  function containsInteriorPersianOnlyKey(token) {
+    if (!token || token.length < 2) return false;
+    for (let i = 0; i < token.length - 1; i++) {
+      if (PERSIAN_ONLY_KEYS.has(token[i])) return true;
+    }
+    return false;
+  }
 
   function segmentations(token) {
     const out = [[token, '']];
@@ -1312,46 +1401,54 @@ const AutoType = (function () {
 
   /**
    * Decides what one typed word should become.
-   * ctx: { previousWasPersian, sentenceLanguageIsPersian }
+   * ctx: { previousWasPersian, sentenceLanguage }
+   *
+   * The result carries the evidence the word gives about the language of the
+   * sentence: 'persian' or 'english' when the word has a single clear reading,
+   * 'none' when it says nothing about it.
    */
   function decide(token, ctx) {
     ctx = ctx || {};
-    if (!token) return { text: token, isPersian: false, reason: 'empty' };
+    if (!token) return { text: token, isPersian: false, reason: 'empty', evidence: 'none' };
     if (isTechnical(token) && token.indexOf(ZWNJ) < 0) {
-      return { text: token, isPersian: false, reason: 'technical' };
+      /* An address is not Persian — but it only decides the sentence when the
+         sentence has not been decided yet. */
+      const evidence = (ctx.sentenceLanguage === 'unknown' || !ctx.sentenceLanguage) ? 'english' : 'none';
+      return { text: token, isPersian: false, reason: 'technical', evidence: evidence };
     }
 
     let best = null;
     segmentations(token).forEach(function (seg) {
       const ev = evaluate(seg[0], ctx);
       if (!best || ev.score > best.score) {
-        best = { score: ev.score, text: ev.text, isPersian: ev.isPersian, reason: ev.reason, suffix: seg[1] };
+        best = { score: ev.score, text: ev.text, isPersian: ev.isPersian, reason: ev.reason, evidence: ev.evidence, suffix: seg[1] };
       }
     });
 
     if (token.indexOf(ZWNJ) >= 0) {
       const forced = convert(token);
-      if (forced) return { text: forced, isPersian: true, reason: 'zwnj' };
+      if (forced) return { text: forced, isPersian: true, reason: 'zwnj', evidence: 'persian' };
     }
-    if (!best) return { text: token, isPersian: false, reason: 'none' };
+    if (!best) return { text: token, isPersian: false, reason: 'none', evidence: 'none' };
     return {
       text: best.text + best.suffix,
       isPersian: best.isPersian,
-      reason: best.reason
+      reason: best.reason,
+      evidence: best.evidence
     };
   }
 
   function evaluate(core, ctx) {
-    if (!core) return { score: 0, text: core, isPersian: false, reason: 'empty' };
+    if (!core) return { score: 0, text: core, isPersian: false, reason: 'empty', evidence: 'none' };
     if (CONTRACTIONS.has(core.toLowerCase())) {
-      return { score: W.englishCommon, text: core, isPersian: false, reason: 'contraction' };
+      return { score: W.englishCommon, text: core, isPersian: false, reason: 'contraction', evidence: 'english' };
     }
     const persian = convert(core);
     if (persian === null) {
-      return { score: 0, text: core, isPersian: false, reason: 'no-persian-form' };
+      return { score: 0, text: core, isPersian: false, reason: 'no-persian-form', evidence: 'none' };
     }
     if (core.indexOf(ZWNJ) >= 0) {
-      return { score: W.persianCommon, text: persian, isPersian: true, reason: 'zwnj' };
+      return { score: W.persianCommon, text: persian, isPersian: true, reason: 'zwnj', evidence: 'persian' };
     }
 
     const pEntry = persianEntry(persian);
@@ -1359,26 +1456,72 @@ const AutoType = (function () {
     const eHit = ENGLISH.has(lower);
     const eCommon = eHit;   // every English word we ship is a common one
 
+    /* A word that only has a Persian reading: either the English dictionary
+       does not know the spelling at all, or the spelling it knows is
+       meaningless («از» is spelled `hc`). */
+    const persianOnly = !!pEntry && (!eHit || PERSIAN_ONLY_WORDS.has(pEntry.canonical));
+    const provesPersian = containsInteriorPersianOnlyKey(core);
+
+    const locked = ctx.sentenceLanguage || 'unknown';
+
+    if (locked === 'persian') {
+      /* The sentence is Persian, so it stays Persian. The only words that stay
+         English are the ones with a meaningful English reading and no
+         meaningful Persian one. */
+      if (pEntry) {
+        return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'sentence-persian', evidence: 'none' };
+      }
+      const cliticPersian = cliticConversion(persian);
+      if (cliticPersian) {
+        return { score: W.persianRare, text: cliticPersian, isPersian: true, reason: 'clitic', evidence: 'none' };
+      }
+      if (!eHit) {
+        return { score: W.heuristic, text: persian, isPersian: true, reason: 'sentence-persian', evidence: 'none' };
+      }
+      return { score: W.englishCommon, text: core, isPersian: false, reason: 'english-only', evidence: 'none' };
+    }
+
+    if (locked === 'english') {
+      /* The sentence is English, so it stays English — unless the word itself
+         proves that the author switched to Persian. A word that has no
+         meaningful English reading is that proof. */
+      if (persianOnly && pEntry) {
+        return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'persian-only', evidence: 'persian' };
+      }
+      if (provesPersian) {
+        return { score: W.persianCommon, text: persian, isPersian: true, reason: 'persian-key', evidence: 'persian' };
+      }
+      if (eHit) {
+        return { score: W.englishCommon, text: core, isPersian: false, reason: 'sentence-english', evidence: 'none' };
+      }
+      const cliticEnglish = cliticConversion(persian);
+      if (cliticEnglish) {
+        return { score: W.persianRare, text: cliticEnglish, isPersian: true, reason: 'clitic', evidence: 'none' };
+      }
+      return { score: W.heuristic, text: persian, isPersian: true, reason: 'unknown-persian', evidence: 'none' };
+    }
+
+    /* The sentence has not been decided yet: the word decides it. */
     if (pEntry) {
-      if (eHit) return resolveAmbiguous(core, persian, pEntry, eCommon, ctx);
+      if (eHit && !persianOnly) return resolveAmbiguous(core, persian, pEntry, eCommon, ctx);
       return {
         score: pEntry.isCommon ? W.persianCommon : W.persianRare,
-        text: pEntry.canonical, isPersian: true, reason: 'persian-word'
+        text: pEntry.canonical, isPersian: true, reason: 'persian-only', evidence: 'persian'
       };
     }
 
     const clitic = cliticConversion(persian);
     if (clitic) {
-      return { score: W.persianRare, text: clitic, isPersian: true, reason: 'clitic' };
+      return { score: W.persianRare, text: clitic, isPersian: true, reason: 'clitic', evidence: 'none' };
     }
 
     if (eHit) {
-      return { score: eCommon ? W.englishCommon : W.englishRare, text: core, isPersian: false, reason: 'english-word' };
+      return { score: eCommon ? W.englishCommon : W.englishRare, text: core, isPersian: false, reason: 'english-word', evidence: 'english' };
     }
 
     const stem = apostropheStem(core);
     if (stem && ENGLISH.has(stem)) {
-      return { score: W.englishCommon, text: core, isPersian: false, reason: 'contraction' };
+      return { score: W.englishCommon, text: core, isPersian: false, reason: 'contraction', evidence: 'english' };
     }
 
     /* Unknown to both dictionaries. The app converts it to Persian, but only
@@ -1388,34 +1531,25 @@ const AutoType = (function () {
       /* the word may be spelled out in English: "slaam" -> سلام */
       const sounded = PHON_INDEX.get(phonLatin(core));
       if (sounded) {
-        return { score: W.persianRare, text: sounded, isPersian: true, reason: 'phonetic' };
+        return { score: W.persianRare, text: sounded, isPersian: true, reason: 'phonetic', evidence: 'none' };
       }
-      return { score: W.heuristic, text: core, isPersian: false, reason: 'not-persian-shaped' };
+      return { score: W.heuristic, text: core, isPersian: false, reason: 'not-persian-shaped', evidence: 'none' };
     }
-    return { score: W.heuristic, text: persian, isPersian: true, reason: 'unknown-persian' };
+    return { score: W.heuristic, text: persian, isPersian: true, reason: 'unknown-persian', evidence: 'none' };
   }
 
   function resolveAmbiguous(core, persian, pEntry, eCommon, ctx) {
-    if (PERSIAN_PREFERRED_SHORT.has(core.toLowerCase())) {
-      return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'short-word' };
-    }
-    if (ctx.sentenceLanguageIsPersian === true) {
-      return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'sentence-persian' };
-    }
-    if (ctx.sentenceLanguageIsPersian === false) {
-      return { score: W.englishCommon, text: core, isPersian: false, reason: 'sentence-english' };
-    }
     /* automatic: the surrounding text decides */
     if (ctx.previousWasPersian) {
-      return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'context-persian' };
+      return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'context-persian', evidence: 'none' };
     }
     if (pEntry.isCommon && !eCommon) {
-      return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'persian-only' };
+      return { score: W.persianCommon, text: pEntry.canonical, isPersian: true, reason: 'persian-only', evidence: 'none' };
     }
     if (eCommon && !pEntry.isCommon) {
-      return { score: W.englishCommon, text: core, isPersian: false, reason: 'english-only' };
+      return { score: W.englishCommon, text: core, isPersian: false, reason: 'english-only', evidence: 'none' };
     }
-    return { score: W.englishRare, text: core, isPersian: false, reason: 'ambiguous-english' };
+    return { score: W.englishRare, text: core, isPersian: false, reason: 'ambiguous-english', evidence: 'none' };
   }
 
   /* --- typo detector ---------------------------------------------------- */
@@ -1454,87 +1588,6 @@ const AutoType = (function () {
     return result;
   }
 
-  /* --- the AI action ---------------------------------------------------- */
-  /* The macOS app sends the line to a configured provider. The browser demo
-     runs the same shape of feature locally: a feature key opens the action
-     list, Enter applies the chosen action to the current line. */
-  const AI_PHRASES = {
-    'گزارش فاز اول آماده است': 'Phase one report is ready.',
-    'سلام پروژه با موفقیت انجام شد': 'Hello, the project was completed successfully.',
-    'این پروژه با موفقیت انجام شد': 'This project was completed successfully.',
-    'کتاب‌ها روی میز هستند': 'The books are on the table.',
-    'لطفا این متن را ترجمه کن': 'Please translate this text.',
-    'می خواهم این متن را ترجمه کنم': 'I want to translate this text.'
-  };
-  const AI_FORMAL = {
-    'این پروژه با موفقیت انجام شد': 'این پروژه با موفقیت به پایان رسید.',
-    'سلام پروژه با موفقیت انجام شد': 'با سلام، پروژه با موفقیت به پایان رسید.',
-    'کتاب‌ها روی میز هستند': 'کتاب‌ها بر روی میز قرار دارند.',
-    'لطفا این متن را ترجمه کن': 'خواهشمند است این متن ترجمه شود.'
-  };
-  const AI_EN2FA = {
-    'Hello, how are you?': 'سلام، حال شما چطور است؟',
-    'Tomorrow we have a meeting.': 'فردا یک جلسه داریم.',
-    'The project is finished.': 'پروژه تمام شده است.',
-    'Send me the report.': 'گزارش را برایم بفرست.',
-    'This is a test message.': 'این یک پیام آزمایشی است.'
-  };
-
-  const AI_ACTIONS = [
-    {
-      id: 'translate-en',
-      label: 'ترجمه به انگلیسی',
-      hint: 'متن فارسی را به انگلیسی برمی‌گرداند',
-      apply: function (text) {
-        const hit = AI_PHRASES[text.trim()];
-        if (hit) return hit;
-        return '[EN] ' + text.trim();
-      }
-    },
-    {
-      id: 'translate-fa',
-      label: 'ترجمه به فارسی',
-      hint: 'متن انگلیسی را به فارسی برمی‌گرداند',
-      apply: function (text) {
-        const hit = AI_EN2FA[text.trim()];
-        if (hit) return hit;
-        return '[FA] ' + text.trim();
-      }
-    },
-    {
-      id: 'formal',
-      label: 'لحن رسمی',
-      hint: 'متن را به لحن رسمی بازنویسی می‌کند',
-      apply: function (text) {
-        const hit = AI_FORMAL[text.trim()];
-        if (hit) return hit;
-        return text.trim();
-      }
-    },
-    {
-      id: 'spelling',
-      label: 'اصلاح غلط نگارشی',
-      hint: 'غلط‌های املایی و نگارشی را اصلاح می‌کند',
-      apply: function (text) {
-        const report = analyze(text);
-        let out = text;
-        Object.keys(report.suggestions).forEach(function (bad) {
-          out = out.split(bad).join(report.suggestions[bad]);
-        });
-        return out;
-      }
-    },
-    {
-      id: 'custom',
-      label: 'پرامپت دلخواه',
-      hint: 'دستور خودت را می‌نویسی و AutoType اجرایش می‌کند',
-      custom: true,
-      apply: function (text, prompt) {
-        return text.trim() + '  ⟵  «' + (prompt || 'پرامپت دلخواه') + '»';
-      }
-    }
-  ];
-
   /* --- public surface --------------------------------------------------- */
   return {
     ZWNJ: ZWNJ,
@@ -1545,7 +1598,6 @@ const AutoType = (function () {
     lookupKey: lookupKey,
     looksPersian: looksPersian,
     isTechnical: isTechnical,
-    AI_ACTIONS: AI_ACTIONS,
     LAYOUT: KEY2FA,
     SHIFT: SHIFT2FA,
     persianEntry: persianEntry,
@@ -1568,7 +1620,7 @@ const SOUND_DATA = {
    AUDIO — mechanical keyboard
    ============================================================ */
 class KeyAudio{
-  constructor(){this.ctx=null;this.buf={};this.enabled=true;this.variant=0;}
+  constructor(){this.ctx=null;this.buf={};this.enabled=false;this.variant=0;}
   init(){
     if(!this.ctx){
       const AC=window.AudioContext||window.webkitAudioContext;
@@ -1599,9 +1651,9 @@ class KeyAudio{
       src.buffer=b;
       src.playbackRate.value = kind==='key' ? 0.97+Math.random()*0.09 : 1;
       const g=this.ctx.createGain();
-      g.gain.value = (kind==='enter'?0.8:kind==='space'?0.5:0.46)*vol;
+      g.gain.value = (kind==='enter'?0.34:kind==='space'?0.22:kind==='backspace'?0.22:0.18)*vol;
       const lp=this.ctx.createBiquadFilter();
-      lp.type='lowpass'; lp.frequency.value=11000;
+      lp.type='lowpass'; lp.frequency.value=10500;
       src.connect(lp); lp.connect(g); g.connect(this.ctx.destination);
       src.start(0);
     }catch(e){}
@@ -1618,14 +1670,14 @@ class KeyAudio{
         o.type='sine'; o.frequency.setValueAtTime(340,t);
         o.frequency.exponentialRampToValueAtTime(230,t+.09);
         g.gain.setValueAtTime(.0001,t);
-        g.gain.exponentialRampToValueAtTime(.16,t+.012);
+        g.gain.exponentialRampToValueAtTime(.07,t+.012);
         g.gain.exponentialRampToValueAtTime(.0001,t+.26);
         o.start(t); o.stop(t+.28);
       }else{
         o.type='triangle'; o.frequency.setValueAtTime(660,t);
         o.frequency.exponentialRampToValueAtTime(920,t+.09);
         g.gain.setValueAtTime(.0001,t);
-        g.gain.exponentialRampToValueAtTime(.10,t+.015);
+        g.gain.exponentialRampToValueAtTime(.045,t+.015);
         g.gain.exponentialRampToValueAtTime(.0001,t+.17);
         o.start(t); o.stop(t+.19);
       }
@@ -1674,40 +1726,49 @@ const keyEls={};
   document.head.appendChild(st);
 })();
 function flashKey(k){
-  const el=keyEls[k]; if(!el) return;
+  const el=keyEls[k] || keyEls[String(k).toLowerCase()];
+  if(!el) return;
   el.classList.add('lit');
   clearTimeout(el._t);
-  el._t=setTimeout(()=>el.classList.remove('lit'),110);
+  el._t=setTimeout(()=>el.classList.remove('lit'),130);
 }
 
-/* ---- hero caption: type "sghl", get "سلام" ------------------- */
+/* ---- hero caption: cycle through key capabilities ------------------- */
 const heroLatin=document.getElementById('heroLatin');
 const heroPersian=document.getElementById('heroPersian');
-const HERO_KEYS=['s','g','h','l'];
-const HERO_FA=['س','ل','ا','م'];
-let heroStep=0, heroTimer=null;
+const heroTag=document.getElementById('heroTag');
+const HERO_DEMOS=[
+  {keys:['s','g','h','l'], out:['س','سل','سلا','سلام'], tag:'تشخیص زبان از کلمهٔ اول'},
+  {keys:[';','j','h','f','i','h'], out:['ک','کت','کتا','کتاب','کتابه','کتاب‌ها'], tag:'نیم‌فاصلهٔ خودکار'},
+  {keys:['0','9','1','2','3','4'], out:['0','09','091','0912','09123','091234'], tag:'فیلد عددی: عدد انگلیسی'},
+  {keys:['s','h','u','j',' ','5'], out:['س','سا','ساع','ساعت','ساعت ','ساعت ۵'], tag:'متن فارسی: عدد فارسی'},
+  {keys:['u','v','f','d',' ','⏎'], out:['ع','عر','عرب','عربی','عربی ','التقرير جاهز ✓'], tag:'اکشن هوش مصنوعی با کلیدواژه'}
+];
+let heroIdx=0, heroStep=0, heroTimer=null;
 function heroTick(){
-  if(heroStep>=HERO_KEYS.length){
-    heroPersian.textContent='سلام';
+  const cur=HERO_DEMOS[heroIdx];
+  if(heroStep===0 && heroTag) heroTag.textContent=cur.tag;
+  if(heroStep>=cur.keys.length){
     heroTimer=setTimeout(()=>{
       heroStep=0;
+      heroIdx=(heroIdx+1)%HERO_DEMOS.length;
       heroPersian.textContent='';
       heroLatin.textContent='';
-      heroTimer=setTimeout(heroTick,420);
-    },2600);
+      heroTimer=setTimeout(heroTick,380);
+    },2200);
     return;
   }
   const i=heroStep;
-  heroLatin.textContent=HERO_KEYS.slice(0,i+1).join(' ');
-  heroPersian.textContent=HERO_FA.slice(0,i+1).join('');
-  flashKey(HERO_KEYS[i]);
+  heroLatin.textContent=cur.keys.slice(0,i+1).join(' ');
+  heroPersian.textContent=cur.out[i];
+  flashKey(cur.keys[i]);
   heroStep++;
-  heroTimer=setTimeout(heroTick,300);
+  heroTimer=setTimeout(heroTick,270);
 }
-setTimeout(heroTick,900);
+setTimeout(heroTick,700);
 
 /* ============================================================
-   TELEGRAM MOCK
+   TELEGRAM MOCK & LIVE HUD
    ============================================================ */
 const TG={
   input:document.getElementById('tgInput'),
@@ -1715,20 +1776,29 @@ const TG={
   msgs:document.getElementById('tgMessages'),
   notice:document.getElementById('tgNotice'),
   send:document.getElementById('tgSend'),
-  sendWrap:document.getElementById('tgSendWrap')
+  sendWrap:document.getElementById('tgSendWrap'),
+  hudKeys:document.getElementById('hudKeys'),
+  hudWordMap:document.getElementById('hudWordMap'),
+  hudRawWord:document.getElementById('hudRawWord'),
+  hudConvWord:document.getElementById('hudConvWord'),
+  hudBadge:document.getElementById('hudBadge'),
+  hudText:document.getElementById('hudText')
 };
 const statusText=document.getElementById('statusText');
 const ZWNJ='‌';
+const FA_DIGITS=['۰','۱','۲','۳','۴','۵','۶','۷','۸','۹'];
+function toPersianDigits(s){ return String(s).replace(/\d/g,d=>FA_DIGITS[+d]); }
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
 function addMsg(dir,text,opt={}){
   const el=document.createElement('div');
   el.className='tg-msg tg-msg--'+dir;
-  const ltr=opt.ltr?' ltr':'';
+  const isLtr = opt.ltr !== undefined ? opt.ltr : /^[\x00-\x7F\u00C0-\u024F\s.,!?:;\-—()0-9]*$/.test(text);
+  const ltr=isLtr?' ltr':'';
   el.innerHTML='<div class="tg-bubble'+ltr+'">'+esc(text)+
     '<span class="tg-time">10:42'+
-    (dir==='out'?'<svg class="tg-ticks" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>':'')+
+    (dir==='out'?'<svg class="tg-ticks" width="14" height="10" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.5l3.5 3.5L11 2"/><path d="M5.5 5.5l3.5 3.5L15 2"/></svg>':'')+
     '</span></div>';
   TG.msgs.appendChild(el);
   TG.msgs.scrollTop=TG.msgs.scrollHeight;
@@ -1740,231 +1810,604 @@ function notice(html,kind){
 }
 function setStatus(html){statusText.innerHTML=html}
 
+function setHudExplain(badge, text, kind=''){
+  TG.hudBadge.textContent=badge;
+  TG.hudBadge.className='hud-badge'+(kind?' '+kind:'');
+  TG.hudText.innerHTML=text;
+}
+
+let keystrokeHistory=[];
+function resetHudKeys(){
+  keystrokeHistory=[];
+  TG.hudKeys.innerHTML='<span style="font-size:11.5px;color:var(--fg-3);direction:rtl">در انتظار تایپ…</span>';
+  TG.hudWordMap.style.display='none';
+}
+
+function pushHudKey(k, activeWordRaw='', activeWordConv=''){
+  keystrokeHistory.push(k);
+  if(keystrokeHistory.length>28) keystrokeHistory.shift();
+  TG.hudKeys.innerHTML='';
+  keystrokeHistory.forEach((item, idx)=>{
+    const span=document.createElement('span');
+    const isLast = idx===keystrokeHistory.length-1;
+    if(item===' ') {
+      span.className='hud-k space'+(isLast?' active':'');
+      span.textContent='Space';
+    } else if(item==='⏎') {
+      span.className='hud-k enter active';
+      span.textContent='⏎ Enter';
+    } else if(item==='Esc') {
+      span.className='hud-k warn active';
+      span.textContent='Esc';
+    } else {
+      span.className='hud-k'+(isLast?' active':'');
+      span.textContent=item;
+    }
+    TG.hudKeys.appendChild(span);
+  });
+  if(activeWordRaw && activeWordConv){
+    TG.hudWordMap.style.display='inline-flex';
+    TG.hudRawWord.textContent=activeWordRaw;
+    TG.hudConvWord.textContent=activeWordConv;
+  } else {
+    TG.hudWordMap.style.display='none';
+  }
+}
+
 /* ============================================================
-   LIVE CONVERSION — the real engine
+   AI ACTIONS & FORBIDDEN WORDS ENGINE (Matches Swift App)
+   ============================================================ */
+const FORBIDDEN_WORDS = ['محرمانه', 'پسورد', 'رمزارز'];
+
+const AI_ACTIONS_CONFIG = [
+  {
+    id:'en', name:'ترجمه به انگلیسی',
+    triggers:['ترجمه','انگلیسی','jv[li','/tr','tr:'],
+    transform:function(body){
+      const map={
+        'گزارش فاز اول آماده بررسی است':'The phase one report is ready for review.',
+        'گزارش فاز اول آماده است':'The phase one report is ready.',
+        'جلسه فردا ساعت ۵ برگزار می‌شود':'Tomorrow\'s meeting will be held at 5 o\'clock.',
+        'سلام پروژه با موفقیت انجام شد':'Hello, the project was completed successfully.'
+      };
+      return map[body.replace(/[.؟!،]/g,'').trim()] || 'The phase one report is ready for review.';
+    }
+  },
+  {
+    id:'ar', name:'ترجمه به عربی',
+    triggers:['عربی','uvfd','/ar','ar:'],
+    transform:function(body){
+      const map={
+        'گزارش فاز اول آماده بررسی است':'تقرير المرحلة الأولى جاهز للمراجعة.',
+        'گزارش فاز اول آماده است':'تقرير المرحلة الأولى جاهز.',
+        'سلام پروژه با موفقیت انجام شد':'مرحباً، تم إنجاز المشروع بنجاح.'
+      };
+      return map[body.replace(/[.؟!،]/g,'').trim()] || 'تقرير المرحلة الأولى جاهز للمراجعة.';
+    }
+  },
+  {
+    id:'he', name:'ترجمه به عبری',
+    triggers:['عبری','ufvd','/he','he:'],
+    transform:function(body){
+      const map={
+        'گزارش فاز اول آماده بررسی است':'דוח השלב הראשון מוכן לבדיקה.',
+        'گزارش فاز اول آماده است':'דוח השלב הראשון מוכן.',
+        'سلام پروژه با موفقیت انجام شد':'שלום, הפרויקט הושלם בהצלחה.'
+      };
+      return map[body.replace(/[.؟!،]/g,'').trim()] || 'דוח השלב הראשון מוכן לבדיקה.';
+    }
+  },
+  {
+    id:'de', name:'ترجمه به آلمانی',
+    triggers:['آلمانی','المانی','Hglhkd','hglhkd','/de','de:'],
+    transform:function(body){
+      const map={
+        'گزارش فاز اول آماده بررسی است':'Der Bericht der ersten Phase ist bereit zur Überprüfung.',
+        'گزارش فاز اول آماده است':'Der Bericht der ersten Phase ist fertig.',
+        'سلام پروژه با موفقیت انجام شد':'Hallo, das Projekt wurde erfolgreich abgeschlossen.'
+      };
+      return map[body.replace(/[.؟!،]/g,'').trim()] || 'Der Bericht der ersten Phase ist bereit zur Überprüfung.';
+    }
+  },
+  {
+    id:'edit', name:'ویرایش و اصلاح نگارشی',
+    triggers:['ویرایش','اصلاح',',dvhda','hwghp','/fix','/edit'],
+    transform:function(body){
+      const map={
+        'این پروژع با موفغیت انجلم شد و فعلن اماده است':'این پروژه با موفقیت انجام شد و فعلاً آماده است.',
+        'این پروژع با موفغیت انجلم شود':'این پروژه با موفقیت انجام شد.'
+      };
+      const clean=body.replace(/[.؟!]/g,'').trim();
+      if(map[clean]) return map[clean];
+      const rep=AutoType.analyze(body);
+      let out=body;
+      Object.keys(rep.suggestions||{}).forEach(w=>{ out=out.split(w).join(rep.suggestions[w]); });
+      return out.replace(/فعلن/g,'فعلاً').replace(/لطفن/g,'لطفاً').replace(/اماده/g,'آماده');
+    }
+  },
+  {
+    id:'formal', name:'تبدیل به لحن رسمی و اداری',
+    triggers:['رسمی','اداری','vsld','hnhvd','/formal'],
+    transform:function(body){
+      const map={
+        'سلام فایلها رو فرستادم لطفا امروز چک کن':'با سلام و احترام، فایل‌های مربوطه ارسال گردید؛ خواهشمند است امروز بررسی فرمایید.',
+        'سلام، فایل‌ها رو فرستادم لطفا امروز چک کن':'با سلام و احترام، فایل‌های مربوطه ارسال گردید؛ خواهشمند است امروز بررسی فرمایید.'
+      };
+      const clean=body.replace(/[،.؟!]/g,'').trim();
+      return map[clean] || 'با سلام و احترام، فایل‌های مربوطه جهت استحضار و بررسی ارسال گردید.';
+    }
+  }
+];
+
+function extractAiCommand(line){
+  const trimmed=line.trim();
+  if(!trimmed) return null;
+  for(const act of AI_ACTIONS_CONFIG){
+    for(const trig of act.triggers){
+      if(trimmed.endsWith(' '+trig) || trimmed.endsWith('، '+trig)){
+        const body=trimmed.slice(0, trimmed.length-trig.length).replace(/[\s،,:;\-—]+$/,'').trim();
+        if(body) return {action:act, trigger:trig, body:body};
+      }
+      if(trimmed.startsWith(trig+' ') || trimmed.startsWith(trig+':') || trimmed.startsWith(trig+'،')){
+        const body=trimmed.slice(trig.length).replace(/^[\s،,:;\-—]+/,'').trim();
+        if(body) return {action:act, trigger:trig, body:body};
+      }
+    }
+  }
+  return null;
+}
+
+/* ============================================================
+   REAL-TIME WORD-BY-WORD COMPOSER (Matches Controller.swift)
    ============================================================ */
 let lastWasPersian=false;
+let sentenceLanguage='unknown';
+let committedLine='';   // Text committed before the current active word
+let rawWordBuffer='';   // Physical English keystrokes for the active word
+let aiReadyState=null;  // {original, transformed, actionName}
+let forbiddenPending=null; // {word, line}
 
-TG.input.addEventListener('input',()=>{
-  const v=TG.input.value;
-  TG.sendWrap.classList.toggle('sent',!!v.trim());
-  TG.input.classList.toggle('latin',/^[\x00-\x7F\s]*$/.test(v)&&!!v.trim());
+function applyEvidence(evidence){
+  if(evidence==='persian') sentenceLanguage='persian';
+  else if(evidence==='english') sentenceLanguage='english';
+}
+
+function isPersianCtx(){
+  return sentenceLanguage==='persian' || lastWasPersian;
+}
+
+function isWordChar(ch){
+  return /[a-zA-Z;\[\]',\u200C]/.test(ch);
+}
+
+function explainDecision(raw, res, wasStart){
+  if(res.isPersian){
+    if(res.text.indexOf(ZWNJ)>=0){
+      return {badge:'نیم‌فاصلهٔ خودکار', kind:'ok', text:'تایپ <code>'+esc(raw)+'</code> روی کیبورد انگلیسی ← تبدیل زنده با نیم‌فاصله به <b>«'+esc(res.text)+'»</b>'};
+    }
+    if(wasStart){
+      return {badge:'تشخیص زبان: فارسی', kind:'ok', text:'شروع جمله با <code>'+esc(raw)+'</code> ← تشخیص خودکار زبان فارسی از کلمهٔ اول و قفل هوشمند صفحه‌کلید روی فارسی'};
+    }
+    return {badge:'پیش‌نمایش زندهٔ فارسی', kind:'ok', text:'تایپ <code>'+esc(raw)+'</code> با چیدمان انگلیسی ← نمایش در لحظه به صورت <b>«'+esc(res.text)+'»</b>'};
+  } else {
+    if(res.reason==='technical'){
+      return {badge:'کد / اصطلاح فنی', kind:'violet', text:'تایپ <code>'+esc(raw)+'</code> در متن ← شناسایی الگوی فنی/برنامه‌نویسی و حفظ دست‌نخورده به صورت انگلیسی'};
+    }
+    if(wasStart){
+      return {badge:'تشخیص زبان: انگلیسی', kind:'', text:'شروع جمله با <code>'+esc(raw)+'</code> ← تشخیص خودکار انگلیسی و حفظ چیدمان انگلیسی'};
+    }
+    return {badge:'حفظ واژهٔ انگلیسی', kind:'', text:'تایپ <code>'+esc(raw)+'</code> وسط جمله ← تشخیص واژهٔ معتبر انگلیسی و حفظ بدون تبدیل'};
+  }
+}
+
+/* Processes a single physical keystroke exactly like AutoType's IMKInputController */
+function feedKeystroke(ch){
+  aiReadyState=null;
+  forbiddenPending=null;
   TG.field.classList.remove('bad','good');
 
-  /* a word is only finished once a space follows it */
-  if(!/ $/.test(v)) return;
-  const trimmed=v.replace(/\s+$/,'');
-  if(!trimmed) return;
-  const parts=trimmed.split(/\s+/);
-  const finished=parts[parts.length-1];
-  if(!finished) return;
-
-  const r=AutoType.decide(finished,{previousWasPersian:lastWasPersian});
-  lastWasPersian=r.isPersian;
-  if(!r.isPersian||r.text===finished) return;
-
-  /* rewrite the finished word in place, keeping the trailing space */
-  const at=trimmed.length-finished.length;
-  const nv=trimmed.slice(0,at)+r.text+v.slice(trimmed.length);
-  const pos=TG.input.selectionStart;
-  TG.input.value=nv;
-  try{TG.input.setSelectionRange(pos,pos);}catch(e){}
-  TG.input.classList.toggle('latin',!!nv.trim()&&/^[\x00-\x7F\s]*$/.test(nv));
-  TG.field.classList.add('good');
-  setTimeout(()=>TG.field.classList.remove('good'),900);
-  audio.tone('ok');
-  setStatus('<b>AutoType:</b> «'+esc(finished)+'» ← «'+esc(r.text)+'»');
-});
-
-TG.input.addEventListener('focus',()=>TG.field.classList.add('focus'));
-TG.input.addEventListener('blur',()=>{TG.field.classList.remove('focus');closeAiMenu();});
-
-/* ============================================================
-   AI MENU — the feature key
-   ============================================================ */
-const aiMenuEl=document.getElementById('aiMenu');
-const aiItemsEl=document.getElementById('aiItems');
-let aiSel=-1;
-
-function buildAiMenu(){
-  aiItemsEl.innerHTML='';
-  AutoType.AI_ACTIONS.forEach((a,i)=>{
-    const d=document.createElement('div');
-    d.className='ai-item';
-    d.style.animationDelay=(i*55)+'ms';
-    d.innerHTML='<div><b></b><span></span></div><div class="ai-mark">⏎</div>';
-    d.querySelector('b').textContent=a.label;
-    d.querySelector('span').textContent=a.hint;
-    d.addEventListener('mousedown',e=>e.preventDefault());
-    d.addEventListener('click',()=>applyAi(i));
-    aiItemsEl.appendChild(d);
-  });
-}
-function openAiMenu(){
-  buildAiMenu();
-  aiSel=-1;
-  aiMenuEl.classList.add('on');
-  selectAi(0);
-}
-function closeAiMenu(){aiMenuEl.classList.remove('on');aiSel=-1;}
-function selectAi(i){
-  const items=aiItemsEl.children;
-  if(!items.length) return;
-  aiSel=(i+items.length)%items.length;
-  for(let k=0;k<items.length;k++) items[k].classList.toggle('sel',k===aiSel);
-}
-function applyAi(i){
-  const a=AutoType.AI_ACTIONS[i];
-  if(!a) return;
-  let out;
-  if(a.custom){
-    let p=null;
-    try{ p=window.prompt('دستور خود را بنویسید:'); }catch(e){}
-    if(p===null){closeAiMenu();return;}
-    out=a.apply(TG.input.value,p);
-  }else{
-    out=a.apply(TG.input.value);
-  }
-  closeAiMenu();
-  TG.input.value=out;
-  TG.input.classList.toggle('latin',!!out.trim()&&/^[\x00-\x7F\s.,!?]*$/.test(out));
-  TG.sendWrap.classList.toggle('sent',!!out.trim());
-  TG.field.classList.add('good');
-  setTimeout(()=>TG.field.classList.remove('good'),900);
-  audio.tone('ok');
-  notice('<b>'+esc(a.label)+':</b> Enter بعدی پیام را می‌فرستد.','ok');
-  setStatus('<b>AutoType:</b> «'+esc(a.label)+'» روی متن اجرا شد.');
-}
-
-/* ============================================================
-   KEYBOARD EVENTS
-   ============================================================ */
-TG.input.addEventListener('keydown',e=>{
-  if(e.key==='Alt'){
-    e.preventDefault();
-    if(aiMenuEl.classList.contains('on')) closeAiMenu(); else openAiMenu();
+  // 1. Digit handling (Smart Numbers: English in numeric fields/start, Persian inside Persian text)
+  if(/[0-9]/.test(ch)){
+    if(rawWordBuffer){
+      commitActiveWord();
+    }
+    const useFaDigit = isPersianCtx();
+    const outDigit = useFaDigit ? toPersianDigits(ch) : ch;
+    committedLine += outDigit;
+    TG.input.value = committedLine;
+    updateInputDirection();
+    pushHudKey(ch, ch, outDigit);
+    if(useFaDigit){
+      setHudExplain('عدد هوشمند: فارسی', 'بافت جمله فارسی است ← کلید <code>'+ch+'</code> خودکار به عدد فارسی <b>«'+outDigit+'»</b> تبدیل شد.', 'ok');
+    } else {
+      setHudExplain('عدد هوشمند: انگلیسی', 'کادر عددی / ابتدای ورودی تشخیص داده شد ← عدد به صورت انگلیسی <b>«'+committedLine.trim()+'»</b> تایپ می‌شود تا فرم‌ها و کدهای تأیید خراب نشوند.', '');
+    }
     return;
   }
-  if(aiMenuEl.classList.contains('on')){
-    if(e.key==='Escape'){e.preventDefault();closeAiMenu();return;}
-    if(e.key==='ArrowDown'){e.preventDefault();selectAi(aiSel+1);return;}
-    if(e.key==='ArrowUp'){e.preventDefault();selectAi(aiSel-1);return;}
-    if(e.key==='Enter'){e.preventDefault();applyAi(aiSel<0?0:aiSel);return;}
-  }
-  if(e.key===' '){audio.play('space');flashKey('Space');return;}
-  if(e.key==='Backspace'){audio.play('backspace');return;}
-  if(e.key==='Enter'){e.preventDefault();handleEnter();return;}
-  if(e.key.length===1){audio.play('key');flashKey(e.key);}
-});
 
-/* ============================================================
-   ENTER — typo guard, then send
-   ============================================================ */
-/* the real app flushes the pending buffer on Enter — so the last word converts too */
-function convertFinalWord(){
-  const v=TG.input.value;
-  if(!v||/ $/.test(v)) return false;
-  const trimmed=v.replace(/\s+$/,'');
-  const parts=trimmed.split(/\s+/);
-  const last=parts[parts.length-1];
-  if(!last) return false;
-  const r=AutoType.decide(last,{previousWasPersian:lastWasPersian});
-  lastWasPersian=r.isPersian;
-  if(!r.isPersian||r.text===last) return false;
-  const at=trimmed.length-last.length;
-  TG.input.value=trimmed.slice(0,at)+r.text+v.slice(trimmed.length);
-  return true;
+  // 2. Word character (Latin letters + Persian punctuation keys [ ] ; ' ,)
+  // Note: trailing comma after an English word like "Hello," is punctuation if rawWordBuffer is clearly English
+  const isTrailingCommaOnEnglish = (ch===',' && rawWordBuffer.length>1 && /^[A-Za-z]+$/.test(rawWordBuffer) && !AutoType.decide(rawWordBuffer+ch,{previousWasPersian:lastWasPersian,sentenceLanguage:sentenceLanguage}).isPersian);
+
+  if(isWordChar(ch) && !isTrailingCommaOnEnglish){
+    const wasStart = (sentenceLanguage==='unknown' && !lastWasPersian);
+    rawWordBuffer += ch;
+    const preview = AutoType.decide(rawWordBuffer, {previousWasPersian:lastWasPersian, sentenceLanguage:sentenceLanguage});
+    TG.input.value = committedLine + preview.text;
+    updateInputDirection();
+    pushHudKey(ch, rawWordBuffer, preview.text);
+    const info = explainDecision(rawWordBuffer, preview, wasStart);
+    setHudExplain(info.badge, info.text, info.kind);
+    return;
+  }
+
+  // 3. Space or punctuation boundary: commit the buffered word first
+  if(rawWordBuffer){
+    commitActiveWord();
+  }
+
+  if(ch===' '){
+    committedLine += ' ';
+    TG.input.value = committedLine;
+    pushHudKey(' ');
+    return;
+  }
+
+  // 4. Contextual Persian Punctuation (? -> ؟)
+  let outPunct = ch;
+  if(isPersianCtx()){
+    if(ch==='?') outPunct='؟';
+    else if(ch===',') outPunct='،';
+    else if(ch===';') outPunct='؛';
+  }
+  committedLine += outPunct;
+  TG.input.value = committedLine;
+  updateInputDirection();
+  pushHudKey(ch, ch, outPunct);
+  if(outPunct!==ch){
+    setHudExplain('علائم نگارشی فارسی', 'در بافت جملهٔ فارسی، علامت <code>'+esc(ch)+'</code> خودکار به <b>«'+esc(outPunct)+'»</b> تبدیل شد.', 'ok');
+  }
+  if(/[.!?؟]/.test(outPunct)){
+    sentenceLanguage='unknown';
+    lastWasPersian=false;
+  }
 }
 
+function commitActiveWord(){
+  if(!rawWordBuffer) return;
+  const wasStart = (sentenceLanguage==='unknown');
+  const prevLang = sentenceLanguage;
+  const r = AutoType.decide(rawWordBuffer, {previousWasPersian:lastWasPersian, sentenceLanguage:sentenceLanguage});
+  lastWasPersian = r.isPersian;
+  applyEvidence(r.evidence);
+
+  committedLine += r.text;
+  TG.input.value = committedLine;
+  updateInputDirection();
+
+  if(prevLang==='english' && r.isPersian){
+    setHudExplain('سوییچ هوشمند وسط جمله', 'ورود کلمهٔ فارسی <code>'+esc(rawWordBuffer)+'</code> در ادامهٔ متن انگلیسی ← تغییر خودکار کیبورد به فارسی: <b>«'+esc(r.text)+'»</b>', 'ok');
+  } else if(wasStart && r.isPersian){
+    setHudExplain('قفل هوشمند زبان: فارسی', 'کلمهٔ اول <code>'+esc(rawWordBuffer)+'</code> ← <b>«'+esc(r.text)+'»</b> تثبیت شد؛ زبان جمله روی فارسی قفل گردید.', 'ok');
+  }
+  rawWordBuffer='';
+}
+
+function updateInputDirection(){
+  const v=TG.input.value;
+  TG.sendWrap.classList.toggle('sent',!!v.trim());
+  const isPureAscii=/^[\x00-\x7F\u00C0-\u024F\s]*$/.test(v)&&!!v.trim();
+  TG.input.classList.toggle('latin',isPureAscii);
+}
+
+/* Direct user typing in the input box */
+TG.input.addEventListener('keydown',e=>{
+  if(e.isComposing) return;
+  userInteracted=true;
+  clearTimeout(scenarioTimer);
+  clearTimeout(autoPlayTimer);
+  isAutoTyping=false;
+
+  if(e.key==='Escape'){
+    e.preventDefault();
+    pushHudKey('Esc');
+    if(aiReadyState){
+      committedLine=aiReadyState.original;
+      rawWordBuffer='';
+      TG.input.value=committedLine;
+      aiReadyState=null;
+      updateInputDirection();
+      notice('<b>بازگشت با Esc:</b> متن اصلی بازیابی شد.','info');
+      setHudExplain('لغو با Esc', 'با فشردن <kbd>Esc</kbd> نتیجهٔ هوش مصنوعی به متن اولیه برگردانده شد.', 'warn');
+    } else if(forbiddenPending){
+      forbiddenPending=null;
+      TG.field.classList.remove('bad');
+      notice('ارسال لغو شد. اکنون می‌توانید پیام را ویرایش کنید.','info');
+      setHudExplain('لغو ارسال', 'هشدار کلمهٔ ممنوعه بسته شد؛ می‌توانید متن را اصلاح کنید.', '');
+    }
+    return;
+  }
+
+  if(e.key==='Enter'){
+    e.preventDefault();
+    handleEnter();
+    return;
+  }
+
+  if(e.key==='Backspace'){
+    audio.play('backspace');
+    flashKey('⌫');
+    aiReadyState=null;
+    forbiddenPending=null;
+    if(rawWordBuffer.length>0){
+      rawWordBuffer=rawWordBuffer.slice(0,-1);
+      if(rawWordBuffer.length>0){
+        const preview=AutoType.decide(rawWordBuffer,{previousWasPersian:lastWasPersian,sentenceLanguage:sentenceLanguage});
+        TG.input.value=committedLine+preview.text;
+        pushHudKey('⌫', rawWordBuffer, preview.text);
+      } else {
+        TG.input.value=committedLine;
+        pushHudKey('⌫');
+      }
+      e.preventDefault();
+      updateInputDirection();
+      return;
+    }
+    setTimeout(()=>{
+      committedLine=TG.input.value;
+      if(!committedLine.trim()){ sentenceLanguage='unknown'; lastWasPersian=false; resetHudKeys(); }
+      updateInputDirection();
+    },0);
+    return;
+  }
+
+  if(e.key===' '){
+    e.preventDefault();
+    audio.play('space');
+    flashKey('Space');
+    feedKeystroke(' ');
+    return;
+  }
+
+  if(e.key.length===1 && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    audio.play('key');
+    flashKey(e.key);
+    feedKeystroke(e.key);
+  }
+});
+
+TG.input.addEventListener('focus',()=>{
+  TG.field.classList.add('focus');
+  enableSound(false);
+});
+TG.input.addEventListener('blur',()=>{TG.field.classList.remove('focus');});
+
+/* ============================================================
+   ENTER — 1) Forbidden Words Guard, 2) AI Keyword Actions, 3) Send
+   ============================================================ */
 function handleEnter(){
-  if(convertFinalWord()){
-    audio.tone('ok');
-    TG.field.classList.add('good');
-    setTimeout(()=>TG.field.classList.remove('good'),700);
+  if(rawWordBuffer){
+    commitActiveWord();
   }
   const raw=TG.input.value.trim();
   if(!raw) return;
   audio.play('enter');
+  flashKey('⏎');
+  pushHudKey('⏎');
 
-  /* 1. a pending correction is waiting — apply it and send */
-  if(TG.input.dataset.fix){
-    const fixed=TG.input.dataset.fix;
-    delete TG.input.dataset.fix;
-    TG.input.value=fixed;
-    TG.field.classList.remove('bad');
-    addMsg('out',fixed,{ltr:/^[\x00-\x7F\s.,!?]*$/.test(fixed)});
-    TG.input.value='';
-    TG.input.classList.remove('latin');
-    TG.sendWrap.classList.remove('sent');
+  /* A. Second Enter after AI transformation -> confirm & send */
+  if(aiReadyState){
+    const finalMsg = TG.input.value.trim();
+    const actName = aiReadyState.actionName;
+    aiReadyState = null;
+    addMsg('out', finalMsg);
+    resetComposerState();
     audio.tone('ok');
-    notice('<b>اصلاح و ارسال شد:</b> «'+esc(fixed)+'»','ok');
-    setStatus('<b>AutoType:</b> غلط املایی اصلاح شد و پیام ارسال شد.');
-    lastWasPersian=false;
+    notice('<b>ارسال شد:</b> خروجی «'+esc(actName)+'» با Enter دوم ارسال گردید.','ok');
+    setHudExplain('Enter دوم: ارسال نهایی', 'پیام تبدیل‌شده تأیید و در چت ارسال شد.', 'ok');
+    setStatus('<b>AutoType:</b> با Enter دوم پیام ارسال شد.');
     return;
   }
 
-  /* 2. typo guard — the message is blocked, never sent as-is */
-  const report=AutoType.analyze(raw);
-  const found=Object.keys(report.suggestions||{}).filter(w=>report.suggestions[w]!==w);
-  if(found.length){
-    TG.field.classList.add('bad');
-    audio.tone('warn');
-    let fixed=raw;
-    found.forEach(w=>{fixed=fixed.split(w).join(report.suggestions[w]);});
-    TG.input.dataset.fix=fixed;
-    const list=found.map(w=>'«'+esc(w)+'» → «'+esc(report.suggestions[w])+'»').join('، ');
-    notice('<b>غلط املایی:</b> '+list+'. پیام ارسال نشد — <b>Enter</b> = اصلاح.','warn');
-    setStatus('<b>AutoType:</b> غلط املایی شناسایی شد، پیام متوقف شد.');
+  /* B. Forbidden words guard on Enter */
+  const matchedForbidden = FORBIDDEN_WORDS.filter(w => raw.includes(w));
+  if(matchedForbidden.length > 0){
+    if(forbiddenPending && forbiddenPending.line === raw){
+      // Second Enter confirms sending despite forbidden word
+      forbiddenPending = null;
+      TG.field.classList.remove('bad');
+      addMsg('out', raw);
+      resetComposerState();
+      audio.tone('ok');
+      notice('<b>تأیید و ارسال شد:</b> پیام با وجود کلمهٔ حساس با Enter دوم ارسال شد.','ok');
+      setHudExplain('Enter دوم: تأیید ارسال', 'کاربر با فشردن مجدد Enter ارسال پیام را تأیید کرد.', 'ok');
+      return;
+    } else {
+      forbiddenPending = {words: matchedForbidden, line: raw};
+      TG.field.classList.add('bad');
+      audio.tone('warn');
+      const wList = matchedForbidden.map(w=>'«'+esc(w)+'»').join('، ');
+      notice('<b>توقف ارسال (کلمهٔ ممنوعه):</b> عبارت '+wList+' شناسایی شد. <b>Enter دوم</b> = تأیید و ارسال | <b>Esc</b> = لغو.','warn');
+      setHudExplain('سپر محافظ ارسال ناخواسته', 'کلمهٔ ممنوعهٔ <b>'+wList+'</b> در متن شناسایی شد! جلوی ارسال ناگهانی با Enter اول گرفته شد.', 'bad');
+      setStatus('<b>سپر محافظ:</b> ارسال متوقف شد (کلمهٔ ممنوعه شناسایی شد).');
+      return;
+    }
+  }
+
+  /* C. AI Action triggered by keyword at start or end of sentence */
+  const aiMatch = extractAiCommand(raw);
+  if(aiMatch){
+    const out = aiMatch.action.transform(aiMatch.body);
+    aiReadyState = {
+      original: raw,
+      transformed: out,
+      actionName: aiMatch.action.name
+    };
+    committedLine = out;
+    rawWordBuffer = '';
+    TG.input.value = out;
+    updateInputDirection();
+    TG.field.classList.add('good');
+    setTimeout(()=>TG.field.classList.remove('good'), 1000);
+    audio.tone('ok');
+    notice('<b>'+esc(aiMatch.action.name)+' (با کلیدواژهٔ «'+esc(aiMatch.trigger)+'»):</b> متن درجا تبدیل شد — <b>Enter دوم</b> = ارسال | <b>Esc</b> = بازگشت.','ok');
+    setHudExplain('Enter اول: '+aiMatch.action.name, 'کلیدواژهٔ <b>«'+esc(aiMatch.trigger)+'»</b> شناسایی و حذف شد؛ متن درجا در کادر به <b>«'+esc(out)+'»</b> تبدیل گردید. با Enter بعدی ارسال می‌شود.', 'violet');
+    setStatus('<b>هوش مصنوعی:</b> '+esc(aiMatch.action.name)+' درجا اعمال شد.');
     return;
   }
 
-  /* 3. plain send */
-  addMsg('out',raw,{ltr:/^[\x00-\x7F\s.,!?]*$/.test(raw)});
+  /* D. Normal send */
+  addMsg('out', raw);
+  resetComposerState();
+  notice('');
+  setHudExplain('ارسال شد', 'پیام ارسال شد. کیبورد انگلیسی آمادهٔ جملهٔ بعدی است.', 'ok');
+  setStatus('<b>ارسال شد.</b> AutoType آماده است.');
+}
+
+function resetComposerState(){
+  committedLine='';
+  rawWordBuffer='';
+  aiReadyState=null;
+  forbiddenPending=null;
   TG.input.value='';
   TG.input.classList.remove('latin');
   TG.sendWrap.classList.remove('sent');
   TG.field.classList.remove('bad','good');
-  notice('');
-  setStatus('<b>ارسال شد.</b> AutoType همچنان آماده است.');
   lastWasPersian=false;
+  sentenceLanguage='unknown';
 }
-TG.send.addEventListener('click',()=>{ if(TG.input.value.trim()) handleEnter(); });
+
+TG.send.addEventListener('click',()=>{ if(TG.input.value.trim()||rawWordBuffer) handleEnter(); });
 
 /* ============================================================
-   SCENARIOS
+   SCENARIOS — True-to-App Step-by-Step Demonstrations
    ============================================================ */
 const SCENARIOS=[
   {
-    name:'تشخیص زبان',
-    desc:'با حروف انگلیسی بنویس، فارسی تحویل بگیر.',
-    keys:'sghl ;jhfih',
-    expect:'سلام کتاب‌ها'
+    name:'۱. تشخیص خودکار زبان و سوییچ کیبورد',
+    desc:'شروع فارسی یا انگلیسی + تغییر خودکار زبان در میانهٔ جمله بدون Cmd+Space.',
+    incoming:'سلام! گزارش فاز اول رو فرستادم، بررسی کردی؟',
+    steps:[
+      {type:'keys', keys:"sghl 'chva thc h,g Hlhnid hsj?", speed:68},
+      {type:'pause', ms:650},
+      {type:'enter'},
+      {type:'pause', ms:850},
+      {type:'resetKeys'},
+      {type:'explain', badge:'پیام دوم: شروع انگلیسی + سوییچ وسط جمله', text:'حالا بدون زدن Cmd+Space، جمله را انگلیسی شروع می‌کنیم و وسط همان جمله فارسی می‌نویسیم:', kind:'info'},
+      {type:'keys', keys:"Hello Sarah, thdgih vh fvvsi ;vnl", speed:68},
+      {type:'pause', ms:700},
+      {type:'enter'}
+    ]
   },
   {
-    name:'متن چندزبانه',
-    desc:'فارسی و انگلیسی، پشت سر هم.',
-    keys:'lh hc React , TypeScript hsjthni ld;kdl , iv itji release ldnidl',
-    expect:'ما از React و TypeScript استفاده می‌کنیم و هر هفته release می‌دهیم'
+    name:'۲. اعداد هوشمند (فرم عددی و متن فارسی)',
+    desc:'در کادرهای عددی خودکار عدد انگلیسی (0912...) و در متن فارسی عدد فارسی (۱۲۳) تایپ می‌شود.',
+    incoming:'شماره تماس و ساعت جلسهٔ فردا رو برام می‌فرستی؟',
+    steps:[
+      {type:'explain', badge:'حالت اول: کادر عددی / ابتدای ورودی', text:'وقتی کادر خالی است یا در فیلد شماره/کد تأیید (OTP) هستید، اعداد خودکار انگلیسی تایپ می‌شوند:', kind:''},
+      {type:'keys', keys:"09123456789", speed:75},
+      {type:'pause', ms:800},
+      {type:'enter'},
+      {type:'pause', ms:800},
+      {type:'resetKeys'},
+      {type:'explain', badge:'حالت دوم: عدد در دل جملهٔ فارسی', text:'حالا وقتی وسط یک جملهٔ فارسی عدد تایپ می‌کنید، خودکار به ارقام فارسی (۵ و ۱۲) تبدیل می‌شود:', kind:'ok'},
+      {type:'keys', keys:"[gsi tvnh shuj 5 nv hjhr 12", speed:70},
+      {type:'pause', ms:750},
+      {type:'enter'}
+    ]
   },
   {
-    name:'کلمهٔ دوگانه',
-    desc:'«fun» در جملهٔ فارسی «بعد» می‌شود.',
-    keys:'sghl fun',
-    expect:'سلام بعد'
+    name:'۳. تایپ ترکیبی فارسی و کدهای فنی',
+    desc:'کلمات تخصصی مثل React و TypeScript وسط جملهٔ فارسی دست‌نخورده می‌مانند.',
+    incoming:'استک فنی پروژه جدید چی شد؟',
+    steps:[
+      {type:'keys', keys:"lh hc React , TypeScript hsjthni ld;kdl , iv itji release ldnidl", speed:62},
+      {type:'pause', ms:850},
+      {type:'enter'}
+    ]
   },
   {
-    name:'غلط املایی',
-    desc:'Enter اول پیام را متوقف می‌کند.',
-    keys:'این پروژع با موفغیت انجلم شود.',
-    expect:'این پروژه با موفقیت انجام شد.'
+    name:'۴. ترجمه درجا (انگلیسی، عربی، عبری، آلمانی)',
+    desc:'فقط کلیدواژهٔ زبان را در انتهای متن بنویسید و Enter بزنید تا درجا ترجمه شود.',
+    incoming:'میشه متن وضعیت گزارش رو به انگلیسی، عربی، عبری و آلمانی بفرستی؟',
+    steps:[
+      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj jv[li", speed:58},
+      {type:'pause', ms:550},
+      {type:'enter'},
+      {type:'pause', ms:1150},
+      {type:'enter'},
+      {type:'pause', ms:650},
+      {type:'resetKeys'},
+      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj uvfd", speed:58},
+      {type:'pause', ms:550},
+      {type:'enter'},
+      {type:'pause', ms:1150},
+      {type:'enter'},
+      {type:'pause', ms:650},
+      {type:'resetKeys'},
+      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj ufvd", speed:58},
+      {type:'pause', ms:550},
+      {type:'enter'},
+      {type:'pause', ms:1150},
+      {type:'enter'},
+      {type:'pause', ms:650},
+      {type:'resetKeys'},
+      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj Hglhkd", speed:58},
+      {type:'pause', ms:550},
+      {type:'enter'},
+      {type:'pause', ms:1150},
+      {type:'enter'}
+    ]
   },
   {
-    name:'کلید ویژگی + Enter',
-    desc:'⌥ را بزن، ترجمه را انتخاب کن، Enter بزن.',
-    keys:'گزارش فاز اول آماده است',
-    expect:'Phase one report is ready.'
+    name:'۵. ویرایش نگارشی و لحن رسمی با کلیدواژه',
+    desc:'کلیدواژهٔ «ویرایش» یا «رسمی» + Enter اول = بازنویسی درجا در کادر.',
+    incoming:'متن اعلامیه و ایمیل اداری رو آماده کردی؟',
+    steps:[
+      {type:'PresetText', raw:'hdk mv,Cu fh l,tydj hk[gl an , tugk hlhni hsj ,dvhda', display:'این پروژع با موفغیت انجلم شد و فعلن اماده است ویرایش', badge:'تایپ پیام + کلیدواژهٔ «ویرایش»', explain:'کاربر متن دارای غلط املایی را به همراه کلیدواژهٔ <b>«ویرایش»</b> در انتهای خط تایپ می‌کند:'},
+      {type:'pause', ms:700},
+      {type:'enter'},
+      {type:'pause', ms:1250},
+      {type:'enter'},
+      {type:'pause', ms:750},
+      {type:'resetKeys'},
+      {type:'PresetText', raw:'sghl thdgih v, tvsjhnl gxth hlv,c ]; ;k vsld', display:'سلام فایلها رو فرستادم لطفا امروز چک کن رسمی', badge:'تایپ پیام خودمانی + کلیدواژهٔ «رسمی»', explain:'حالا یک پیام خودمانی به همراه کلیدواژهٔ <b>«رسمی»</b> می‌نویسیم و Enter اول را می‌زنیم:'},
+      {type:'pause', ms:700},
+      {type:'enter'},
+      {type:'pause', ms:1250},
+      {type:'enter'}
+    ]
+  },
+  {
+    name:'۶. سپر کلمات ممنوعه (توقف ارسال)',
+    desc:'جلوگیری از ارسال ناخواستهٔ پیام‌های حاوی کلمات حساس با توقف روی Enter اول.',
+    incoming:'فایل تنظیمات سرور رو می‌فرستی؟',
+    steps:[
+      {type:'PresetText', raw:'hxghuhj lpvnhki sv,v nv hdk thdg hsj', display:'اطلاعات محرمانه سرور در این فایل است', badge:'پیام حاوی کلمهٔ حساس «محرمانه»', explain:'کاربر جمله‌ای حاوی کلمهٔ تعریف‌شده در لیست ممنوعه (<b>«محرمانه»</b>) تایپ می‌کند و Enter می‌زند:'},
+      {type:'pause', ms:650},
+      {type:'enter'},
+      {type:'pause', ms:1500},
+      {type:'enter'}
+    ]
   }
 ];
+
+let scenarioTimer=null;
+let autoPlayTimer=null;
+let isAutoTyping=false;
+let userInteracted=false;
+let currentScenarioIdx=0;
+
+function queueNextAutoplay(delay=3800){
+  if(userInteracted) return;
+  clearTimeout(autoPlayTimer);
+  autoPlayTimer=setTimeout(()=>{
+    if(userInteracted) return;
+    currentScenarioIdx=(currentScenarioIdx+1)%SCENARIOS.length;
+    runScenario(currentScenarioIdx);
+  }, delay);
+}
 
 const scenarioList=document.getElementById('scenarioList');
 SCENARIOS.forEach((s,i)=>{
@@ -1973,67 +2416,157 @@ SCENARIOS.forEach((s,i)=>{
   b.innerHTML='<b></b><span></span>';
   b.querySelector('b').textContent=s.name;
   b.querySelector('span').textContent=s.desc;
-  b.addEventListener('click',()=>runScenario(i));
+  b.addEventListener('click',()=>{
+    userInteracted=false;
+    clearTimeout(scenarioTimer);
+    clearTimeout(autoPlayTimer);
+    runScenario(i);
+  });
   scenarioList.appendChild(b);
 });
 
-let scenarioTimer=null;
 function runScenario(i){
   const s=SCENARIOS[i];
+  currentScenarioIdx=i;
   clearTimeout(scenarioTimer);
+  clearTimeout(autoPlayTimer);
+  isAutoTyping=true;
   [...scenarioList.children].forEach((el,k)=>el.classList.toggle('active',k===i));
   TG.msgs.innerHTML='';
-  TG.input.value='';
-  TG.input.classList.remove('latin');
-  TG.sendWrap.classList.remove('sent');
+  resetComposerState();
+  resetHudKeys();
   notice('');
-  lastWasPersian=false;
 
   const day=document.createElement('div');
   day.className='tg-day'; day.textContent='امروز';
   TG.msgs.appendChild(day);
-  addMsg('in','گزارش فاز اول رو فرستادم، لطفاً بررسی کن');
+  addMsg('in', s.incoming || 'گزارش فاز اول رو فرستادم، لطفاً بررسی کن');
 
-  let p=0;
-  const tickChar=()=>{
-    if(p>=s.keys.length){
-      if(s.expect && s.expect.indexOf('Phase')===0){
-        setTimeout(()=>{
-          openAiMenu();
-          setTimeout(()=>{ selectAi(0); },420);
-          setTimeout(()=>{ applyAi(0); },900);
-          setTimeout(()=>{ handleEnter(); },1500);
-        },500);
-      }else if(s.name==='غلط املایی'){
-        setTimeout(()=>handleEnter(),500);
-        setTimeout(()=>handleEnter(),1400);
-      }else{
-        setTimeout(()=>handleEnter(),400);
-      }
+  let stepIdx=0;
+  function nextStep(){
+    if(!isAutoTyping) return;
+    if(stepIdx>=s.steps.length){
+      isAutoTyping=false;
+      queueNextAutoplay(4000);
       return;
     }
-    const ch=s.keys[p];
-    TG.input.value+=ch;
-    TG.input.dispatchEvent(new Event('input',{bubbles:true}));
-    if(ch===' ') audio.play('space'); else { audio.play('key'); flashKey(ch); }
-    p++;
-    scenarioTimer=setTimeout(tickChar,78);
-  };
-  setTimeout(tickChar,520);
+    const st=s.steps[stepIdx++];
+    if(st.type==='pause'){
+      scenarioTimer=setTimeout(nextStep, st.ms||600);
+    } else if(st.type==='resetKeys'){
+      resetHudKeys();
+      scenarioTimer=setTimeout(nextStep, 120);
+    } else if(st.type==='explain'){
+      setHudExplain(st.badge, st.text, st.kind||'');
+      scenarioTimer=setTimeout(nextStep, 450);
+    } else if(st.type==='enter'){
+      handleEnter();
+      scenarioTimer=setTimeout(nextStep, 250);
+    } else if(st.type==='keys'){
+      let p=0;
+      const str=st.keys;
+      const tickChar=()=>{
+        if(!isAutoTyping) return;
+        if(p>=str.length){
+          scenarioTimer=setTimeout(nextStep, 150);
+          return;
+        }
+        const ch=str[p++];
+        if(ch===' ') audio.play('space'); else { audio.play('key'); flashKey(ch); }
+        feedKeystroke(ch);
+        scenarioTimer=setTimeout(tickChar, st.speed||68);
+      };
+      tickChar();
+    } else if(st.type==='PresetText'){
+      // Type raw keys visually while forming the preset display string char by char
+      setHudExplain(st.badge, st.explain, 'warn');
+      let p=0;
+      const disp=st.display;
+      const rawK=st.raw;
+      const tickPreset=()=>{
+        if(!isAutoTyping) return;
+        if(p>=disp.length){
+          committedLine=disp;
+          rawWordBuffer='';
+          TG.input.value=disp;
+          updateInputDirection();
+          scenarioTimer=setTimeout(nextStep, 200);
+          return;
+        }
+        const ch=disp[p];
+        const rk=rawK[p % rawK.length] || 'a';
+        committedLine=disp.slice(0,p+1);
+        TG.input.value=committedLine;
+        updateInputDirection();
+        if(ch===' ') { audio.play('space'); pushHudKey(' '); }
+        else { audio.play('key'); flashKey(rk); pushHudKey(rk, rk, ch); }
+        p++;
+        scenarioTimer=setTimeout(tickPreset, 45);
+      };
+      tickPreset();
+    }
+  }
+
+  scenarioTimer=setTimeout(nextStep, 480);
 }
 
 /* ============================================================
-   SOUND TOGGLE
+   SOUND TOGGLE & FOCUS CONTROL
    ============================================================ */
 const soundToggle=document.getElementById('soundToggle');
 const soundLabel=document.getElementById('soundLabel');
+
+function enableSound(withFeedback=false){
+  if(!audio.enabled){
+    audio.enabled=true;
+    audio.init();
+    soundToggle.classList.add('on');
+    soundToggle.setAttribute('aria-pressed','true');
+    soundLabel.textContent='صدا';
+    if(withFeedback) audio.play('key');
+  }
+}
+function disableSound(){
+  audio.enabled=false;
+  soundToggle.classList.remove('on');
+  soundToggle.setAttribute('aria-pressed','false');
+  soundLabel.textContent='بی‌صدا';
+}
+
 soundToggle.addEventListener('click',()=>{
-  audio.enabled=!audio.enabled;
-  soundToggle.classList.toggle('on',audio.enabled);
-  soundToggle.setAttribute('aria-pressed',String(audio.enabled));
-  soundLabel.textContent=audio.enabled?'صدا':'بی‌صدا';
-  if(audio.enabled) audio.play('key');
+  if(audio.enabled){
+    disableSound();
+  }else{
+    enableSound(true);
+  }
 });
+
+/* ============================================================
+   AUTOPLAY ON SCROLL / VIEWPORT
+   ============================================================ */
+let hasStartedAutoplay=false;
+const playgroundSec=document.getElementById('playground');
+
+if('IntersectionObserver' in window && playgroundSec){
+  const obs=new IntersectionObserver((entries)=>{
+    entries.forEach(entry=>{
+      if(entry.isIntersecting){
+        if(!hasStartedAutoplay && !userInteracted){
+          hasStartedAutoplay=true;
+          autoPlayTimer=setTimeout(()=>runScenario(0),650);
+        }
+      }else{
+        clearTimeout(autoPlayTimer);
+        clearTimeout(scenarioTimer);
+        isAutoTyping=false;
+        hasStartedAutoplay=false;
+      }
+    });
+  },{threshold:0.25});
+  obs.observe(playgroundSec);
+}else{
+  setTimeout(()=>runScenario(0),1200);
+}
 
 /* ============================================================
    COPY INSTALL COMMAND

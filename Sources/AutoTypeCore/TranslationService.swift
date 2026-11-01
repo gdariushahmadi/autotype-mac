@@ -46,6 +46,11 @@ public final class TranslationService: @unchecked Sendable {
 
     /// Translates text using the provided settings.
     public func translate(text: String, settings: TranslationSettings) async throws -> String {
+        return try await process(text: text, systemPrompt: settings.systemPrompt, settings: settings)
+    }
+
+    /// Processes text with the AI model using an optional custom system prompt (or the settings default prompt).
+    public func process(text: String, systemPrompt: String? = nil, settings: TranslationSettings) async throws -> String {
         let trimmedKey = settings.apiKey.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedKey.isEmpty else {
             throw TranslationError.emptyAPIKey
@@ -88,6 +93,10 @@ public final class TranslationService: @unchecked Sendable {
             ? settings.provider.defaultModel
             : settings.model.trimmingCharacters(in: .whitespacesAndNewlines)
 
+        let effectivePrompt = (systemPrompt?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false)
+            ? systemPrompt!
+            : settings.systemPrompt
+
         let payloadData: Data
         if isGeminiNative {
             let nativePayload: [String: Any] = [
@@ -100,7 +109,7 @@ public final class TranslationService: @unchecked Sendable {
                 ],
                 "systemInstruction": [
                     "parts": [
-                        ["text": settings.systemPrompt]
+                        ["text": effectivePrompt]
                     ]
                 ],
                 "generationConfig": [
@@ -114,7 +123,7 @@ public final class TranslationService: @unchecked Sendable {
                 "messages": [
                     [
                         "role": "system",
-                        "content": settings.systemPrompt
+                        "content": effectivePrompt
                     ],
                     [
                         "role": "user",
@@ -192,7 +201,7 @@ public final class TranslationService: @unchecked Sendable {
     }
 
     /// Tests connection and translation with sample text.
-    public func testConnection(settings: TranslationSettings) async throws -> String {
-        return try await translate(text: "سلام دنیا", settings: settings)
+    public func testConnection(settings: TranslationSettings, systemPrompt: String? = nil) async throws -> String {
+        return try await process(text: "سلام دنیا", systemPrompt: systemPrompt, settings: settings)
     }
 }

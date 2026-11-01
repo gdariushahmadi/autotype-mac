@@ -70,6 +70,12 @@ public enum AutoTypeResources {
     }
 
     private static func url(for name: String) throws -> URL {
+        #if SWIFT_PACKAGE
+        if let url = Bundle.module.url(forResource: name, withExtension: nil) {
+            return url
+        }
+        #endif
+
         if let bundle, let url = bundle.url(forResource: name, withExtension: nil) {
             return url
         }

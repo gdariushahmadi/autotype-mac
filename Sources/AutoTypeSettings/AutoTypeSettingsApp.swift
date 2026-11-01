@@ -15,6 +15,7 @@ struct AutoTypeSettingsApp: App {
         MenuBarExtra {
             MenuBarMenu()
                 .environmentObject(model)
+                .environment(\.layoutDirection, .leftToRight)
         } label: {
             MenuBarLabel(symbol: model.settings.mode == .directPersian
                          ? "character.bubble.fill"
@@ -26,6 +27,9 @@ struct AutoTypeSettingsApp: App {
         Window("AutoType Settings", id: AppRouter.settingsWindowID) {
             SettingsView()
                 .environmentObject(model)
+                // The wording of the app is English, so the window reads from
+                // left to right even when the system prefers Persian.
+                .environment(\.layoutDirection, .leftToRight)
         }
         .defaultSize(width: 1000, height: 640)
         .windowResizability(.contentMinSize)
@@ -76,12 +80,6 @@ private struct MenuBarLabel: View {
 
 /// Wires the parts of AutoType that live outside the SwiftUI scene.
 final class AppDelegate: NSObject, NSApplicationDelegate {
-
-    func applicationWillFinishLaunching(_ notification: Notification) {
-        // A service request can arrive while the app is still starting, so the
-        // provider is registered as early as possible.
-        ServiceProvider.register(in: notification.object as? NSApplication)
-    }
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         // `--section <name>` opens the window on one part of it, so that the

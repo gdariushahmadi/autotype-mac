@@ -65,4 +65,16 @@ final class SettingsModel: ObservableObject {
     func removeEnglishWord(_ word: String) {
         dictionary.englishWords.removeAll { $0 == word }
     }
+
+    /// Adds a word or phrase to the forbidden list.
+    func addForbiddenWord(_ word: String) {
+        let trimmed = word.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty, !dictionary.forbiddenWords.contains(trimmed) else { return }
+        dictionary.forbiddenWords.append(trimmed)
+        dictionary.forbiddenWords.sort()
+    }
+
+    func removeForbiddenWord(_ word: String) {
+        dictionary.forbiddenWords.removeAll { $0 == word }
+    }
 }

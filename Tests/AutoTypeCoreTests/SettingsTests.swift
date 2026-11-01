@@ -13,6 +13,8 @@ struct SettingsTests {
         settings.usePersianDigits = true
         settings.usePersianPunctuation = false
         settings.englishModifier = .rightOption
+        settings.checkForForbiddenWords = true
+        settings.forbiddenWordsAction = .block
 
         let data = try JSONEncoder().encode(settings)
         let decoded = try JSONDecoder().decode(ConversionSettings.self, from: data)
@@ -27,14 +29,17 @@ struct SettingsTests {
         #expect(settings.priority == .automatic)
         #expect(settings.englishModifier == .rightCommand)
         #expect(settings.usePersianPunctuation == true)
+        #expect(settings.checkForForbiddenWords == true)
+        #expect(settings.forbiddenWordsAction == .requireConfirmation)
     }
 
     @Test("A dictionary that is missing a key keeps the words it has")
     func partialDictionary() throws {
-        let data = Data(#"{"persianWords": ["سلام"]}"#.utf8)
+        let data = Data(#"{"persianWords": ["سلام"], "forbiddenWords": ["محرمانه"]}"#.utf8)
         let dictionary = try JSONDecoder().decode(PersonalDictionary.self, from: data)
         #expect(dictionary.persianWords == ["سلام"])
         #expect(dictionary.englishWords.isEmpty)
+        #expect(dictionary.forbiddenWords == ["محرمانه"])
     }
 
     @Test("Persian punctuation is written in Persian")

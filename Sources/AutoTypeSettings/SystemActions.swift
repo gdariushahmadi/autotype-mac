@@ -26,14 +26,6 @@ enum SystemActions {
         ])
     }
 
-    /// Opens the pane where the macOS Services are turned on.
-    static func openServicesSettings() {
-        openSystemPane([
-            "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Services",
-            "x-apple.systempreferences:com.apple.preference.keyboard",
-        ])
-    }
-
     private static func openSystemPane(_ candidates: [String]) {
         for candidate in candidates {
             if let url = URL(string: candidate), NSWorkspace.shared.open(url) { return }

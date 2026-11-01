@@ -6,7 +6,6 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     case general
     case dictionary
     case translation
-    case services
     case about
 
     var id: String { rawValue }
@@ -15,8 +14,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "General"
         case .dictionary: return "Dictionary"
-        case .translation: return "Translation"
-        case .services: return "Services"
+        case .translation: return "AI Actions & Translation"
         case .about: return "About"
         }
     }
@@ -25,8 +23,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
         switch self {
         case .general: return "gearshape"
         case .dictionary: return "text.book.closed"
-        case .translation: return "character.bubble"
-        case .services: return "wand.and.stars"
+        case .translation: return "sparkles"
         case .about: return "info.circle"
         }
     }
@@ -80,8 +77,6 @@ struct SettingsView: View {
                 DictionarySettingsView()
             case .translation:
                 TranslationSettingsView()
-            case .services:
-                ServicesSettingsView()
             case .about:
                 AboutSettingsView()
             }

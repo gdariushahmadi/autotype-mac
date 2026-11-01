@@ -111,6 +111,24 @@ func runSelfTest() -> Int32 {
     type("sghl, ")
     expect(client.text, "سلام hello کتاب‌ها می‌رود test@example.com سلام، ", "a trailing comma becomes a Persian comma")
 
+    // A word that only has a Persian reading is Persian, wherever it stands.
+    let functionClient = MockTextInput()
+    let functionController = Controller()
+    functionController.loadedEngine = engine
+    type("hc ", on: functionController, client: functionClient)
+    expect(functionClient.text, "از ", "«از» is Persian even at the start of a sentence")
+
+    // The question mark is written the Persian way inside a Persian sentence.
+    type("sghl?", on: functionController, client: functionClient)
+    expect(functionClient.text, "از سلام؟", "the question mark becomes a Persian one")
+
+    // The preview shows the word the way it will be committed.
+    let previewClient = MockTextInput()
+    let previewController = Controller()
+    previewController.loadedEngine = engine
+    type("www", on: previewController, client: previewClient)
+    expect(previewClient.markedText, "www", "the preview of an English word stays Latin")
+
     // Backspace over a converted word deletes characters normally.
     let undoClient = MockTextInput()
     let undoController = Controller()

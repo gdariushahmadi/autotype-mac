@@ -187,12 +187,21 @@ public final class Lexicon {
         let key = word.lowercased()
         guard !key.isEmpty else { return false }
         if protectedEnglish.contains(key) { return true }
+        // In the English language, only "a" and "i" can be standalone words.
+        // Isolated letters (e.g. b, c, d, h, f, n, l, s) are not English words.
+        if key.count == 1 && key != "a" && key != "i" {
+            return false
+        }
         return englishList.contains(key)
     }
 
     /// `true` when the token is a frequently used English word.
     public func isCommonEnglish(_ word: String) -> Bool {
-        englishCommonList.contains(word.lowercased())
+        let lower = word.lowercased()
+        if lower.count == 1 && lower != "a" && lower != "i" {
+            return false
+        }
+        return englishCommonList.contains(lower)
     }
 
     /// Every English word in the list — used by the dictionary editor.

@@ -14,10 +14,6 @@ AutoType این کار را حذف می‌کند: شما همیشه با چید�
 - `hello` → **hello**
 - `test@example.com` → **test@example.com**
 
-**چهار سرویس مک.** روی هر متنی که انتخاب کرده باشید، از منوی *Services* می‌توانید آن را
-فارسی کنید، با هوش مصنوعی ترجمه کنید، به دیکشنری شخصی اضافه کنید یا به لاتین برگردانید.
-(بخش [Services](#services) را ببینید.)
-
 </div>
 
 ---
@@ -30,8 +26,8 @@ AutoType این کار را حذف می‌کند: شما همیشه با چید�
 - **Backspace undoes a conversion.** Press backspace over a converted word to get the Latin text back.
 - **Personal dictionary.** Words you always want in Persian, and words you never want converted.
 - **Ambiguity resolved by context.** A word that can be read either way follows the sentence around it, or a rule you choose.
+- **The sentence keeps one language.** The first word decides: a Persian sentence stays Persian, an English one stays English. Words that have no equivalent in the other language — «از», «در», «یا» — are always Persian, and a word that only exists in English stays English inside a Persian sentence.
 - **A menu bar app** for every setting — a small menu for the common things, a full window for the rest.
-- **Four macOS Services** that work on any text you select — see [Services](#services).
 
 ---
 
@@ -122,71 +118,11 @@ of AutoType, and a pane for the part you are looking at.
 | **General** | Whether AutoType is running, the typing mode, ambiguous words, the modifier key that types plain English, Persian numerals and Persian punctuation |
 | **Dictionary** | Words that always convert, and words that never do |
 | **Translation** | The AI translation that happens when you press Return |
-| **Services** | The four AutoType actions, and how to turn them on |
 | **About** | The version, the login item and the files AutoType keeps |
 
 Settings live in `~/Library/Application Support/AutoType/settings.json` and
 `dictionary.json`. The input method watches that folder, so a change takes effect
 immediately — no need to switch applications.
-
----
-
-## Services
-
-The settings app also publishes four **macOS Services**. They act on whatever text you
-have selected in any app that supports Services — no AutoType input method needed.
-
-| Service | What it does |
-| --- | --- |
-| **AutoType → Convert to Persian** | Turns the selected Latin words into Persian (`sghl ;jhf` → `سلام کتاب`) |
-| **AutoType → Translate with AI** | Translates the selection with the configured AI provider |
-| **AutoType → Add to Dictionary** | Adds the selected word to your personal dictionary |
-| **AutoType → Convert to Latin** | Turns selected Persian back into the Latin keys that produce it (`سلام کتاب` → `sghl ;jhf`) |
-
-### Turning them on
-
-macOS disables third‑party Services until you allow them, once:
-
-1. Open **System Settings → Keyboard → Keyboard Shortcuts → Services**.
-2. Tick **AutoType** (and the four entries under it).
-3. Optionally give them a shortcut — select the service and press **⌘ + …**.
-
-After that they are in the **Services** submenu of every app that has one:
-**Edit → Services**, or right‑click a selection → **Services**.
-
-### Where they appear
-
-Only apps that support the Services menu show them: **TextEdit, Notes, Mail, Safari,
-Xcode, Finder** and most native apps. **Chrome, VS Code, Slack and Electron apps do
-not** have a Services menu — that is a limitation of those apps, not of AutoType.
-
-### How it works
-
-The four services are declared in the app bundle's `Info.plist` under `NSServices`:
-
-```xml
-<key>NSServices</key>
-<array>
-    <dict>
-        <key>NSMenuItem</key>   <dict><key>default</key><string>AutoType/Convert to Persian</string></dict>
-        <key>NSMessage</key>    <string>convertSelectionToPersian</string>
-        <key>NSPortName</key>   <string>AutoType Settings</string>
-        <key>NSSendTypes</key>  <array><string>public.utf8-plain-text</string></array>
-    </dict>
-    …
-</array>
-```
-
-macOS then calls the provider — the `ServiceProvider` object in
-`Sources/AutoTypeSettings/ServiceProvider.swift` — through a method named after the
-message: `convertSelectionToPersian:userData:error:`. The selected text arrives on the
-pasteboard, and the answer is written back onto the same pasteboard, where the app that
-started the service replaces its selection with it.
-
-> **Note for developers:** macOS only calls these `@objc` methods in an *optimized*
-> build. `Scripts/package_app.sh` therefore compiles the debug configuration with
-> `-Xswiftc -O` as well; without it AppKit finds the provider, asks whether it
-> implements the selector, gets a yes — and then never calls it.
 
 ---
 
@@ -233,8 +169,15 @@ the zero-width non-joiner, so `میرود` is written `می‌رود`.
 
 **The decision** is a scored one. A token that is technical never reaches the scorer.
 Otherwise the Persian reading is looked up in the dictionary; a word that is in both
-dictionaries is decided by the surrounding text or by the priority setting; a word in
+dictionaries is decided by the sentence around it or by the priority setting; a word in
 neither is left alone unless it contains a Persian-only key.
+
+**The sentence** keeps one language. The first word that has a single clear reading
+decides it: a Persian sentence stays Persian, an English one stays English. The
+exceptions are the words that have no equivalent in the other language — «از»، «به»،
+«یا» and «در» and the rest of the Persian function words are always Persian, and a word
+that only exists in English stays English inside a Persian sentence. A word that has no
+English reading at all is the evidence that the author switched to Persian.
 
 ---
 
@@ -246,7 +189,7 @@ source Scripts/env.sh
 # Build everything
 swift build --disable-sandbox --cache-path "$AUTOTYPE_ROOT/.build/cache"
 
-# Run the checks (63 assertions, no Xcode needed)
+# Run the checks (124 assertions, no Xcode needed)
 swift run --disable-sandbox --cache-path "$AUTOTYPE_ROOT/.build/cache" AutoTypeChecks
 
 # Run the swift-testing suite (needs a full Xcode toolchain)
@@ -266,10 +209,18 @@ AutoType self test
   english words: 238182
   ✓ sghl → سلام
   ✓ ;jhf → کتاب
+  ✓ hello stays English
+  ✓ an e-mail address survives
   ✓ a typed Persian word is committed
+  ✓ an English word is left alone
   ✓ a plural keeps its ZWNJ
+  ✓ a verb prefix keeps its ZWNJ
   ✓ a technical string survives
-  ✓ the second backspace undoes the conversion
+  ✓ a trailing comma becomes a Persian comma
+  ✓ «از» is Persian even at the start of a sentence
+  ✓ the question mark becomes a Persian one
+  ✓ the preview of an English word stays Latin
+  ✓ the second backspace deletes the last character
   ✓ the English modifier types plain English
 All self test checks passed.
 ```
@@ -294,8 +245,6 @@ All self test checks passed.
 - The input method is ad-hoc signed, so Gatekeeper may ask for confirmation the first
   time macOS starts it.
 - Only the ISIRI 2901 layout is supported. Other Persian layouts are not.
-- The macOS Services only show up in apps that have a **Services** menu (TextEdit,
-  Notes, Safari, Xcode, …). Chrome, VS Code and other Electron apps do not have one.
 
 ---
 

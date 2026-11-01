@@ -30,7 +30,7 @@ final class MockURLProtocol: URLProtocol, @unchecked Sendable {
     override func stopLoading() {}
 }
 
-@Suite("Translation")
+@Suite("Translation", .serialized)
 struct TranslationTests {
 
     @Test("Persian detection recognizes Persian text")
@@ -143,5 +143,89 @@ struct TranslationTests {
         await #expect(throws: TranslationService.TranslationError.self) {
             try await service.translate(text: "سلام", settings: settings)
         }
+    }
+
+    @Test("AI actions match start, end, and either position")
+    func triggerPositions() {
+        var settings = TranslationSettings(isEnabled: true, requireTriggerPrefix: true)
+
+        // Translation action (default is .either)
+        let trStart = settings.extractActionAndBody(from: "ترجمه سلام دنیا")
+        #expect(trStart != nil)
+        #expect(trStart?.body == "سلام دنیا")
+        #expect(trStart?.position == .start)
+        #expect(trStart?.action.name.contains("ترجمه") == true)
+
+        let trEnd = settings.extractActionAndBody(from: "سلام دنیا ترجمه")
+        #expect(trEnd != nil)
+        #expect(trEnd?.body == "سلام دنیا")
+        #expect(trEnd?.position == .end)
+
+        let trColonEnd = settings.extractActionAndBody(from: "سلام دنیا :ترجمه")
+        #expect(trColonEnd != nil)
+        #expect(trColonEnd?.body == "سلام دنیا")
+        #expect(trColonEnd?.position == .end)
+
+        // Proofreading action (default is .either)
+        let fixStart = settings.extractActionAndBody(from: "اصلاح این جمله غلط دارد")
+        #expect(fixStart != nil)
+        #expect(fixStart?.body == "این جمله غلط دارد")
+        #expect(fixStart?.action.name.contains("اصلاح") == true)
+        #expect(fixStart?.position == .start)
+
+        let fixEnd = settings.extractActionAndBody(from: "این جمله غلط دارد اصلاح")
+        #expect(fixEnd != nil)
+        #expect(fixEnd?.body == "این جمله غلط دارد")
+        #expect(fixEnd?.position == .end)
+
+        let fixAlternativeTrigger = settings.extractActionAndBody(from: "این جمله غلط دارد ویرایش")
+        #expect(fixAlternativeTrigger != nil)
+        #expect(fixAlternativeTrigger?.body == "این جمله غلط دارد")
+
+        // Action restricted to start only
+        let startOnlyAction = AIAction(
+            name: "خلاصه",
+            trigger: "خلاصه",
+            position: .start,
+            systemPrompt: "Summarize this."
+        )
+        settings.actions.append(startOnlyAction)
+
+        #expect(settings.extractActionAndBody(from: "خلاصه این متن طولانی است")?.body == "این متن طولانی است")
+        #expect(settings.extractActionAndBody(from: "این متن طولانی است خلاصه") == nil)
+
+        // Action restricted to end only
+        let endOnlyAction = AIAction(
+            name: "رسمی",
+            trigger: "رسمی",
+            position: .end,
+            systemPrompt: "Make it formal."
+        )
+        settings.actions.append(endOnlyAction)
+
+        #expect(settings.extractActionAndBody(from: "سلام قربان حال شما رسمی")?.body == "سلام قربان حال شما")
+        #expect(settings.extractActionAndBody(from: "رسمی سلام قربان حال شما") == nil)
+    }
+
+    @Test("Custom actions survive JSON round trip")
+    func customActionsSerialization() throws {
+        var settings = TranslationSettings()
+        settings.isEnabled = true
+        settings.actions = [
+            AIAction(name: "ترجمه", trigger: "ترجمه, /tr", position: .either, systemPrompt: "Prompt 1"),
+            AIAction(name: "اصلاح", trigger: "اصلاح, /fix", position: .end, systemPrompt: "Prompt 2"),
+            AIAction(name: "توضیح", trigger: "توضیح", position: .start, systemPrompt: "Prompt 3")
+        ]
+
+        let data = try JSONEncoder().encode(settings)
+        let decoded = try JSONDecoder().decode(TranslationSettings.self, from: data)
+
+        #expect(decoded.actions.count == 3)
+        #expect(decoded.actions[0].name == "ترجمه")
+        #expect(decoded.actions[0].position == .either)
+        #expect(decoded.actions[1].name == "اصلاح")
+        #expect(decoded.actions[1].position == .end)
+        #expect(decoded.actions[2].name == "توضیح")
+        #expect(decoded.actions[2].position == .start)
     }
 }

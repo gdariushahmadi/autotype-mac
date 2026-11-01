@@ -22,7 +22,7 @@ enum AutoTypeMetrics {
 /// A rounded container with a hairline border.
 ///
 /// Everything that is not a control — the status of the input method, the
-/// description of a service — sits in one of these, so the window has a
+/// descriptions — sits in one of these, so the window has a
 /// single surface instead of a mixture of panels.
 struct Card<Content: View>: View {
 
