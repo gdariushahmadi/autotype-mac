@@ -185,26 +185,26 @@ struct TranslationTests {
         // Action restricted to start only
         let startOnlyAction = AIAction(
             name: "خلاصه",
-            trigger: "خلاصه",
+            trigger: "فقط‌شروع",
             position: .start,
             systemPrompt: "Summarize this."
         )
         settings.actions.append(startOnlyAction)
 
-        #expect(settings.extractActionAndBody(from: "خلاصه این متن طولانی است")?.body == "این متن طولانی است")
-        #expect(settings.extractActionAndBody(from: "این متن طولانی است خلاصه") == nil)
+        #expect(settings.extractActionAndBody(from: "فقط‌شروع این متن طولانی است")?.body == "این متن طولانی است")
+        #expect(settings.extractActionAndBody(from: "این متن طولانی است فقط‌شروع") == nil)
 
         // Action restricted to end only
         let endOnlyAction = AIAction(
             name: "رسمی",
-            trigger: "رسمی",
+            trigger: "فقط‌پایان",
             position: .end,
             systemPrompt: "Make it formal."
         )
         settings.actions.append(endOnlyAction)
 
-        #expect(settings.extractActionAndBody(from: "سلام قربان حال شما رسمی")?.body == "سلام قربان حال شما")
-        #expect(settings.extractActionAndBody(from: "رسمی سلام قربان حال شما") == nil)
+        #expect(settings.extractActionAndBody(from: "سلام قربان حال شما فقط‌پایان")?.body == "سلام قربان حال شما")
+        #expect(settings.extractActionAndBody(from: "فقط‌پایان سلام قربان حال شما") == nil)
     }
 
     @Test("Custom actions survive JSON round trip")

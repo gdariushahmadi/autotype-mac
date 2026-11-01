@@ -37,9 +37,9 @@ struct PersianLayoutTests {
         #expect(PersianLayout.convert("a b") == nil)
     }
 
-    @Test("Uppercase uses the same key")
+    @Test("Uppercase uses shifted keys")
     func uppercase() {
-        #expect(PersianLayout.convert("SGH") == "سلا")
+        #expect(PersianLayout.convert("SGH") == "ئأآ")
     }
 
     @Test("An interior Persian-only key is evidence, a trailing one is not")

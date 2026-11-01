@@ -215,7 +215,7 @@ struct ConversionEngineTests {
     func passageKeepsEverythingElse() throws {
         let engine = try makeEngine()
         #expect(engine.convertText("sghl, ;jhf!") == "سلام, کتاب!")
-        #expect(engine.convertText("a\nb") == "a\nb")
+        #expect(engine.convertText("hello\nworld") == "hello\nworld")
         #expect(engine.convertText("") == "")
     }
 
@@ -319,11 +319,11 @@ struct ConversionEngineTests {
         #expect(engine.convertText("fd ;jhf") == "بی کتاب")
         #expect(engine.convertText("mv hc") == "پر از")
         #expect(engine.convertText("sv ;hv") == "سر کار")
-        #expect(engine.convertText("af fodu") == "شب بخیر")
+        #expect(engine.convertText("af fodv") == "شب بخیر")
         #expect(engine.convertText("hello d;") == "hello یک")
         #expect(engine.convertText("hello fi") == "hello به")
         #expect(engine.convertText("1 d;") == "1 یک")
-        #expect(engine.convertText("1 fi 2") == "1 به 2")
+        #expect(engine.convertText("1 fi 2") == "1 به ۲")
     }
 
     @Test("Ambiguous words convert inside Persian sentences")
@@ -332,7 +332,7 @@ struct ConversionEngineTests {
         #expect(engine.convertText("sghl an") == "سلام شد")
         #expect(engine.convertText("sghl fun") == "سلام بعد")
         #expect(engine.convertText("sghl leg") == "سلام مثل")
-        #expect(engine.convertText("sghl 1 an") == "سلام 1 شد")
+        #expect(engine.convertText("sghl 1 an") == "سلام ۱ شد")
     }
     // MARK: - The language of the sentence
 
