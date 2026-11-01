@@ -20,6 +20,21 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      - name: Select Xcode 16
+        run: |
+          for xcode_path in \
+            "/Applications/Xcode_16.app" \
+            "/Applications/Xcode_16.2.app" \
+            "/Applications/Xcode_16.1.app" \
+            "/Applications/Xcode_16.0.app"; do
+            if [ -d "$xcode_path" ]; then
+              echo "Selecting $xcode_path"
+              sudo xcode-select -s "$xcode_path"
+              break
+            fi
+          done
+          swift --version
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
