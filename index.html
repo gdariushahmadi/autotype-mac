@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoType — تایپ هوشمند و ترجمه AI در مک</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090a0f;
+      --card-bg: #141721;
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent: #2aabee;
+      --tg-bg: #0e1621;
+      --tg-surface: #17212b;
+      --tg-surface-border: #131b24;
+      --tg-msg-in: #182533;
+      --tg-msg-out: #2b5278;
+      --tg-blue: #2aabee;
+      --text: #f1f5f9;
+      --text-muted: #708499;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Vazirmatn', -apple-system, sans-serif;
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(ellipse at 50% -10%, rgba(42, 171, 238, 0.12), transparent 60%),
+        radial-gradient(ellipse at 90% 60%, rgba(16, 185, 129, 0.06), transparent 50%);
+    }
+
+    .container {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Minimalist Header */
+    header {
+      padding: 1.2rem 0;
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(14px);
+      background: rgba(9, 10, 15, 0.85);
+    }
+
+    .header-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 32px;
+      height: 32px;
+      background: linear-gradient(135deg, #229ed9, #2abee7);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+    }
+
+    .header-nav {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      list-style: none;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .header-nav a:hover {
+      color: #fff;
+    }
+
+    .btn-header {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      padding: 0.45rem 1rem;
+      border-radius: 0.5rem;
+      color: #fff;
+      font-size: 0.85rem;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-header:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 4.5rem 0 2rem;
+      text-align: center;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      background: rgba(42, 171, 238, 0.12);
+      border: 1px solid rgba(42, 171, 238, 0.3);
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      font-weight: 500;
+      margin-bottom: 1.5rem;
+    }
+
+    .hero h1 {
+      font-size: clamp(2.1rem, 4.2vw, 3.3rem);
+      font-weight: 900;
+      line-height: 1.35;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.25rem;
+      color: #fff;
+    }
+
+    .hero h1 span.blue {
+      color: #2aabee;
+    }
+
+    .hero p.lead {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 650px;
+      margin: 0 auto 2.5rem;
+    }
+
+    .app-icons-strip {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1.25rem;
+      margin-bottom: 3rem;
+      flex-wrap: wrap;
+    }
+
+    .strip-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .app-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+    }
+
+    .app-tag.active {
+      background: rgba(42, 171, 238, 0.15);
+      border-color: rgba(42, 171, 238, 0.4);
+      color: #38bdf8;
+    }
+
+    /* TELEGRAM DESKTOP WINDOW CONTAINER */
+    .tg-window-wrapper {
+      max-width: 880px;
+      margin: 0 auto 5rem;
+      background: var(--tg-bg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85), 0 0 40px rgba(42, 171, 238, 0.1);
+      display: flex;
+      height: 620px;
+    }
+
+    /* Telegram Sidebar */
+    .tg-sidebar {
+      width: 280px;
+      background: var(--tg-surface);
+      border-left: 1px solid var(--tg-surface-border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .tg-sidebar {
+        display: none;
+      }
+    }
+
+    .tg-sidebar-header {
+      padding: 0.85rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+    }
+
+    .tg-search-bar {
+      background: #242f3d;
+      border-radius: 20px;
+      padding: 0.35rem 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: #708499;
+      font-size: 0.8rem;
+      flex-grow: 1;
+    }
+
+    .tg-dialog-list {
+      overflow-y: auto;
+      flex-grow: 1;
+    }
+
+    .tg-dialog-item {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .tg-dialog-item.active {
+      background: #2b5278;
+    }
+
+    .tg-dialog-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #e17076, #ff885e);
+      color: white;
+      font-weight: 700;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .tg-dialog-info {
+      flex-grow: 1;
+      overflow: hidden;
+      text-align: right;
+    }
+
+    .tg-dialog-name-row {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.2rem;
+    }
+
+    .tg-dialog-name {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #fff;
+    }
+
+    .tg-dialog-time {
+      font-size: 0.7rem;
+      color: #708499;
+    }
+
+    .tg-dialog-preview {
+      font-size: 0.78rem;
+      color: #7f91a4;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Telegram Chat Pane */
+    .tg-chat-pane {
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      background: #0e1621;
+      position: relative;
+    }
+
+    /* Mac Window Controls + Telegram Header */
+    .tg-chat-header {
+      background: var(--tg-surface);
+      padding: 0.65rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid var(--tg-surface-border);
+      height: 56px;
+    }
+
+    .traffic-dots {
+      display: flex;
+      gap: 6px;
+      direction: ltr;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+    }
+    .dot-r { background: #ff5f56; }
+    .dot-y { background: #ffbd2e; }
+    .dot-g { background: #27c93f; }
+
+    .tg-user-status-block {
+      text-align: right;
+    }
+
+    .tg-user-title {
+      font-size: 0.925rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .tg-user-online {
+      font-size: 0.75rem;
+      color: var(--tg-blue);
+    }
+
+    /* Telegram Pattern Chat Body */
+    .tg-chat-history {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+      background-color: #0e1621;
+      background-image: 
+        radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      background-size: 24px 24px;
+    }
+
+    .tg-msg {
+      display: flex;
+      flex-direction: column;
+      max-width: 78%;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tg-msg.in {
+      align-self: flex-start;
+      align-items: flex-start;
+    }
+
+    .tg-msg.out {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .tg-bubble {
+      padding: 0.65rem 0.95rem;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .tg-msg.in .tg-bubble {
+      background: var(--tg-msg-in);
+      color: #f5f5f5;
+      border-bottom-right-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    }
+
+    .tg-msg.out .tg-bubble {
+      background: var(--tg-msg-out);
+      color: #fff;
+      border-bottom-left-radius: 3px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
+    }
+
+    .tg-msg-meta {
+      font-size: 0.68rem;
+      color: rgba(255, 255, 255, 0.5);
+      margin-top: 0.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    /* Telegram Bottom Input Area */
+    .tg-input-area {
+      background: var(--tg-surface);
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--tg-surface-border);
+    }
+
+    /* Feature Toast Bar */
+    .tg-feature-toast {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 0.35rem 0.75rem;
+      border-radius: 6px;
+      margin-bottom: 0.6rem;
+      font-size: 0.78rem;
+    }
+
+    .feature-step-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .tag-persian {
+      background: rgba(16, 185, 129, 0.18);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+    }
+
+    .tag-english {
+      background: rgba(42, 171, 238, 0.18);
+      color: #38bdf8;
+      border: 1px solid rgba(42, 171, 238, 0.3);
+    }
+
+    .tag-translate {
+      background: rgba(168, 85, 247, 0.18);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+
+    .tg-input-box {
+      background: #0e1621;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 22px;
+      padding: 0.45rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .tg-input-field {
+      flex-grow: 1;
+      font-size: 0.95rem;
+      color: #fff;
+      font-family: 'Vazirmatn', sans-serif;
+      min-height: 24px;
+    }
+
+    .cursor {
+      display: inline-block;
+      width: 2px;
+      height: 1.25em;
+      background: var(--tg-blue);
+      vertical-align: middle;
+      animation: blink 0.9s infinite;
+      margin-right: 2px;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    .tg-send-btn {
+      width: 34px;
+      height: 34px;
+      background: var(--tg-blue);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      flex-shrink: 0;
+      transition: transform 0.15s;
+    }
+
+    /* INTERACTIVE PLAYGROUND (TEST IN BROWSER) */
+    .playground-section {
+      background: linear-gradient(180deg, #12151e 0%, #0d0f17 100%);
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      margin-bottom: 5rem;
+    }
+
+    .playground-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .playground-header h2 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .playground-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .interactive-card {
+      max-width: 720px;
+      margin: 0 auto;
+      background: #0e121a;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 0.85rem;
+      padding: 1.5rem;
+    }
+
+    .interactive-card label {
+      display: block;
+      font-size: 0.85rem;
+      color: #94a3b8;
+      margin-bottom: 0.6rem;
+    }
+
+    .test-input {
+      width: 100%;
+      background: #07090e;
+      border: 1px solid #1e293b;
+      border-radius: 0.6rem;
+      padding: 0.85rem 1rem;
+      color: #38bdf8;
+      font-size: 1.15rem;
+      font-family: 'Vazirmatn', sans-serif;
+      outline: none;
+      direction: rtl;
+      transition: border-color 0.2s;
+    }
+
+    .test-input:focus {
+      border-color: #38bdf8;
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+    }
+
+    .playground-hints {
+      display: flex;
+      gap: 0.6rem;
+      flex-wrap: wrap;
+      margin-top: 0.85rem;
+    }
+
+    .chip-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 0.3rem 0.7rem;
+      border-radius: 0.4rem;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+      cursor: pointer;
+      font-family: 'JetBrains Mono', 'Vazirmatn', monospace;
+      transition: all 0.2s;
+    }
+
+    .chip-btn:hover {
+      background: rgba(42, 171, 238, 0.15);
+      border-color: rgba(42, 171, 238, 0.35);
+      color: #38bdf8;
+    }
+
+    .output-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    @media (max-width: 600px) {
+      .output-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .output-box {
+      background: #07090e;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 0.6rem;
+      padding: 0.85rem 1rem;
+    }
+
+    .output-title {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .output-content {
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      min-height: 1.6rem;
+    }
+
+    .output-content.persian { color: #34d399; }
+    .output-content.english { color: #38bdf8; direction: ltr; text-align: left; }
+
+    /* Clean SVG Feature Grid */
+    .features-section {
+      padding: 2rem 0 5rem;
+    }
+
+    .section-head {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .section-head h2 {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 0.6rem;
+    }
+
+    .section-head p {
+      color: var(--text-muted);
+      font-size: 1rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 0.9rem;
+      padding: 1.6rem;
+    }
+
+    .feature-card h3 {
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.65rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .feature-icon-svg {
+      width: 22px;
+      height: 22px;
+      flex-shrink: 0;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.925rem;
+      line-height: 1.7;
+    }
+
+    /* Terminal Setup */
+    .install-card {
+      background: #0f121b;
+      border: 1px solid var(--card-border);
+      border-radius: 1rem;
+      padding: 2.5rem;
+      text-align: center;
+      margin-bottom: 5rem;
+    }
+
+    .terminal-line {
+      background: #06070a;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 0.65rem;
+      padding: 0.9rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 720px;
+      margin: 1.5rem auto 0;
+      direction: ltr;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .terminal-cmd {
+      color: #38bdf8;
+      font-size: 0.88rem;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 0.35rem 0.75rem;
+      border-radius: 0.4rem;
+      font-size: 0.75rem;
+      cursor: pointer;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.16);
+    }
+
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 2rem 0;
+      text-align: center;
+      color: #64748b;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container header-inner">
+      <div class="brand-logo">
+        <div class="brand-icon">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h8M6 16h.01M10 16h4M18 16h.01"></path></svg>
+        </div>
+        AutoType for macOS
+      </div>
+      <ul class="header-nav">
+        <li><a href="#demo-tg">شبیه‌ساز تلگرام</a></li>
+        <li><a href="#playground">تست در مرورگر</a></li>
+        <li><a href="#how">قابلیت‌ها</a></li>
+      </ul>
+      <a href="#install" class="btn-header">نصب و اجرا</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="badge">ورودی بومی سیستم‌عامل مک (macOS 14+)</div>
+      <h1>دیگه مهم نیست کیبوردت چیه!<br><span class="blue">بعد از تایپ اولین کلمه</span>، زبان هوشمند تغییر می‌کنه.</h1>
+      <p class="lead">
+        تایپ فارسی و انگلیسی بدون دغدغه تعویض چیدمان در تمامی برنامه‌ها (تلگرام، اسلک، بروزر، کد ادیتور و...). AutoType زبان مورد نظر شما را از اولین کلمه تشخیص می‌دهد و هر ۳ سناریو را لحظه‌ای اجرا می‌کند.
+      </p>
+
+      <!-- App Compatibility Badges -->
+      <div class="app-icons-strip">
+        <span class="strip-label">فعال در هر فیلد متنی:</span>
+        <span class="app-tag active">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
+          Telegram
+        </span>
+        <span class="app-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+          WhatsApp
+        </span>
+        <span class="app-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><line x1="9" y1="3" x2="9" y2="21"></line></svg>
+          Slack / Discord
+        </span>
+        <span class="app-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          Chrome / Safari
+        </span>
+        <span class="app-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Notion / Notes
+        </span>
+        <span class="app-tag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+          VS Code / Terminal
+        </span>
+      </div>
+    </section>
+
+    <!-- REAL TELEGRAM DESKTOP ANIMATION SHOWING ALL 3 CAPABILITIES -->
+    <div class="tg-window-wrapper" id="demo-tg">
+      <!-- Telegram Sidebar -->
+      <div class="tg-sidebar">
+        <div class="tg-sidebar-header">
+          <div class="traffic-dots">
+            <span class="dot dot-r"></span>
+            <span class="dot dot-y"></span>
+            <span class="dot dot-g"></span>
+          </div>
+          <div class="tg-search-bar">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+            جستجو در گفتگوها
+          </div>
+        </div>
+        <div class="tg-dialog-list">
+          <div class="tg-dialog-item active">
+            <div class="tg-dialog-avatar">JD</div>
+            <div class="tg-dialog-info">
+              <div class="tg-dialog-name-row">
+                <span class="tg-dialog-name">John Doe (همکار بین‌المللی)</span>
+                <span class="tg-dialog-time">۱۰:۴۲</span>
+              </div>
+              <div class="tg-dialog-preview">Hi! Could you please send project updates...</div>
+            </div>
+          </div>
+          <div class="tg-dialog-item">
+            <div class="tg-dialog-avatar" style="background: linear-gradient(135deg, #4ade80, #16a34a);">تیم</div>
+            <div class="tg-dialog-info">
+              <div class="tg-dialog-name-row">
+                <span class="tg-dialog-name">گروه توسعه محصول</span>
+                <span class="tg-dialog-time">دیروز</span>
+              </div>
+              <div class="tg-dialog-preview">نسخه جدید روی سرور استیجینگ دیپلوی شد</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Telegram Chat Pane -->
+      <div class="tg-chat-pane">
+        <div class="tg-chat-header">
+          <div class="tg-user-status-block">
+            <div class="tg-user-title">John Doe</div>
+            <div class="tg-user-online">آنلاین در تلگرام</div>
+          </div>
+          <div style="font-size: 0.75rem; color: #708499; font-family: 'JetBrains Mono', monospace; direction: ltr;">
+            AutoType Active
+          </div>
+        </div>
+
+        <!-- Chat History -->
+        <div class="tg-chat-history" id="tgChatHistory">
+          <div class="tg-msg in">
+            <div class="tg-bubble">
+              Hi! Could you please send me the project updates and timeline for tomorrow?
+            </div>
+            <div class="tg-msg-meta">۱۰:۴۲</div>
+          </div>
+        </div>
+
+        <!-- Telegram Live Input Area -->
+        <div class="tg-input-area">
+          <div class="tg-feature-toast">
+            <span id="tgStepStatus" style="color: #94a3b8;">شروع سناریو...</span>
+            <span class="feature-step-tag tag-persian" id="tgTagBadge">
+              <span id="tgTagText">AutoType: فعال</span>
+            </span>
+          </div>
+
+          <div class="tg-input-box">
+            <div class="tg-input-field">
+              <span id="tgInputText"></span><span class="cursor"></span>
+            </div>
+            <div class="tg-send-btn" id="tgSendBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- INTERACTIVE PLAYGROUND (TEST RIGHT IN BROWSER) -->
+    <section class="playground-section" id="playground">
+      <div class="playground-header">
+        <h2>همین حالا در مرورگر امتحان کنید</h2>
+        <p>بدون نیاز به نصب، رفتار موتور تبدیل خودکار و ترجمه با Enter را خودتان تست کنید:</p>
+      </div>
+
+      <div class="interactive-card">
+        <label>اینجا با حروف انگلیسی تایپ کنید و کلید <strong>Space</strong> یا <strong>Enter</strong> را بزنید:</label>
+        <input type="text" id="liveUserTestInput" class="test-input" placeholder="مثلاً بنویسید sghl یا hello یا ترجمه حال شما چطوره؟" autofocus>
+
+        <div class="playground-hints">
+          <span class="chip-btn" onclick="applyTest('sghl')">تایپ sghl (سلام)</span>
+          <span class="chip-btn" onclick="applyTest(';jhf')">تایپ ;jhf (کتاب)</span>
+          <span class="chip-btn" onclick="applyTest('take it easy')">تایپ take it easy (انگلیسی دست‌نخورده)</span>
+          <span class="chip-btn" onclick="applyTest('ترجمه فردا جلسه داریم')">ترجمه با فشردن Enter</span>
+        </div>
+
+        <div class="output-grid">
+          <div class="output-box">
+            <div class="output-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              خروجی تبدیل خودکار AutoType:
+            </div>
+            <div class="output-content persian" id="livePersianOutput">سلام</div>
+          </div>
+
+          <div class="output-box">
+            <div class="output-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+              ترجمه روی کلید Enter:
+            </div>
+            <div class="output-content english" id="liveTranslationOutput">Hello</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Clean SVG Feature Grid -->
+    <section class="features-section" id="how">
+      <div class="section-head">
+        <h2>۳ قابلیت حیاتی AutoType در یک نگاه</h2>
+        <p>یکپارچه شده در سطح سیستم‌عامل مک (macOS Input Method) برای همه برنامه‌ها</p>
+      </div>
+
+      <div class="grid-3">
+        <div class="feature-card">
+          <h3>
+            <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            ۱. قفل خودکار زبان از کلمهٔ اول
+          </h3>
+          <p>
+            با تایپ اولین کلمه، زبان جمله مشخص می‌شود. اگر با فارسی شروع کنید، بقیه جمله روی فارسی قفل می‌شود و اگر با انگلیسی شروع کنید، جمله بدون تغییر انگلیسی می‌ماند.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h3>
+            <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+            ۲. نیم‌فاصله واقعی و حفظ رشته‌های فنی
+          </h3>
+          <p>
+            کلید <code>Shift + Space</code> نیم‌فاصله واقعی تولید می‌کند («حرفه‌ای»، «می‌شود»). ایمیل‌ها، آدرس وبسایت‌ها، مسیر فایل‌ها و کدهای برنامه‌نویسی نیز هرگز دستکاری نمی‌شوند.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <h3>
+            <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+            ۳. ترجمه فوری با فشردن کلید Enter
+          </h3>
+          <p>
+            پیام را با کلمه دلخواه (مثل <code>ترجمه</code> یا <code>تت</code>) شروع کنید؛ با زدن اولین Enter درجا به انگلیسی ترجمه می‌شود و دومین Enter پیام را ارسال می‌کند.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Installation -->
+    <section class="install-card" id="install">
+      <h2 style="color: #fff; font-size: 1.6rem; font-weight: 800; margin-bottom: 0.5rem;">نصب در ترمینال مک</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        دستور زیر را در ترمینال اجرا کنید تا ورودی کیبورد و اپلیکیشن تنظیمات در مک شما نصب شوند:
+      </p>
+
+      <div class="terminal-line">
+        <span class="terminal-cmd" id="installCmd">git clone https://github.com/your-username/autotype-mac && cd autotype-mac && bash Scripts/install.sh</span>
+        <button class="copy-btn" onclick="copyCommand()">کپی دستور</button>
+      </div>
+      <div style="margin-top: 1rem; color: #64748b; font-size: 0.8rem;">
+        پس از نصب، یک بار Log out کنید و از تنظیمات Keyboard گزینه AutoType را اضافه نمایید.
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      AutoType for macOS — ساخته شده برای تایپ بی‌دردسر فارسی و ترجمه هوشمند AI
+    </div>
+  </footer>
+
+  <!-- Animation Logic & In-Browser Test Engine -->
+  <script>
+    // --- TELEGRAM SIMULATOR ALL 3 FEATURES LOOP ---
+    const tgChatHistory = document.getElementById('tgChatHistory');
+    const tgInputText = document.getElementById('tgInputText');
+    const tgStepStatus = document.getElementById('tgStepStatus');
+    const tgTagBadge = document.getElementById('tgTagBadge');
+    const tgTagText = document.getElementById('tgTagText');
+    const tgSendBtn = document.getElementById('tgSendBtn');
+
+    function sleep(ms) {
+      return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    function addTgMessage(text, isPersian = false) {
+      const msg = document.createElement('div');
+      msg.className = 'tg-msg out';
+      msg.innerHTML = `
+        <div class="tg-bubble" style="direction: ${isPersian ? 'rtl' : 'ltr'}; text-align: ${isPersian ? 'right' : 'left'};">
+          ${text}
+        </div>
+        <div class="tg-msg-meta">
+          <span>۱۰:۴۳</span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
+        </div>
+      `;
+      tgChatHistory.appendChild(msg);
+      tgChatHistory.scrollTop = tgChatHistory.scrollHeight;
+    }
+
+    async function runTelegramSimulation() {
+      while(true) {
+        tgChatHistory.innerHTML = `
+          <div class="tg-msg in">
+            <div class="tg-bubble">
+              Hi! Could you please send me the project updates and timeline for tomorrow?
+            </div>
+            <div class="tg-msg-meta">۱۰:۴۲</div>
+          </div>
+        `;
+        tgInputText.textContent = '';
+        await sleep(1000);
+
+        // --- CAPABILITY 1: First word starts Persian -> Locks to Persian ---
+        tgStepStatus.textContent = 'قابلیت ۱: شروع با کلمه فارسی (sghl) → قفل خودکار زبان روی فارسی';
+        tgTagBadge.className = 'feature-step-tag tag-persian';
+        tgTagText.textContent = 'قفل زبان: فارسی';
+
+        const keys1 = ['s', 'g', 'h', 'l'];
+        let buf1 = '';
+        for (const k of keys1) {
+          buf1 += k;
+          tgInputText.textContent = buf1;
+          await sleep(140);
+        }
+        await sleep(300);
+        tgInputText.textContent = 'سلام ';
+
+        // Type with ZWNJ (CAPABILITY 2: Semi-space / ZWNJ)
+        tgStepStatus.textContent = 'قابلیت ۲: نیم‌فاصله هوشمند (Shift+Space) در کلمات دارای پسوند';
+        const persianPart = 'پروژه به صورت حرفه‌ای آماده شد.';
+        for (let i = 0; i < persianPart.length; i++) {
+          tgInputText.textContent += persianPart[i];
+          await sleep(55);
+        }
+
+        await sleep(900);
+        tgSendBtn.style.transform = 'scale(0.85)';
+        await sleep(150);
+        tgSendBtn.style.transform = 'scale(1)';
+        addTgMessage('سلام پروژه به صورت حرفه‌ای آماده شد.', true);
+        tgInputText.textContent = '';
+        await sleep(1500);
+
+        // --- CAPABILITY 3: AI Translation on Enter ---
+        tgStepStatus.textContent = 'قابلیت ۳: ترجمه پاسخ به انگلیسی روی کلید Enter با پیشوند «ترجمه»';
+        tgTagBadge.className = 'feature-step-tag tag-translate';
+        tgTagText.textContent = 'ترجمه با Enter';
+
+        const trSentence = 'ترجمه فردا ساعت ۱۰ گزارش نهایی تحویل می‌شود.';
+        for (let i = 0; i < trSentence.length; i++) {
+          tgInputText.textContent += trSentence[i];
+          await sleep(55);
+        }
+
+        await sleep(900);
+
+        // Press Enter 1: Translate
+        tgStepStatus.textContent = 'فشردن Enter اول: ترجمه هوش مصنوعی جایگزین شد!';
+        tgInputText.style.opacity = '0.5';
+        await sleep(650);
+        tgInputText.style.opacity = '1';
+        tgInputText.textContent = 'The final report will be delivered tomorrow at 10 AM.';
+
+        await sleep(1500);
+
+        // Press Enter 2: Send
+        tgStepStatus.textContent = 'فشردن Enter دوم: پیام انگلیسی ارسال گردید ✓';
+        tgSendBtn.style.transform = 'scale(0.85)';
+        await sleep(150);
+        tgSendBtn.style.transform = 'scale(1)';
+        addTgMessage('The final report will be delivered tomorrow at 10 AM.', false);
+        tgInputText.textContent = '';
+
+        await sleep(3500);
+      }
+    }
+
+    // --- IN-BROWSER TEST PLAYGROUND ENGINE ---
+    const keyMap = {
+      'q':'ض', 'w':'ص', 'e':'ث', 'r':'ق', 't':'ف', 'y':'غ', 'u':'ع', 'i':'ه', 'o':'خ', 'p':'ح', '[':'ج', ']':'چ',
+      'a':'ش', 's':'س', 'd':'ی', 'f':'ب', 'g':'ل', 'h':'ا', 'j':'ت', 'k':'ن', 'l':'م', ';':'ک', "'":'گ',
+      'z':'ظ', 'x':'ط', 'c':'ز', 'v':'ر', 'b':'ذ', 'n':'د', 'm':'پ', ',':'و'
+    };
+
+    const localDict = {
+      'sghl': 'سلام',
+      ';jhf': 'کتاب',
+      ';jhfih': 'کتاب‌ها',
+      'ldv,n': 'می‌رود',
+      'of': 'خب',
+      'fi': 'به',
+      'hc': 'از',
+      'lk': 'من',
+      'j,': 'تو'
+    };
+
+    const mockTranslations = {
+      'سلام': 'Hello',
+      'کتاب': 'Book',
+      'فردا جلسه داریم': 'We have a meeting tomorrow',
+      'حال شما چطوره؟': 'How are you doing?',
+      'خوب': 'Good',
+      'ممنون': 'Thank you'
+    };
+
+    const testInput = document.getElementById('liveUserTestInput');
+    const persianOutput = document.getElementById('livePersianOutput');
+    const trOutput = document.getElementById('liveTranslationOutput');
+
+    function convertWord(word) {
+      if (localDict[word]) return localDict[word];
+      if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(word)) return word;
+      if (['hello', 'take', 'it', 'easy', 'apple', 'mac', 'code', 'swift', 'telegram'].includes(word.toLowerCase())) return word;
+      let res = '';
+      for (let ch of word) {
+        res += keyMap[ch] || ch;
+      }
+      return res;
+    }
+
+    testInput.addEventListener('input', (e) => {
+      const val = e.target.value;
+      if (!val) {
+        persianOutput.textContent = '...';
+        trOutput.textContent = '...';
+        return;
+      }
+
+      const words = val.split(' ');
+      const convertedWords = words.map(convertWord);
+      let fullText = convertedWords.join(' ');
+
+      let textToTr = fullText;
+      if (fullText.startsWith('ترجمه')) {
+        textToTr = fullText.replace(/^ترجمه[:\s]*/, '');
+      }
+
+      persianOutput.textContent = fullText;
+      trOutput.textContent = mockTranslations[textToTr] || 'AI Translation ready...';
+    });
+
+    testInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        let text = persianOutput.textContent;
+        if (text.startsWith('ترجمه')) {
+          text = text.replace(/^ترجمه[:\s]*/, '');
+        }
+        persianOutput.textContent = mockTranslations[text] || 'متن ترجمه شده با موفقیت جایگزین شد!';
+      }
+    });
+
+    function applyTest(sample) {
+      testInput.value = sample;
+      testInput.dispatchEvent(new Event('input'));
+      testInput.focus();
+    }
+
+    function copyCommand() {
+      const cmd = document.getElementById('installCmd').textContent;
+      navigator.clipboard.writeText(cmd).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        btn.textContent = 'کپی شد!';
+        setTimeout(() => btn.textContent = 'کپی دستور', 2000);
+      });
+    }
+
+    // Launch telegram animation
+    runTelegramSimulation();
+    // Init playground
+    applyTest('sghl');
+  </script>
+</body>
+</html>
