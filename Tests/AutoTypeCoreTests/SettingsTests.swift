@@ -55,4 +55,17 @@ struct SettingsTests {
         #expect(PersianText.persianDigits("1403") == "۱۴۰۳")
         #expect(PersianText.persianDigits("a1b2") == "a۱b۲")
     }
+
+    @Test("Disabled apps list is checked case-insensitively")
+    func disabledAppsCheck() {
+        var settings = ConversionSettings()
+        settings.disabledApps = ["com.apple.Terminal", "com.microsoft.VSCode"]
+
+        #expect(settings.isAppDisabled(bundleID: "com.apple.Terminal"))
+        #expect(settings.isAppDisabled(bundleID: "COM.APPLE.TERMINAL"))
+        #expect(settings.isAppDisabled(bundleID: "com.microsoft.vscode"))
+        #expect(!settings.isAppDisabled(bundleID: "org.telegram.desktop"))
+        #expect(!settings.isAppDisabled(bundleID: nil))
+        #expect(!settings.isAppDisabled(bundleID: ""))
+    }
 }

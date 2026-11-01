@@ -3,9 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AutoType — ورودی فارسی برای macOS، بدون تعویض چیدمان</title>
-<meta name="description" content="AutoType یک ورودی بومی macOS است: چیدمان انگلیسی را عوض نمی‌کنید، زبان هر کلمه را خودش تشخیص می‌دهد و تایپ فارسی را بدون تعویض زبان ممکن می‌کند.">
+<title>AutoType — تایپ هوشمند فارسی روی macOS، بدون تعویض چیدمان کیبورد</title>
+<meta name="description" content="ورودی بومی و متن‌باز macOS: همیشه با کیبورد انگلیسی تایپ کنید؛ کلمات فارسی، انگلیسی و اصطلاحات فنی خودکار تشخیص داده می‌شوند — همراه با نیم‌فاصلهٔ خودکار، اعداد هوشمند در فرم‌ها و ترجمه/ویرایش درجا با Enter.">
 <meta name="theme-color" content="#08090c">
+<link rel="canonical" href="https://gdariushahmadi.github.io/autotype-mac/">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0e14' stroke='%233f9fd8' stroke-width='1.5'/%3E%3Crect x='5' y='9' width='22' height='14' rx='3' fill='none' stroke='%237cc0e8' stroke-width='2'/%3E%3Cpath d='M9.5 13.5h.01M14 13.5h.01M18 13.5h.01M22.5 13.5h.01M11.5 18.5h9' stroke='%235cb894' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<!-- Open Graph / Social Preview -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AutoType for macOS">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:url" content="https://gdariushahmadi.github.io/autotype-mac/">
+<meta property="og:title" content="AutoType — تایپ هوشمند فارسی روی macOS، بدون تعویض کیبورد">
+<meta property="og:description" content="چیدمان انگلیسی را عوض نکنید؛ زبان هر کلمه را خودش تشخیص می‌دهد. همراه با حفظ خودکار کد و اصطلاحات فنی، نیم‌فاصلهٔ دقیق، اعداد هوشمند در فرم‌ها و ترجمه/ویرایش نگارشی درجا با Enter. (با امکان تست زنده در مرورگر)">
+<meta property="og:image" content="https://gdariushahmadi.github.io/autotype-mac/og-preview.png">
+<meta property="og:image:secure_url" content="https://gdariushahmadi.github.io/autotype-mac/og-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="2400">
+<meta property="og:image:height" content="1260">
+<meta property="og:image:alt" content="AutoType — ورودی هوشمند فارسی برای macOS بدون نیاز به تعویض چیدمان کیبورد (Cmd + Space)">
+
+<!-- X (Twitter) Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://gdariushahmadi.github.io/autotype-mac/">
+<meta name="twitter:title" content="AutoType — تایپ هوشمند فارسی روی macOS، بدون تعویض کیبورد">
+<meta name="twitter:description" content="چیدمان انگلیسی را عوض نکنید؛ زبان هر کلمه را خودش تشخیص می‌دهد. همراه با حفظ خودکار کد و اصطلاحات فنی، نیم‌فاصلهٔ دقیق، اعداد هوشمند و ترجمه/ویرایش درجا با Enter. (همراه با تست زنده در مرورگر)">
+<meta name="twitter:image" content="https://gdariushahmadi.github.io/autotype-mac/og-preview.png">
+<meta name="twitter:image:alt" content="AutoType — ورودی هوشمند فارسی برای macOS بدون نیاز به تعویض چیدمان کیبورد (Cmd + Space)">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -135,6 +159,30 @@ header.stuck{border-bottom-color:var(--line)}
   background:var(--fg);color:var(--ink);
   display:grid;place-items:center;
 }
+.beta-badge{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:var(--mono);font-size:10px;font-weight:700;letter-spacing:.08em;
+  padding:2px 7px;border-radius:4px;
+  background:var(--warn-bg);color:var(--warn);border:1px solid rgba(210,155,60,.38);
+  line-height:1.3;direction:ltr;
+}
+.beta-notice{
+  margin-top:20px;padding:12px 15px;border-radius:var(--r);
+  background:rgba(210,155,60,.07);border:1px solid rgba(210,155,60,.28);
+  font-size:13.2px;line-height:1.85;color:var(--fg-2);
+}
+.beta-notice strong{color:var(--warn);font-weight:700}
+.origin-story{
+  margin-top:14px;padding:13px 16px;border-radius:var(--r);
+  background:rgba(63,159,216,.06);border:1px solid rgba(63,159,216,.24);
+  font-size:13.3px;line-height:1.9;color:var(--fg-2);
+}
+.origin-story strong{color:var(--accent-2);font-weight:700}
+.origin-story a{
+  color:var(--fg);font-weight:600;border-bottom:1px dashed var(--accent);
+  transition:color var(--d1) var(--ease),border-color var(--d1) var(--ease);
+}
+.origin-story a:hover{color:var(--accent-2);border-bottom-style:solid}
 .nav-links{display:flex;align-items:center;gap:26px;margin-inline-start:14px;font-size:14px;color:var(--fg-2)}
 .nav-links a{transition:color var(--d1) var(--ease);position:relative;padding-block:4px}
 .nav-links a:hover{color:var(--fg)}
@@ -279,43 +327,62 @@ header.stuck{border-bottom-color:var(--line)}
    6 — PLAYGROUND
    ============================================================ */
 .playground{
-  display:grid;grid-template-columns:minmax(0,268px) minmax(0,1fr);
-  gap:20px;align-items:start;
+  display:grid;grid-template-columns:minmax(0,305px) minmax(0,1fr);
+  gap:20px;align-items:stretch;
 }
 .drawer{
   background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r-lg);
-  padding:16px;position:sticky;top:84px;
+  padding:14px;display:flex;flex-direction:column;box-sizing:border-box;
+  height:100%;
 }
-.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.drawer-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;flex-shrink:0}
 .drawer-head h3{
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;
   color:var(--fg-3);font-weight:500;display:flex;align-items:center;gap:8px;
 }
 .sound-toggle{
-  display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 9px;
+  display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 8px;
   border-radius:var(--r);border:1px solid var(--line);background:transparent;
-  color:var(--fg-3);cursor:pointer;font:inherit;font-size:12px;
+  color:var(--fg-3);cursor:pointer;font:inherit;font-size:11.5px;
   transition:all var(--d1) var(--ease);
 }
 .sound-toggle:hover{border-color:var(--line-2);color:var(--fg-2)}
 .sound-toggle.on{color:var(--ok);border-color:rgba(92,184,148,.35);background:var(--ok-bg)}
-.scenario{
-  width:100%;text-align:start;display:block;padding:11px 12px;margin-bottom:6px;
-  border-radius:var(--r);border:1px solid transparent;background:var(--ink-3);
-  color:var(--fg-2);font:inherit;font-size:13.5px;cursor:pointer;
-  transition:all var(--d1) var(--ease);position:relative;
+#scenarioList{
+  display:flex;flex-direction:column;gap:5px;flex:1;min-height:0;overflow-y:auto;
+  padding-inline-end:3px;
 }
-.scenario:hover{border-color:var(--line-2);color:var(--fg)}
-.scenario.active{border-color:rgba(63,159,216,.5);background:var(--accent-bg);color:var(--fg)}
-.scenario b{display:block;font-weight:600;margin-bottom:2px}
-.scenario span{display:block;font-size:12px;color:var(--fg-3);line-height:1.7}
+#scenarioList::-webkit-scrollbar{width:4px}
+#scenarioList::-webkit-scrollbar-track{background:transparent}
+#scenarioList::-webkit-scrollbar-thumb{background:var(--line-2);border-radius:4px}
+.scenario{
+  width:100%;text-align:start;display:flex;flex-direction:column;justify-content:center;
+  padding:8px 11px;border-radius:var(--r);border:1px solid transparent;border-inline-start:3px solid transparent;
+  background:var(--ink-3);color:var(--fg-2);font:inherit;cursor:pointer;
+  transition:all var(--d1) var(--ease);position:relative;flex-shrink:0;
+}
+.scenario:hover{border-color:var(--line-2);color:var(--fg);background:rgba(255,255,255,.03)}
+.scenario.active{
+  border-color:rgba(63,159,216,.35);
+  border-inline-start-color:var(--accent);
+  background:var(--accent-bg);color:var(--fg);
+}
+.scenario b{
+  display:block;font-size:12px;font-weight:600;margin-bottom:2px;line-height:1.4;color:var(--fg);
+}
+.scenario.active b{color:#fff}
+.scenario span{
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  font-size:11px;color:var(--fg-3);line-height:1.45;
+}
 .scenario.active span{color:var(--fg-2)}
 .status{
-  margin-top:14px;padding-top:13px;border-top:1px solid var(--line);
-  display:flex;gap:9px;align-items:flex-start;font-size:12.5px;color:var(--fg-3);line-height:1.75;
+  margin-top:auto;padding-top:10px;border-top:1px solid var(--line);
+  display:flex;gap:8px;align-items:flex-start;font-size:11.5px;color:var(--fg-3);line-height:1.6;
+  flex-shrink:0;
 }
 .status-dot{
-  width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;margin-top:8px;
+  width:6px;height:6px;border-radius:50%;background:var(--ok);flex-shrink:0;margin-top:6px;
   box-shadow:0 0 0 3px rgba(92,184,148,.14);
 }
 .status b{color:var(--fg-2);font-weight:600}
@@ -371,7 +438,7 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-head-status{font-size:11px;color:var(--tg-muted)}
 .tg-head-actions{display:flex;gap:14px;color:var(--tg-muted)}
 .tg-messages{
-  flex:1;min-height:300px;max-height:420px;overflow-y:auto;padding:16px 14px;
+  height:285px;min-height:285px;max-height:285px;overflow-y:auto;padding:14px;
   display:flex;flex-direction:column;gap:8px;
 }
 .tg-day{
@@ -383,19 +450,23 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-msg--out{align-self:flex-end;align-items:flex-end}
 @keyframes msgIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .tg-bubble{
-  background:var(--tg-in);color:var(--tg-text);padding:8px 12px 7px;border-radius:11px;
+  background:var(--tg-in);color:var(--tg-text);padding:8px 12px 6px;border-radius:12px;
   font-size:13.5px;line-height:1.75;word-break:break-word;
-  box-shadow:0 1px 2px rgba(0,0,0,.22);
+  box-shadow:0 1px 2px rgba(0,0,0,.22);position:relative;min-width:68px;
 }
-.tg-msg--out .tg-bubble{background:var(--tg-out)}
-.tg-bubble.ltr{direction:ltr;text-align:left;font-family:var(--mono);font-size:12.5px}
-.tg-time{
-  display:inline-flex;align-items:center;font-size:10px;color:var(--tg-muted);margin-top:2px;gap:2px;
+.tg-msg--out .tg-bubble{background:var(--tg-out);border-bottom-right-radius:3px}
+.tg-msg--in .tg-bubble{border-bottom-left-radius:3px}
+.tg-bubble.is-rtl .tg-bubble-text{direction:rtl;text-align:right;unicode-bidi:plaintext}
+.tg-bubble.is-ltr .tg-bubble-text{direction:ltr;text-align:left;unicode-bidi:plaintext}
+.tg-bubble.is-ltr.code .tg-bubble-text{font-family:var(--mono);font-size:12.5px}
+.tg-bubble-meta{
+  display:flex;align-items:center;justify-content:flex-end;gap:3px;
+  font-size:10px;color:var(--tg-muted);margin-top:2px;direction:ltr;user-select:none;
 }
-.tg-msg--out .tg-time{display:flex;justify-content:flex-end}
+.tg-time{font-size:10px;color:var(--tg-muted);line-height:1}
 .tg-ticks{
   width:14px;height:10px;display:inline-block;vertical-align:middle;
-  margin-inline-start:4px;color:#5bb3ff;flex-shrink:0;
+  color:#5bb3ff;flex-shrink:0;
 }
 .tg-notice{
   font-size:12px;padding:0 14px;color:var(--fg-3);min-height:0;overflow:hidden;
@@ -408,14 +479,31 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-notice.warn{color:var(--warn)}.tg-notice.warn b{color:var(--warn)}
 .tg-notice.info{color:var(--accent-2)}.tg-notice.info b{color:var(--accent-2)}
 
-/* Live Keystroke & Engine HUD inside Playground */
-.live-hud{
-  background:rgba(8,10,15,.94);
-  border-top:1px solid var(--tg-line);
-  padding:10px 14px;
-  display:flex;flex-direction:column;gap:8px;
-  direction:rtl;
+/* Live Keystroke & Engine Inspector Panel (OUTSIDE Telegram) */
+.playground-main{
+  display:flex;flex-direction:column;gap:12px;min-width:0;
 }
+.live-hud-panel{
+  background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r-lg);
+  padding:11px 14px;display:flex;flex-direction:column;gap:8px;direction:rtl;
+}
+.hud-panel-head{
+  display:flex;align-items:center;justify-content:space-between;gap:8px;
+  padding-bottom:7px;border-bottom:1px solid var(--line);font-size:11.5px;
+}
+.hud-panel-title{
+  display:inline-flex;align-items:center;gap:7px;font-weight:600;color:var(--fg-2);
+}
+.hud-pulse-dot{
+  width:6px;height:6px;border-radius:50%;background:var(--accent-2);
+  box-shadow:0 0 0 3px rgba(63,159,216,.2);flex-shrink:0;
+}
+.hud-tag{
+  font-family:var(--mono);font-size:10px;font-weight:700;color:var(--accent-2);
+  background:var(--accent-bg);border:1px solid rgba(63,159,216,.3);
+  padding:1px 7px;border-radius:4px;
+}
+.hud-note{font-size:11px;color:var(--fg-3)}
 .live-hud-row{
   display:flex;align-items:center;gap:10px;flex-wrap:wrap;min-height:26px;
 }
@@ -492,9 +580,11 @@ header.stuck{border-bottom-color:var(--line)}
 .tg-real-input{
   width:100%;height:40px;padding:0 14px;border:0;background:transparent;outline:0;
   color:var(--fg);font:inherit;font-size:13.5px;border-radius:var(--r-lg);
+  direction:rtl;text-align:right;
 }
-.tg-real-input::placeholder{color:var(--fg-3)}
+.tg-real-input::placeholder{color:var(--fg-3);direction:rtl;text-align:right}
 .tg-real-input.latin{direction:ltr;text-align:left;font-family:var(--mono);font-size:13px}
+.tg-real-input.latin::placeholder{direction:ltr;text-align:left}
 .tg-send-wrap{display:flex;align-items:center;gap:4px}
 .tg-send{
   width:32px;height:32px;border-radius:50%;border:0;background:var(--accent);color:#fff;
@@ -538,17 +628,25 @@ kbd{
 /* install */
 .install{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);gap:clamp(28px,4vw,60px);align-items:start}
 .install ol{margin:18px 0 0;padding:0;list-style:none;counter-reset:s}
-.install li{
-  counter-increment:s;position:relative;padding-inline-start:34px;margin-bottom:16px;
+.install ol > li{
+  counter-increment:s;position:relative;padding-inline-start:34px;margin-bottom:18px;
   font-size:14.5px;color:var(--fg-2);line-height:1.9;
 }
-.install li::before{
+.install ol > li::before{
   content:counter(s);position:absolute;inset-inline-start:0;top:3px;
   width:22px;height:22px;border-radius:50%;border:1px solid var(--line-2);
   font-family:var(--mono);font-size:11px;color:var(--fg-3);
   display:grid;place-items:center;
 }
-.install li b{color:var(--fg);font-weight:600}
+.install ol > li b{color:var(--fg);font-weight:600}
+.install-where{
+  margin-top:10px;padding:12px 14px;background:var(--ink-3);
+  border:1px solid var(--line);border-radius:var(--r);font-size:13px;line-height:1.85;color:var(--fg-2);
+}
+.install-where ul{margin:4px 0 0;padding-inline-start:18px;list-style:disc}
+.install-where li{counter-increment:none;padding:0;margin:4px 0;font-size:13px;line-height:1.8;color:var(--fg-2)}
+.install-where li::before{display:none}
+.install-where b{color:var(--accent-2)}
 .terminal{background:var(--ink-2);border:1px solid var(--line);border-radius:var(--r-lg);overflow:hidden}
 .term-bar{
   display:flex;align-items:center;gap:7px;padding:10px 13px;border-bottom:1px solid var(--line);
@@ -597,10 +695,14 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 }
 @media (max-width:1040px){
   .hero-grid{grid-template-columns:1fr;gap:40px}
-  .playground{grid-template-columns:1fr}
-  .drawer{position:static}
+  .playground{grid-template-columns:1fr;gap:16px}
+  .drawer{height:auto;position:static}
+  #scenarioList{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:6px;overflow-y:visible}
   .install{grid-template-columns:1fr}
   .nav-links{display:none}
+}
+@media (max-width:640px){
+  #scenarioList{grid-template-columns:1fr}
 }
 @media (max-width:820px){
   .shell{padding:0 20px}
@@ -634,6 +736,7 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M6.5 9.5h.01M10 9.5h.01M13.5 9.5h.01M17 9.5h.01M8.5 13.5h7"/></svg>
       </span>
       <span>AutoType</span>
+      <span class="beta-badge" title="نسخهٔ آزمایشی (بتا)">BETA</span>
     </a>
     <ul class="nav-links">
       <li><a href="#playground">تست زنده</a></li>
@@ -659,7 +762,8 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
     <div class="hero-grid">
       <div>
         <div class="hero-meta">
-          <span class="on">● v1.2.0</span><span class="dot"></span>
+          <span class="on">● v1.2.0-beta</span><span class="dot"></span>
+          <span class="beta-badge">BETA · نسخهٔ آزمایشی</span><span class="dot"></span>
           <span>macOS 14+</span><span class="dot"></span>
           <span>ISIRI 2901</span><span class="dot"></span>
           <span>MIT</span>
@@ -676,6 +780,12 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
           تبدیل می‌کند و متن را همان‌جا اصلاح می‌نویسد.
           نیازی به <code>Cmd + Space</code> نیست — و نیازی به نگاه کردن به کیبورد هم نیست.
         </p>
+
+        <div class="beta-notice">
+          <strong>⚠️ نسخهٔ آزمایشی (Beta):</strong>
+          این پروژه در حال حاضر در مرحلهٔ بتا قرار دارد و به‌طور مستمر در حال بهینه‌سازی است.
+          اگر در برنامه‌ای خاص یا روی برخی کلمات با تشخیص ناخواسته روبه‌رو شدید، می‌توانید با نگه‌داشتن کلید <code>⌘ راست</code> مستقیم انگلیسی بنویسید، با <code>Backspace</code> تبدیل آخرین کلمه را برگردانید، یا برنامه‌های مورد نظر (مثل ترمینال و محیط‌های کدنویسی) را در بخش <b>Excluded Apps</b> تنظیمات مستثنی کنید.
+        </div>
 
         <div class="hero-actions">
           <a class="btn btn-primary btn-lg" href="#install">
@@ -749,121 +859,133 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
         </div>
       </aside>
 
-      <div class="tg" id="tg">
-        <div class="tg-titlebar">
-          <span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span>
-          <span class="tg-titlebar-title">Telegram — AutoType Live Experience</span>
-          <span class="tg-titlebar-actions">
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-          </span>
-        </div>
+      <div class="playground-main">
+        <div class="tg" id="tg">
+          <div class="tg-titlebar">
+            <span class="tl tl-r"></span><span class="tl tl-y"></span><span class="tl tl-g"></span>
+            <span class="tg-titlebar-title">Telegram — AutoType Live Experience</span>
+            <span class="tg-titlebar-actions">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+            </span>
+          </div>
 
-        <div class="tg-body">
-          <aside class="tg-sidebar">
-            <div class="tg-search">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-              Search
-            </div>
-            <div class="tg-chatlist">
-              <div class="tg-chat-item active">
-                <span class="avatar av-1">SM</span>
-                <div class="tg-chat-main">
-                  <div class="tg-chat-top"><span class="tg-chat-name">Sarah Miller</span><span class="tg-chat-time">10:42</span></div>
-                  <span class="tg-chat-last">گزارش فاز اول رو فرستادم، لطفاً بررسی کن</span>
-                </div>
-                <span class="tg-unread">۲</span>
+          <div class="tg-body">
+            <aside class="tg-sidebar">
+              <div class="tg-search">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                Search
               </div>
-              <div class="tg-chat-item">
-                <span class="avatar av-2">AT</span>
-                <div class="tg-chat-main">
-                  <div class="tg-chat-top"><span class="tg-chat-name">AutoType · Release</span><span class="tg-chat-time">09:15</span></div>
-                  <span class="tg-chat-last">v1.2.0 published to GitHub</span>
+              <div class="tg-chatlist">
+                <div class="tg-chat-item active">
+                  <span class="avatar av-1">SM</span>
+                  <div class="tg-chat-main">
+                    <div class="tg-chat-top"><span class="tg-chat-name">Sarah Miller</span><span class="tg-chat-time">10:42</span></div>
+                    <span class="tg-chat-last">گزارش فاز اول رو فرستادم، لطفاً بررسی کن</span>
+                  </div>
+                  <span class="tg-unread">۲</span>
+                </div>
+                <div class="tg-chat-item">
+                  <span class="avatar av-2">AT</span>
+                  <div class="tg-chat-main">
+                    <div class="tg-chat-top"><span class="tg-chat-name">AutoType · Release</span><span class="tg-chat-time">09:15</span></div>
+                    <span class="tg-chat-last">v1.2.0-beta published to GitHub</span>
+                  </div>
+                </div>
+                <div class="tg-chat-item">
+                  <span class="avatar av-3">MJ</span>
+                  <div class="tg-chat-main">
+                    <div class="tg-chat-top"><span class="tg-chat-name">مهدی جعفری</span><span class="tg-chat-time">دیروز</span></div>
+                    <span class="tg-chat-last">فایل رو فرستادم، یه نگاه بنداز</span>
+                  </div>
+                </div>
+                <div class="tg-chat-item">
+                  <span class="avatar av-4">DS</span>
+                  <div class="tg-chat-main">
+                    <div class="tg-chat-top"><span class="tg-chat-name">Design Team</span><span class="tg-chat-time">دیروز</span></div>
+                    <span class="tg-chat-last">لینک فیگما آماده‌ست</span>
+                  </div>
+                </div>
+                <div class="tg-chat-item">
+                  <span class="avatar av-5">TG</span>
+                  <div class="tg-chat-main">
+                    <div class="tg-chat-top"><span class="tg-chat-name">Telegram Farsi</span><span class="tg-chat-time">دیروز</span></div>
+                    <span class="tg-chat-last">۵ نفر آنلاین</span>
+                  </div>
                 </div>
               </div>
-              <div class="tg-chat-item">
-                <span class="avatar av-3">MJ</span>
-                <div class="tg-chat-main">
-                  <div class="tg-chat-top"><span class="tg-chat-name">مهدی جعفری</span><span class="tg-chat-time">دیروز</span></div>
-                  <span class="tg-chat-last">فایل رو فرستادم، یه نگاه بنداز</span>
-                </div>
+              <div class="tg-side-foot">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
+                <span>AutoType فعال — کیبورد همیشه انگلیسی</span>
               </div>
-              <div class="tg-chat-item">
-                <span class="avatar av-4">DS</span>
-                <div class="tg-chat-main">
-                  <div class="tg-chat-top"><span class="tg-chat-name">Design Team</span><span class="tg-chat-time">دیروز</span></div>
-                  <span class="tg-chat-last">لینک فیگما آماده‌ست</span>
-                </div>
-              </div>
-              <div class="tg-chat-item">
-                <span class="avatar av-5">TG</span>
-                <div class="tg-chat-main">
-                  <div class="tg-chat-top"><span class="tg-chat-name">Telegram Farsi</span><span class="tg-chat-time">دیروز</span></div>
-                  <span class="tg-chat-last">۵ نفر آنلاین</span>
-                </div>
-              </div>
-            </div>
-            <div class="tg-side-foot">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l2.5 2.5"/></svg>
-              <span>AutoType فعال — کیبورد همیشه انگلیسی</span>
-            </div>
-          </aside>
+            </aside>
 
-          <div class="tg-chat">
-            <header class="tg-chat-head">
-              <span class="avatar tg-head-avatar av-1">SM</span>
-              <div class="tg-head-meta">
-                <div class="tg-head-name">Sarah Miller</div>
-                <div class="tg-head-status">online</div>
-              </div>
-              <div class="tg-head-actions">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-              </div>
-            </header>
-
-            <div class="tg-messages" id="tgMessages"></div>
-            <div class="tg-notice" id="tgNotice"></div>
-
-            <!-- Live Keystrokes & Real-time Engine Explanation HUD -->
-            <div class="live-hud" id="liveHud">
-              <div class="live-hud-row">
-                <span class="live-hud-label">
-                  <span>کلیدهای تایپ‌شده توسط کاربر:</span>
-                  <span class="kb-pill">EN · QWERTY</span>
-                </span>
-                <div class="hud-keys" id="hudKeys">
-                  <span style="font-size:11.5px;color:var(--fg-3);direction:rtl">در انتظار تایپ…</span>
+            <div class="tg-chat">
+              <header class="tg-chat-head">
+                <span class="avatar tg-head-avatar av-1">SM</span>
+                <div class="tg-head-meta">
+                  <div class="tg-head-name">Sarah Miller</div>
+                  <div class="tg-head-status">online</div>
                 </div>
-                <div class="hud-word-map" id="hudWordMap" style="display:none">
-                  <span class="lat" id="hudRawWord"></span>
-                  <span class="arr">→</span>
-                  <span class="out" id="hudConvWord"></span>
+                <div class="tg-head-actions">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
                 </div>
-              </div>
-              <div class="hud-explain" id="hudExplain">
-                <span class="hud-badge" id="hudBadge">آماده</span>
-                <span id="hudText">شما با کیبورد انگلیسی تایپ می‌کنید؛ AutoType در لحظه کلمه را تشخیص داده و در کادر زیر می‌نویسد.</span>
-              </div>
-            </div>
+              </header>
 
-            <div class="tg-composer">
-              <button class="tg-ico" tabindex="-1" aria-label="پیوست">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 11.5l-8.4 8.4a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.7 1.7 0 01-2.4-2.4l7.8-7.8"/></svg>
-              </button>
-              <div class="tg-field" id="tgField">
-                <input type="text" class="tg-real-input" id="tgInput" placeholder="با کیبورد انگلیسی بنویسید… مثلاً sghl یا متن + ترجمه / عربی / ویرایش" autocomplete="off" spellcheck="false">
-              </div>
-              <div class="tg-send-wrap" id="tgSendWrap">
-                <button class="tg-ico tg-emoji" tabindex="-1" aria-label="شکلک">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 007 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+              <div class="tg-messages" id="tgMessages"></div>
+              <div class="tg-notice" id="tgNotice"></div>
+
+              <div class="tg-composer">
+                <button class="tg-ico" tabindex="-1" aria-label="پیوست">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><path d="M21 11.5l-8.4 8.4a5 5 0 01-7-7l8.5-8.5a3.3 3.3 0 014.7 4.7l-8.5 8.5a1.7 1.7 0 01-2.4-2.4l7.8-7.8"/></svg>
                 </button>
-                <button class="tg-send" id="tgSend" aria-label="ارسال">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2.5L11 13"/><path d="M21.5 2.5l-6.7 19-3.8-8.5L2.5 9.2z"/></svg>
-                </button>
+                <div class="tg-field" id="tgField">
+                  <input type="text" class="tg-real-input" id="tgInput" placeholder="با کیبورد انگلیسی بنویسید… مثلاً sghl یا متن + ترجمه / عربی / ویرایش" autocomplete="off" spellcheck="false">
+                </div>
+                <div class="tg-send-wrap" id="tgSendWrap">
+                  <button class="tg-ico tg-emoji" tabindex="-1" aria-label="شکلک">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M8.5 14.5a4.5 4.5 0 007 0"/><path d="M9 9.5h.01M15 9.5h.01"/></svg>
+                  </button>
+                  <button class="tg-send" id="tgSend" aria-label="ارسال">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2.5L11 13"/><path d="M21.5 2.5l-6.7 19-3.8-8.5L2.5 9.2z"/></svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+        </div>
+
+        <!-- Live Keystrokes & Real-time Engine Inspector (OUTSIDE Telegram) -->
+        <div class="live-hud-panel" id="liveHud">
+          <div class="hud-panel-head">
+            <div class="hud-panel-title">
+              <span class="hud-pulse-dot"></span>
+              <span>نوار تحلیل زندهٔ تصمیمات موتور AutoType</span>
+              <span class="hud-tag">راهنمای نمایشی</span>
+            </div>
+            <span class="hud-note">موتور این پردازش‌ها را بی‌صدا در پس‌زمینهٔ macOS انجام می‌دهد (بدون نمایش این کادر)</span>
+          </div>
+          <div class="live-hud-row">
+            <span class="live-hud-label">
+              <span>کلیدهای تایپ‌شده روی کیبورد:</span>
+              <span class="kb-pill">EN · QWERTY</span>
+            </span>
+            <div class="hud-keys" id="hudKeys">
+              <span style="font-size:11.5px;color:var(--fg-3);direction:rtl">در انتظار تایپ…</span>
+            </div>
+            <div class="hud-word-map" id="hudWordMap" style="display:none">
+              <span class="lat" id="hudRawWord"></span>
+              <span class="arr">→</span>
+              <span class="out" id="hudConvWord"></span>
+            </div>
+          </div>
+          <div class="hud-explain" id="hudExplain">
+            <span class="hud-badge" id="hudBadge">آماده</span>
+            <span id="hudText">شما با کیبورد انگلیسی تایپ می‌کنید؛ AutoType در لحظه کلمه را تشخیص داده و بدون باز شدن هیچ پنجره یا کادر اضافی می‌نویسد.</span>
+          </div>
+        </div>
+      </div>
         </div>
       </div>
     </div>
@@ -1020,17 +1142,25 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 <section class="section" id="install">
   <div class="shell">
     <div class="section-head">
-      <div class="eyebrow">نصب</div>
-      <h2>در سه قدم نصب کنید</h2>
-      <p>AutoType متن‌باز است و روی خود مک نصب می‌شود — بدون هیچ نصب‌کنندهٔ جداگانه.</p>
+      <div class="eyebrow">نصب · نسخهٔ آزمایشی (BETA)</div>
+      <h2>مراحل نصب و فعال‌سازی <span class="beta-badge" style="vertical-align:middle;margin-inline-start:8px">v1.2.0-beta</span></h2>
+      <p>AutoType متن‌باز است و روی خود مک نصب می‌شود — بدون هیچ نصب‌کنندهٔ جداگانه. توجه داشته باشید که این نسخه <b>آزمایشی (بتا)</b> است؛ در صورت مشاهدهٔ هرگونه خطا یا رفتار پیش‌بینی‌نشده، خوشحال می‌شویم آن را از طریق بخش Issues در گیت‌هاب گزارش دهید.</p>
     </div>
 
     <div class="install">
       <div>
         <ol>
-          <li><b>نصب:</b> اسکریپت، ورودی سیستم‌عامل و اپلیکیشن تنظیمات را می‌سازد و نصب می‌کند.</li>
-          <li><b>یک بار خارج و دوباره وارد شوید:</b> macOS فقط بعد از ورود مجدد، ورودی‌های جدید را می‌بیند.</li>
-          <li><b>فعال‌سازی:</b> در System Settings → Keyboard → Text Input → Edit… دکمهٔ <b>+</b> را بزنید و AutoType را اضافه کنید.</li>
+          <li><b>نصب با اسکریپت:</b> دستورات روبه‌رو را در ترمینال اجرا کنید تا ورودی سیستم‌عامل و اپلیکیشن تنظیمات کامپایل و نصب شوند.</li>
+          <li><b>لاگ‌اوت یا ریستارت مک:</b> از حساب کاربری مک لاگ‌اوت (Log Out) و دوباره لاگ‌این شوید یا مک را ریستارت (Restart) کنید. سیستم‌عامل macOS کیبوردهای ورودی جدید شخص ثالث را فقط بعد از ورود مجدد به حساب کاربری شناسایی می‌کند.</li>
+          <li><b>فعال‌سازی در تنظیمات مک:</b> وارد <b>System Settings → Keyboard → Text Input</b> شوید، روی دکمهٔ <b>Edit…</b> کلیک کنید، دکمهٔ <b>+</b> را بزنید و <b>AutoType</b> را اضافه کنید.</li>
+          <li><b>کجا دنبالش بگردید؟ (شروع استفاده):</b>
+            <div class="install-where">
+              <ul>
+                <li><b>منوی زبان کیبورد در نوار بالای مک (Menu Bar):</b> در بالای صفحه مک (کنار ساعت)، AutoType به لیست کیبوردهای شما اضافه شده است. با کلیک روی منوی زبان یا کلید میانبر <b>Control + Space</b> (یا کلید Globe 🌐 / Fn) آن را انتخاب کنید و با همان کیبورد انگلیسی تایپ کنید تا خودکار فارسی شود.</li>
+                <li><b>آیکون تنظیمات در نوار منو:</b> برنامهٔ <b>AutoType Settings</b> نیز با آیکون اختصاصی در نوار منوی بالای مک (کنار ساعت) و پوشهٔ Applications قرار می‌گیرد تا بتوانید وضعیت فعال بودن، دکشنری و تنظیمات را شخصی‌سازی کنید.</li>
+              </ul>
+            </div>
+          </li>
         </ol>
         <div style="margin-top:26px;padding-top:20px;border-top:1px solid var(--line);display:flex;align-items:center;gap:12px;flex-wrap:wrap">
           <span style="font-size:13px;color:var(--fg-3)">مخزن کد:</span>
@@ -1055,14 +1185,20 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
 <span class="cmt"># 2. build and install both apps</span>
 <span class="cmd">bash</span> Scripts/install.sh
 
-<span class="cmt"># 3. log out and back in, then:</span>
-<span class="cmt"># System Settings → Keyboard → Text Input → Edit… → + → AutoType</span></div>
+<span class="cmt"># 3. log out and log back in (or restart the Mac), then:</span>
+<span class="cmt"># System Settings → Keyboard → Text Input → Edit… → + → AutoType</span>
+
+<span class="cmt"># 4. switch via Menu Bar input menu (near clock) or Control + Space</span></div>
         </div>
         <button class="copy-btn" id="copyBtn">
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
           <span id="copyLabel">کپی دستور نصب</span>
         </button>
       </div>
+    </div>
+    <div class="origin-story" style="margin-top:36px">
+      <strong>💡 داستان شکل‌گیری و ایدهٔ اولیه:</strong>
+      جرقهٔ اولیهٔ این پروژه از <a href="https://diyar.digital/fa/" target="_blank" rel="noopener">دیار (Diyar)</a> زده شد؛ سر توییت معرفی آن وسوسه شدم این برنامه را برای مک بسازم. اما بعد از ساختنش، شکل پیاده‌سازی و کنترل‌هایی که روی ورودی سیستم‌عامل داشتم باعث شد کلی قابلیت کاربردی برای استفادهٔ خودم به آن اضافه کنم (مثل ترجمه و ویرایش درجا با Enter، تشخیص هوشمند اعداد در فرم‌ها و اصلاح جابه‌جایی حروف) — طوری که الان دیگر خودِ قابلیتِ «تایپ انگلیسی وسط متن فارسی» در مقابل بقیهٔ امکاناتش اصلاً به چشم نمی‌آید!
     </div>
   </div>
 </section>
@@ -1075,8 +1211,9 @@ footer{border-top:1px solid var(--line);padding:34px 0 44px}
     <a class="brand" href="#top">
       <span class="brand-mark"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><rect x="2.5" y="5.5" width="19" height="13" rx="2.5"/><path d="M6.5 9.5h.01M10 9.5h.01M13.5 9.5h.01M17 9.5h.01M8.5 13.5h7"/></svg></span>
       <span>AutoType for macOS</span>
+      <span class="beta-badge">BETA</span>
     </a>
-    <span class="sep">متن‌باز · بدون جمع‌آوری داده · macOS 14+</span>
+    <span class="sep">نسخهٔ آزمایشی (بتا) · متن‌باز · بدون جمع‌آوری داده · با الهام اولیه از <a href="https://diyar.digital/fa/" target="_blank" rel="noopener" style="color:var(--fg-2);border-bottom:1px dotted var(--line-2)">Diyar</a> · macOS 14+</span>
     <div class="right">
       <a class="repo-link" href="https://github.com/gdariushahmadi/autotype-mac" target="_blank" rel="noopener">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 00-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0019 6.08 5.07 5.07 0 0018.91 3S17.73 2.63 15 4.48a13.38 13.38 0 00-7 0C5.27 2.63 4.09 3 4.09 3A5.07 5.07 0 004 6.08a5.44 5.44 0 00-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 009 18.13V22"/></svg>
@@ -1791,15 +1928,23 @@ function toPersianDigits(s){ return String(s).replace(/\d/g,d=>FA_DIGITS[+d]); }
 
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]))}
 
+function isRtlText(str){
+  return /[\u0600-\u06FF\u0750-\u077F\u0590-\u05FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(str);
+}
+
 function addMsg(dir,text,opt={}){
   const el=document.createElement('div');
   el.className='tg-msg tg-msg--'+dir;
-  const isLtr = opt.ltr !== undefined ? opt.ltr : /^[\x00-\x7F\u00C0-\u024F\s.,!?:;\-—()0-9]*$/.test(text);
-  const ltr=isLtr?' ltr':'';
-  el.innerHTML='<div class="tg-bubble'+ltr+'">'+esc(text)+
-    '<span class="tg-time">10:42'+
-    (dir==='out'?'<svg class="tg-ticks" width="14" height="10" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.5l3.5 3.5L11 2"/><path d="M5.5 5.5l3.5 3.5L15 2"/></svg>':'')+
-    '</span></div>';
+  const isRtl = opt.ltr !== undefined ? !opt.ltr : isRtlText(text);
+  const dirCls = isRtl ? 'is-rtl' : 'is-ltr' + (opt.code ? ' code' : '');
+  const dirAttr = isRtl ? 'rtl' : 'ltr';
+  el.innerHTML='<div class="tg-bubble '+dirCls+'">'+
+    '<div class="tg-bubble-text" dir="'+dirAttr+'">'+esc(text)+'</div>'+
+    '<div class="tg-bubble-meta">'+
+      '<span class="tg-time">10:42</span>'+
+      (dir==='out'?'<svg class="tg-ticks" width="14" height="10" viewBox="0 0 16 11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M1 5.5l3.5 3.5L11 2"/><path d="M5.5 5.5l3.5 3.5L15 2"/></svg>':'')+
+    '</div>'+
+  '</div>';
   TG.msgs.appendChild(el);
   TG.msgs.scrollTop=TG.msgs.scrollHeight;
   return el;
@@ -2096,8 +2241,22 @@ function commitActiveWord(){
 function updateInputDirection(){
   const v=TG.input.value;
   TG.sendWrap.classList.toggle('sent',!!v.trim());
-  const isPureAscii=/^[\x00-\x7F\u00C0-\u024F\s]*$/.test(v)&&!!v.trim();
-  TG.input.classList.toggle('latin',isPureAscii);
+  const hasRtl=isRtlText(v);
+  if(hasRtl){
+    TG.input.classList.remove('latin');
+    TG.input.style.direction='rtl';
+    TG.input.style.textAlign='right';
+  } else {
+    const hasLatin=/[A-Za-z0-9]/.test(v);
+    TG.input.classList.toggle('latin',hasLatin);
+    if(hasLatin){
+      TG.input.style.direction='ltr';
+      TG.input.style.textAlign='left';
+    } else {
+      TG.input.style.direction='rtl';
+      TG.input.style.textAlign='right';
+    }
+  }
 }
 
 /* Direct user typing in the input box */
@@ -2272,6 +2431,8 @@ function resetComposerState(){
   forbiddenPending=null;
   TG.input.value='';
   TG.input.classList.remove('latin');
+  TG.input.style.direction='rtl';
+  TG.input.style.textAlign='right';
   TG.sendWrap.classList.remove('sent');
   TG.field.classList.remove('bad','good');
   lastWasPersian=false;
@@ -2289,20 +2450,20 @@ const SCENARIOS=[
     desc:'شروع فارسی یا انگلیسی + تغییر خودکار زبان در میانهٔ جمله بدون Cmd+Space.',
     incoming:'سلام! گزارش فاز اول رو فرستادم، بررسی کردی؟',
     steps:[
-      {type:'keys', keys:"sghl 'chva thc h,g Hlhnid hsj?", speed:68},
+      {type:'keys', keys:"sghl 'chva thc h,g Hlhni hsj.", speed:68},
       {type:'pause', ms:650},
       {type:'enter'},
       {type:'pause', ms:850},
       {type:'resetKeys'},
       {type:'explain', badge:'پیام دوم: شروع انگلیسی + سوییچ وسط جمله', text:'حالا بدون زدن Cmd+Space، جمله را انگلیسی شروع می‌کنیم و وسط همان جمله فارسی می‌نویسیم:', kind:'info'},
-      {type:'keys', keys:"Hello Sarah, thdgih vh fvvsi ;vnl", speed:68},
+      {type:'keys', keys:"Hello Sarah, thdgih vh fvvsd ;vnl", speed:68},
       {type:'pause', ms:700},
       {type:'enter'}
     ]
   },
   {
     name:'۲. اعداد هوشمند (فرم عددی و متن فارسی)',
-    desc:'در کادرهای عددی خودکار عدد انگلیسی (0912...) و در متن فارسی عدد فارسی (۱۲۳) تایپ می‌شود.',
+    desc:'ارقام انگلیسی در فیلدهای عددی و تبدیل خودکار به ارقام فارسی در متن.',
     incoming:'شماره تماس و ساعت جلسهٔ فردا رو برام می‌فرستی؟',
     steps:[
       {type:'explain', badge:'حالت اول: کادر عددی / ابتدای ورودی', text:'وقتی کادر خالی است یا در فیلد شماره/کد تأیید (OTP) هستید، اعداد خودکار انگلیسی تایپ می‌شوند:', kind:''},
@@ -2319,7 +2480,7 @@ const SCENARIOS=[
   },
   {
     name:'۳. تایپ ترکیبی فارسی و کدهای فنی',
-    desc:'کلمات تخصصی مثل React و TypeScript وسط جملهٔ فارسی دست‌نخورده می‌مانند.',
+    desc:'کلمات تخصصی مثل React و TypeScript وسط جمله دست‌نخورده می‌مانند.',
     incoming:'استک فنی پروژه جدید چی شد؟',
     steps:[
       {type:'keys', keys:"lh hc React , TypeScript hsjthni ld;kdl , iv itji release ldnidl", speed:62},
@@ -2329,31 +2490,31 @@ const SCENARIOS=[
   },
   {
     name:'۴. ترجمه درجا (انگلیسی، عربی، عبری، آلمانی)',
-    desc:'فقط کلیدواژهٔ زبان را در انتهای متن بنویسید و Enter بزنید تا درجا ترجمه شود.',
+    desc:'ترجمهٔ خودکار متن هنگام تایپ با پیشوندهای /en و /ar و /he و /de.',
     incoming:'میشه متن وضعیت گزارش رو به انگلیسی، عربی، عبری و آلمانی بفرستی؟',
     steps:[
-      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj jv[li", speed:58},
+      {type:'keys', keys:"'chva thc h,g Hlhni fvvsd hsj jv[li", speed:58},
       {type:'pause', ms:550},
       {type:'enter'},
       {type:'pause', ms:1150},
       {type:'enter'},
       {type:'pause', ms:650},
       {type:'resetKeys'},
-      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj uvfd", speed:58},
+      {type:'keys', keys:"'chva thc h,g Hlhni fvvsd hsj uvfd", speed:58},
       {type:'pause', ms:550},
       {type:'enter'},
       {type:'pause', ms:1150},
       {type:'enter'},
       {type:'pause', ms:650},
       {type:'resetKeys'},
-      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj ufvd", speed:58},
+      {type:'keys', keys:"'chva thc h,g Hlhni fvvsd hsj ufvd", speed:58},
       {type:'pause', ms:550},
       {type:'enter'},
       {type:'pause', ms:1150},
       {type:'enter'},
       {type:'pause', ms:650},
       {type:'resetKeys'},
-      {type:'keys', keys:"'chva thc h,g Hlhnid fvvsi hsj Hglhkd", speed:58},
+      {type:'keys', keys:"'chva thc h,g Hlhni fvvsd hsj Hglhkd", speed:58},
       {type:'pause', ms:550},
       {type:'enter'},
       {type:'pause', ms:1150},
@@ -2362,7 +2523,7 @@ const SCENARIOS=[
   },
   {
     name:'۵. ویرایش نگارشی و لحن رسمی با کلیدواژه',
-    desc:'کلیدواژهٔ «ویرایش» یا «رسمی» + Enter اول = بازنویسی درجا در کادر.',
+    desc:'کلیدواژهٔ «ویرایش» یا «رسمی» + کلید Enter = بازنویسی درجا در کادر.',
     incoming:'متن اعلامیه و ایمیل اداری رو آماده کردی؟',
     steps:[
       {type:'PresetText', raw:'hdk mv,Cu fh l,tydj hk[gl an , tugk hlhni hsj ,dvhda', display:'این پروژع با موفغیت انجلم شد و فعلن اماده است ویرایش', badge:'تایپ پیام + کلیدواژهٔ «ویرایش»', explain:'کاربر متن دارای غلط املایی را به همراه کلیدواژهٔ <b>«ویرایش»</b> در انتهای خط تایپ می‌کند:'},
@@ -2431,7 +2592,13 @@ function runScenario(i){
   clearTimeout(scenarioTimer);
   clearTimeout(autoPlayTimer);
   isAutoTyping=true;
-  [...scenarioList.children].forEach((el,k)=>el.classList.toggle('active',k===i));
+  [...scenarioList.children].forEach((el,k)=>{
+    const active=k===i;
+    el.classList.toggle('active',active);
+    if(active && typeof el.scrollIntoView==='function'){
+      el.scrollIntoView({block:'nearest',behavior:'smooth'});
+    }
+  });
   TG.msgs.innerHTML='';
   resetComposerState();
   resetHudKeys();

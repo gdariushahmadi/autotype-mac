@@ -4,6 +4,7 @@ import AutoTypeCore
 /// The parts AutoType is divided into, one per row in the sidebar.
 enum SettingsSection: String, CaseIterable, Identifiable {
     case general
+    case apps
     case dictionary
     case translation
     case about
@@ -13,6 +14,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     var title: String {
         switch self {
         case .general: return "General"
+        case .apps: return "Excluded Apps"
         case .dictionary: return "Dictionary"
         case .translation: return "AI Actions & Translation"
         case .about: return "About"
@@ -22,6 +24,7 @@ enum SettingsSection: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .general: return "gearshape"
+        case .apps: return "app.badge.xmark"
         case .dictionary: return "text.book.closed"
         case .translation: return "sparkles"
         case .about: return "info.circle"
@@ -73,6 +76,8 @@ struct SettingsView: View {
             switch section {
             case .general:
                 GeneralSettingsView()
+            case .apps:
+                ExcludedAppsSettingsView()
             case .dictionary:
                 DictionarySettingsView()
             case .translation:

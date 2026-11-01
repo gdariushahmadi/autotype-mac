@@ -13,7 +13,7 @@ extension Controller {
         let settings = makeEngine().settings
 
         // A quiet header, so the menu says what it belongs to.
-        let header = NSMenuItem(title: "AutoType \(Self.version)", action: nil, keyEquivalent: "")
+        let header = NSMenuItem(title: "AutoType \(Self.version) · Beta", action: nil, keyEquivalent: "")
         header.isEnabled = false
         menu.addItem(header)
 
@@ -102,7 +102,7 @@ extension Controller {
     /// The version shown in the header of the menu.
     static var version: String {
         let bundle = Bundle.main
-        let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.2.0-beta"
         let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
         return "\(short) (\(build))"
     }

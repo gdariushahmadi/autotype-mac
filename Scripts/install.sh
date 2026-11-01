@@ -104,10 +104,14 @@ echo "==> Checking the input method"
 
 cat <<'MESSAGE'
 
-AutoType is installed.
+AutoType (Beta / نسخهٔ آزمایشی) is installed.
 
   Input method:  ~/Library/Input Methods/AutoType.app
   Settings app:  ~/Applications/AutoType Settings.app
+
+Note: This is a Beta release. Please keep an eye on conversions in critical
+forms or apps, and use "Excluded Apps" in AutoType Settings for apps where you
+always want plain English.
 
 Two steps are left:
 
@@ -116,6 +120,11 @@ Two steps are left:
 
   2. Open System Settings › Keyboard › Text Input › Edit…, press + and add
      AutoType.
+
+Where to find it after activation:
+  - Input Method: In the Menu Bar input menu (top right near the clock),
+    or switch to it with Control + Space.
+  - Settings App: In the Menu Bar (icon) and ~/Applications/AutoType Settings.app.
 
 The settings app in the menu bar tells you when step 2 is done.
 MESSAGE

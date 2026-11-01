@@ -23,5 +23,8 @@ _Users_*.lock
 # Build caches & local scratch
 .cache/
 Scripts/.cache/
+node_modules/
 *.swp
 *~
+*.mp4
+*.webm

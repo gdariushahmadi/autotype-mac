@@ -20,6 +20,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
     public var showPreview: Bool = false
     /// Lock the rest of the sentence/line to the language detected on the first word.
     public var lockLanguageFromSentenceStart: Bool = true
+    /// Automatically detect and fix transposed (swapped) characters when typing fast in Persian and English.
+    public var fixTransposedCharacters: Bool = true
     /// Prevent accidental Enter dispatch if suspicious typos, broken words or grammar issues are detected.
     public var interceptSuspiciousEnter: Bool = true
     /// Prevent accidental Enter dispatch if sentence contains forbidden words.
@@ -28,6 +30,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
     public var forbiddenWordsAction: ForbiddenWordsAction = .requireConfirmation
     /// Automatic AI translation on Enter.
     public var translation: TranslationSettings = TranslationSettings()
+    /// Bundle identifiers of applications where AutoType is disabled and passes all keys through.
+    public var disabledApps: [String] = []
 
     public init() {}
 
@@ -47,10 +51,12 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         convertSelection = try container.decodeIfPresent(Bool.self, forKey: .convertSelection) ?? true
         showPreview = try container.decodeIfPresent(Bool.self, forKey: .showPreview) ?? false
         lockLanguageFromSentenceStart = try container.decodeIfPresent(Bool.self, forKey: .lockLanguageFromSentenceStart) ?? true
+        fixTransposedCharacters = try container.decodeIfPresent(Bool.self, forKey: .fixTransposedCharacters) ?? true
         interceptSuspiciousEnter = try container.decodeIfPresent(Bool.self, forKey: .interceptSuspiciousEnter) ?? true
         checkForForbiddenWords = try container.decodeIfPresent(Bool.self, forKey: .checkForForbiddenWords) ?? true
         forbiddenWordsAction = try container.decodeIfPresent(ForbiddenWordsAction.self, forKey: .forbiddenWordsAction) ?? .requireConfirmation
         translation = try container.decodeIfPresent(TranslationSettings.self, forKey: .translation) ?? TranslationSettings()
+        disabledApps = try container.decodeIfPresent([String].self, forKey: .disabledApps) ?? []
     }
 
     public init(
@@ -63,10 +69,12 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         convertSelection: Bool = true,
         showPreview: Bool = false,
         lockLanguageFromSentenceStart: Bool = true,
+        fixTransposedCharacters: Bool = true,
         interceptSuspiciousEnter: Bool = true,
         checkForForbiddenWords: Bool = true,
         forbiddenWordsAction: ForbiddenWordsAction = .requireConfirmation,
-        translation: TranslationSettings = TranslationSettings()
+        translation: TranslationSettings = TranslationSettings(),
+        disabledApps: [String] = []
     ) {
         self.isEnabled = isEnabled
         self.mode = mode
@@ -77,10 +85,19 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         self.convertSelection = convertSelection
         self.showPreview = showPreview
         self.lockLanguageFromSentenceStart = lockLanguageFromSentenceStart
+        self.fixTransposedCharacters = fixTransposedCharacters
         self.interceptSuspiciousEnter = interceptSuspiciousEnter
         self.checkForForbiddenWords = checkForForbiddenWords
         self.forbiddenWordsAction = forbiddenWordsAction
         self.translation = translation
+        self.disabledApps = disabledApps
+    }
+
+    /// `true` when the application with the given bundle identifier is in the disabled apps list.
+    public func isAppDisabled(bundleID: String?) -> Bool {
+        guard let bundleID, !bundleID.isEmpty else { return false }
+        let lower = bundleID.lowercased()
+        return disabledApps.contains { $0.lowercased() == lower }
     }
 }
 

@@ -401,4 +401,103 @@ struct ConversionEngineTests {
         #expect(PersianText.persianPunctuationMark(for: "%") == "٪")
         #expect(PersianText.persianPunctuationMark(for: "a") == nil)
     }
+
+    // MARK: - Hyphenated words, slugs, and English context
+
+    @Test("Hyphenated English slugs and kebab-case identifiers are preserved untouched")
+    func hyphenatedEnglishSlugs() throws {
+        let engine = try makeEngine()
+        #expect(convert("shakiba-academy-beauty", engine: engine) == "shakiba-academy-beauty")
+        #expect(convert("user-profile-widget", engine: engine) == "user-profile-widget")
+        #expect(convert("auto-type-mac", engine: engine) == "auto-type-mac")
+        #expect(convert("--dry-run", engine: engine) == "--dry-run")
+    }
+
+    @Test("Hyphenated Persian words are converted properly")
+    func hyphenatedPersianWords() throws {
+        let engine = try makeEngine()
+        #expect(convert("sghl-sghl", engine: engine) == "سلام-سلام")
+        #expect(convert("sghl-]xhvd", engine: engine) == "سلام-چطوری")
+    }
+
+    @Test("Inside an English sentence, unknown names and typos stay English")
+    func englishContextKeepsUnknownWords() throws {
+        let engine = try makeEngine()
+        let englishCtx = ConversionContext(previousWasPersian: false, sentenceLanguage: .english)
+        #expect(convert("shakiba", context: englishCtx, engine: engine) == "shakiba")
+        #expect(convert("beayty", context: englishCtx, engine: engine) == "beayty")
+        #expect(convert("macbook", context: englishCtx, engine: engine) == "macbook")
+
+        // But genuine Persian words still convert inside English sentences
+        #expect(convert("sghl", context: englishCtx, engine: engine) == "سلام")
+    }
+
+    // MARK: - Transposed Character Auto-Correction
+
+    @Test("Transposed Persian words typed on Latin keys or directly in Persian are corrected")
+    func transposedPersianWords() throws {
+        let engine = try makeEngine()
+
+        // Latin keystrokes with transposed letters
+        #expect(convert("hkg'ds", engine: engine) == "انگلیس")       // انلگیس -> انگلیس
+        #expect(convert("hkg'dsd", engine: engine) == "انگلیسی")     // انلگیسی -> انگلیسی
+        #expect(convert("fvklhi", engine: engine) == "برنامه")       // برنماه -> برنامه
+        #expect(convert("tvhsd", engine: engine) == "فارسی")         // فراسی -> فارسی
+        #expect(convert("sdjsl", engine: engine) == "سیستم")         // سیتسم -> سیستم
+        #expect(convert("l,tdrj", engine: engine) == "موفقیت")       // موفیقت -> موفقیت
+        #expect(convert("l;ag", engine: engine) == "مشکل")           // مکشل -> مشکل
+        #expect(convert("]xv,d", engine: engine) == "چطوری")         // چطروی -> چطوری
+        #expect(convert("gshl", engine: engine) == "سلام")           // لسام -> سلام
+        #expect(convert(";jfh", engine: engine) == "کتاب")           // کتبا -> کتاب
+
+        // Direct Persian Unicode tokens with transposed letters
+        #expect(convert("انلگیس", engine: engine) == "انگلیس")
+        #expect(convert("انلگیسی", engine: engine) == "انگلیسی")
+        #expect(convert("برنماه", engine: engine) == "برنامه")
+        #expect(convert("فراسی", engine: engine) == "فارسی")
+        #expect(convert("مکشل", engine: engine) == "مشکل")
+
+        // Clitic forms with transposed stem
+        #expect(convert("fvklhiih", engine: engine) == "برنامه\u{200C}ها") // برنامه‌ها
+    }
+
+    @Test("Valid Persian words that are anagrams of other words are never altered")
+    func validPersianWordsNotAlteredByTransposition() throws {
+        let engine = try makeEngine()
+        #expect(convert("shgl", engine: engine) == "سالم")
+        #expect(convert(";hjf", engine: engine) == "کاتب")
+        #expect(convert("l[gi", engine: engine) == "مجله")
+    }
+
+    @Test("Transposed English words are corrected and preserve case")
+    func transposedEnglishWords() throws {
+        let engine = try makeEngine()
+        #expect(convert("teh", engine: engine) == "the")
+        #expect(convert("Teh", engine: engine) == "The")
+        #expect(convert("TEH", engine: engine) == "THE")
+        #expect(convert("Hte", engine: engine) == "The")
+        #expect(convert("adn", engine: engine) == "and")
+        #expect(convert("taht", engine: engine) == "that")
+        #expect(convert("wiht", engine: engine) == "with")
+        #expect(convert("recieve", engine: engine) == "receive")
+        #expect(convert("freind", engine: engine) == "friend")
+        #expect(convert("wierd", engine: engine) == "weird")
+        #expect(convert("becuase", engine: engine) == "because")
+        #expect(convert("enlgish", engine: engine) == "english")
+
+        // Valid English words like "from" and "form" stay untouched
+        #expect(convert("from", engine: engine) == "from")
+        #expect(convert("form", engine: engine) == "form")
+    }
+
+    @Test("Disabling fixTransposedCharacters turns off transposition auto-correction")
+    func transpositionToggleCanBeDisabled() throws {
+        var settings = ConversionSettings()
+        settings.fixTransposedCharacters = false
+        let engine = try makeEngine(settings: settings)
+
+        #expect(convert("انلگیس", engine: engine) == "انلگیس")
+        #expect(convert("hkg'ds", engine: engine) == "انلگیس")
+        #expect(convert("برنماه", engine: engine) == "برنماه")
+    }
 }

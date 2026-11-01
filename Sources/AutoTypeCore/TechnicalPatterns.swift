@@ -100,6 +100,7 @@ public enum TechnicalPatterns {
         if token.contains("_") { return true }
         if token.contains("()") { return true }
         if token.hasSuffix("()") { return true }
+        if isKebabCase(token) { return true }
         // camelCase / PascalCase: an uppercase letter after the first character.
         if token.count > 1 {
             let characters = Array(token)
@@ -108,6 +109,18 @@ public enum TechnicalPatterns {
             }
         }
         return false
+    }
+
+    /// `true` when the token is a kebab-case identifier, slug or CLI flag (e.g. `shakiba-academy-beauty`, `my-app`, `--flag`).
+    public static func isKebabCase(_ token: String) -> Bool {
+        guard token.contains("-") else { return false }
+        guard !token.contains("\u{200C}") else { return false }
+        if token.hasPrefix("-") && token.count >= 2 { return true }
+        let parts = token.split(separator: "-", omittingEmptySubsequences: false)
+        guard parts.count >= 2 else { return false }
+        return parts.allSatisfy { part in
+            !part.isEmpty && part.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber) }
+        }
     }
 
     public static func isAcronym(_ token: String) -> Bool {

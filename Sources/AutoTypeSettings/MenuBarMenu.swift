@@ -17,7 +17,7 @@ struct MenuBarMenu: View {
     var body: some View {
         // The state of AutoType, shown as a heading. A disabled item is
         // the way a menu says “this is a label, not a button”.
-        Button("AutoType — \(status)") { }
+        Button("AutoType (Beta) — \(status)") { }
             .disabled(true)
 
         Divider()

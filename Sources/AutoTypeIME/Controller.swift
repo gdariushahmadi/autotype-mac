@@ -194,6 +194,16 @@ final class Controller: IMKInputController {
     ) -> Bool {
         logDebug("handleKeyInput: keyCode=\(keyCode), chars=\(characters ?? ""), flags=\(modifierFlags.rawValue), buf=\(buffer)")
 
+        // If the active application is in the excluded/disabled list, stand down completely
+        let currentAppID = currentAppBundleIdentifier(client: client)
+        let settings = makeEngine().settings
+        if settings.isAppDisabled(bundleID: currentAppID) {
+            if !buffer.isEmpty {
+                flushBuffer(client: client)
+            }
+            return false
+        }
+
         // Handle readyToSend state for non-Return/non-Escape keys:
         // if user types any character, backspaces, etc., reset translation state so they can edit.
         if case .readyToSend = translationState {
@@ -229,6 +239,8 @@ final class Controller: IMKInputController {
         case 48:  // Tab
             if !buffer.isEmpty {
                 flushBuffer(client: client)
+            } else {
+                fixLastDirectPersianWordIfNeeded(client: client)
             }
             sessionLineBuffer.append("\t")
             return false
@@ -247,6 +259,8 @@ final class Controller: IMKInputController {
             }
             if !buffer.isEmpty {
                 flushBuffer(client: client)
+            } else {
+                fixLastDirectPersianWordIfNeeded(client: client)
             }
             sessionLineBuffer.append(" ")
             return false
@@ -268,7 +282,11 @@ final class Controller: IMKInputController {
                 return false
             }
             if firstChar == "\t" {
-                if !buffer.isEmpty { flushBuffer(client: client) }
+                if !buffer.isEmpty {
+                    flushBuffer(client: client)
+                } else {
+                    fixLastDirectPersianWordIfNeeded(client: client)
+                }
                 sessionLineBuffer.append("\t")
                 return false
             }
@@ -286,6 +304,8 @@ final class Controller: IMKInputController {
                 }
                 if !buffer.isEmpty {
                     flushBuffer(client: client)
+                } else {
+                    fixLastDirectPersianWordIfNeeded(client: client)
                 }
                 sessionLineBuffer.append(" ")
                 return false
@@ -294,7 +314,6 @@ final class Controller: IMKInputController {
 
         guard !isPaused else { return false }
 
-        let settings = makeEngine().settings
         guard settings.isEnabled else {
             if !buffer.isEmpty {
                 flushBuffer(client: client)
@@ -352,6 +371,7 @@ final class Controller: IMKInputController {
                 flushBuffer(client: client)
             }
             if character.isNumber {
+                fixLastDirectPersianWordIfNeeded(client: client)
                 return handleDigitInput(character, client: client)
             }
             if let letter = PersianLayout.convert(character) {
@@ -359,6 +379,7 @@ final class Controller: IMKInputController {
                 sessionLineBuffer.append(letter)
                 return true
             }
+            fixLastDirectPersianWordIfNeeded(client: client)
             return false
         }
 
@@ -382,6 +403,8 @@ final class Controller: IMKInputController {
         // literally.
         if !buffer.isEmpty {
             flushBuffer(client: client)
+        } else {
+            fixLastDirectPersianWordIfNeeded(client: client)
         }
 
         // When the text around the caret is Persian, the punctuation that
@@ -447,14 +470,22 @@ final class Controller: IMKInputController {
         return true
     }
 
+    private func currentAppBundleIdentifier(client: IMKTextInput) -> String? {
+        if let id = client.bundleIdentifier(), !id.isEmpty {
+            return id
+        }
+        return NSWorkspace.shared.frontmostApplication?.bundleIdentifier
+    }
+
     /// Characters that may be part of a word.
     ///
     /// The Persian-only keys (`[ ] ; ' ,`) are included because they carry the
-    /// Persian letters `ج چ ک گ و`.
+    /// Persian letters `ج چ ک گ و`. Hyphens (`-`) are included for kebab-case/slugs.
     private func isWordCharacter(_ character: Character) -> Bool {
         if character.isLetter { return true }
         if PersianLayout.persianOnlyKeys.contains(character) { return true }
         if character == "\u{200C}" { return true }
+        if character == "-" { return true }
         return false
     }
 
@@ -589,6 +620,44 @@ final class Controller: IMKInputController {
         }
     }
 
+    /// In direct Persian mode (or when Persian characters were inserted directly),
+    /// checks if the word immediately before the boundary has transposed characters and fixes it.
+    private func fixLastDirectPersianWordIfNeeded(client: IMKTextInput?) {
+        guard !isPaused else { return }
+        let engine = makeEngine()
+        let settings = engine.settings
+        guard settings.isEnabled, settings.fixTransposedCharacters else { return }
+        guard let client else { return }
+
+        // Extract trailing Persian letters from sessionLineBuffer
+        var wordStart = sessionLineBuffer.endIndex
+        while wordStart > sessionLineBuffer.startIndex {
+            let prev = sessionLineBuffer.index(before: wordStart)
+            let ch = sessionLineBuffer[prev]
+            if PersianLayout.isPersianUnicode(ch) {
+                wordStart = prev
+            } else {
+                break
+            }
+        }
+
+        let lastWord = String(sessionLineBuffer[wordStart...])
+        guard lastWord.count >= 3,
+              let corrected = engine.transposedPersianWord(for: lastWord),
+              corrected != lastWord else {
+            return
+        }
+
+        let caret = client.selectedRange().location
+        let oldNSLen = (lastWord as NSString).length
+        guard caret != NSNotFound, caret >= oldNSLen else { return }
+        let replaceRange = NSRange(location: caret - oldNSLen, length: oldNSLen)
+        if let existing = client.attributedSubstring(from: replaceRange)?.string, existing == lastWord {
+            client.insertText(corrected, replacementRange: replaceRange)
+            sessionLineBuffer.replaceSubrange(wordStart..., with: corrected)
+        }
+    }
+
     /// Rewrites the punctuation that trails a word, leaving the word itself
     /// alone.
     private func persianPunctuation(inSuffix text: String) -> String {
@@ -632,6 +701,8 @@ final class Controller: IMKInputController {
 
         if !buffer.isEmpty {
             flushBuffer(client: client)
+        } else {
+            fixLastDirectPersianWordIfNeeded(client: client)
         }
 
         let lineText = extractCurrentLineText(client: client)

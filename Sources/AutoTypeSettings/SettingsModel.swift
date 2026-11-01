@@ -77,4 +77,20 @@ final class SettingsModel: ObservableObject {
     func removeForbiddenWord(_ word: String) {
         dictionary.forbiddenWords.removeAll { $0 == word }
     }
+
+    // MARK: - Excluded Apps
+
+    func addDisabledApp(_ bundleID: String) {
+        let trimmed = bundleID.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let lower = trimmed.lowercased()
+        guard !settings.disabledApps.contains(where: { $0.lowercased() == lower }) else { return }
+        settings.disabledApps.append(trimmed)
+        settings.disabledApps.sort()
+    }
+
+    func removeDisabledApp(_ bundleID: String) {
+        let lower = bundleID.lowercased()
+        settings.disabledApps.removeAll { $0.lowercased() == lower }
+    }
 }

@@ -18,6 +18,33 @@ struct GeneralSettingsView: View {
             }
 
             Section {
+                HStack(alignment: .top, spacing: 10) {
+                    Image(systemName: "flask.fill")
+                        .foregroundStyle(.orange)
+                        .font(.system(size: 14, weight: .semibold))
+                        .padding(.top, 2)
+                    VStack(alignment: .leading, spacing: 2) {
+                        HStack(spacing: 6) {
+                            Text("Beta Version (نسخهٔ آزمایشی بتا)")
+                                .font(.subheadline)
+                                .fontWeight(.semibold)
+                            Text("BETA")
+                                .font(.system(size: 9, weight: .bold, design: .monospaced))
+                                .foregroundStyle(.orange)
+                                .padding(.horizontal, 5)
+                                .padding(.vertical, 1)
+                                .background(Color.orange.opacity(0.15), in: Capsule())
+                        }
+                        Text("This version is in active beta testing. Please keep an eye on conversions; you can exclude specific apps in Excluded Apps or hold Right ⌘ anytime for plain English.")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+
+            Section {
                 Toggle("Convert Persian words automatically", isOn: $model.settings.isEnabled)
                     .toggleStyle(.switch)
             } header: {
@@ -88,6 +115,15 @@ struct GeneralSettingsView: View {
                     Text("Persian text")
                 } footer: {
                     InlineHelp("When starting or in English, numbers are typed as 123. Inside Persian text, numbers match the language (۱۲۳).")
+                }
+
+                Section {
+                    Toggle("Fix transposed characters automatically (اصلاح جابجایی حروف)",
+                           isOn: $model.settings.fixTransposedCharacters)
+                } header: {
+                    Text("Smart Typo Correction (اصلاح هوشمند جابجایی حروف)")
+                } footer: {
+                    InlineHelp("Automatically detects and fixes accidentally swapped characters when typing fast in Persian and English (e.g. «انلگیسی» → «انگلیسی», «برنماه» → «برنامه», «teh» → «the», «recieve» → «receive»).")
                 }
 
                 Section {

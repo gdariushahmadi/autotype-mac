@@ -1,12 +1,15 @@
-# AutoType
+# AutoType `BETA`
 
 <div dir="rtl">
+
+> ⚠️ **توجه (نسخهٔ آزمایشی / Beta):**
+> این پروژه در حال حاضر در مرحلهٔ **بتا (Beta)** قرار دارد و به‌طور مستمر در حال بهینه‌سازی است. اگر در برنامه‌ای خاص یا روی برخی کلمات با تشخیص ناخواسته روبه‌رو شدید، می‌توانید با نگه‌داشتن کلید `⌘ راست` مستقیم انگلیسی بنویسید، با `Backspace` تبدیل آخرین کلمه را برگردانید، یا برنامه‌های مورد نظر (مانند ترمینال و محیط‌های کدنویسی) را در بخش **Excluded Apps** تنظیمات مستثنی کنید. لطفاً هرگونه باگ یا پیشنهاد را در بخش Issues گزارش دهید.
 
 **ورودی فارسی بدون عوض کردن چیدمان صفحه‌کلید.**
 
 روی مک، برای نوشتن فارسی معمولاً باید چیدمان صفحه‌کلید را بین انگلیسی و فارسی عوض کنید.
 AutoType این کار را حذف می‌کند: شما همیشه با چیدمان انگلیسی تایپ می‌کنید و هر کلمه‌ای که
-فارسی باشد، خودکار به فارسی تبدیل می‌شود — دقیقاً مثل Diyar روی ویندوز.
+فارسی باشد، خودکار به فارسی تبدیل می‌شود — با الهام اولیه از [Diyar](https://diyar.digital/fa/).
 
 - `sghl` → **سلام**
 - `;jhf` → **کتاب**
@@ -15,6 +18,8 @@ AutoType این کار را حذف می‌کند: شما همیشه با چید�
 - `test@example.com` → **test@example.com**
 
 </div>
+
+> **Note (Beta Release):** AutoType is currently in **Beta**. While it is tested and ready for daily use, you may occasionally encounter edge cases in certain apps or words. You can hold the Right `⌘` key to type plain English, press `Backspace` to undo a conversion, or exclude specific apps (such as terminals and IDEs) in **Excluded Apps** inside AutoType Settings.
 
 ---
 
@@ -58,10 +63,12 @@ The script installs:
 
 macOS only notices a **new** input method after you log out and back in, so:
 
-1. **Log out and log in again** (or restart the Mac).
+1. **Log out and log in again** (or restart the Mac). macOS scans `~/Library/Input Methods` when the user session starts.
 2. Open **System Settings → Keyboard → Text Input → Edit…**.
 3. Press **+**, choose **AutoType** and add it.
-4. Switch to it with **Control + Space** (or the globe key).
+4. **Where to find it & start typing:**
+   - **Input source:** AutoType appears in the macOS **Menu Bar input menu** (top right near the clock). Switch to it using **Control + Space** (or the globe key 🌐 / `Fn`). Now type on the English layout and Persian words will convert automatically.
+   - **Settings:** The companion app **AutoType Settings** sits in your macOS menu bar and `~/Applications/` to let you configure the dictionary, modifier keys, and AI features.
 
 The settings app shows whether this has been done yet, and has a button that opens the
 right settings pane for you.
@@ -252,8 +259,19 @@ All self test checks passed.
 
 AutoType is a Persian input method for macOS that never asks you to switch keyboard
 layouts. You keep typing on the US layout; words that are Persian are converted
-automatically, while English words, technical strings and numbers are left alone. It is
-the macOS counterpart of Diyar (Iranux), built on InputMethodKit.
+automatically, while English words, technical strings and numbers are left alone.
+
+The initial idea was inspired by [Diyar](https://diyar.digital/fa/) on Windows; once built natively on macOS `InputMethodKit`, having direct control over the input pipeline opened the door to many more daily utilities — including in-place AI translation and proofreading on Return, context-aware smart numerals, automatic character transposition correction, sensitive-word shields, and per-app exclusions.
 
 Install it with `bash Scripts/install.sh`, log out and back in once so macOS notices the
 new input method, then add **AutoType** under *System Settings → Keyboard → Text Input*.
+
+<div dir="rtl">
+
+---
+
+### 💡 داستان شکل‌گیری و ایدهٔ اولیه
+
+جرقهٔ اولیهٔ این پروژه از برنامهٔ **[دیار (Diyar)](https://diyar.digital/fa/)** و توییت معرفی آن زده شد؛ سر همان توییت وسوسه شدم این برنامه را برای مک بسازم. بعد از ساختنش، شکل پیاده‌سازی و کنترل‌هایی که روی ورودی سیستم‌عامل داشتم باعث شد کلی قابلیت کاربردی برای استفادهٔ خودم به آن اضافه کنم (مثل ترجمه و ویرایش نگارشی درجا با `Enter`، اعداد هوشمند در فرم‌ها، اصلاح جابه‌جایی حروف، و سپر کلمات حساس) — طوری که الان دیگر خودِ قابلیتِ «وسط متن انگلیسی نوشتن» در مقابل بقیهٔ امکاناتش اصلاً به چشم نمی‌آید!
+
+</div>

@@ -3,7 +3,33 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>AutoType — تیزر</title>
+<title>AutoType — تیزر ۵۸ ثانیه‌ای ورودی هوشمند فارسی برای macOS</title>
+<meta name="description" content="تیزر تعاملی AutoType برای macOS: تایپ فارسی روی چیدمان انگلیسی بدون Cmd+Space، تشخیص خودکار کد و اصطلاحات فنی، نیم‌فاصلهٔ دقیق و ترجمه/ویرایش درجا با Enter.">
+<meta name="theme-color" content="#05060a">
+<link rel="canonical" href="https://gdariushahmadi.github.io/autotype-mac/teaser.html">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b0e14' stroke='%233f9fd8' stroke-width='1.5'/%3E%3Crect x='5' y='9' width='22' height='14' rx='3' fill='none' stroke='%237cc0e8' stroke-width='2'/%3E%3Cpath d='M9.5 13.5h.01M14 13.5h.01M18 13.5h.01M22.5 13.5h.01M11.5 18.5h9' stroke='%235cb894' stroke-width='2.2' stroke-linecap='round'/%3E%3C/svg%3E">
+
+<!-- Open Graph / Social Preview -->
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AutoType for macOS">
+<meta property="og:locale" content="fa_IR">
+<meta property="og:url" content="https://gdariushahmadi.github.io/autotype-mac/teaser.html">
+<meta property="og:title" content="AutoType — تیزر ورودی هوشمند فارسی برای macOS بدون تعویض کیبورد">
+<meta property="og:description" content="در ۵۸ ثانیه ببینید چطور AutoType بدون عوض کردن چیدمان کیبورد، فارسی و انگلیسی را خودکار تشخیص می‌دهد، نیم‌فاصله می‌گذارد و با یک Enter درجا ترجمه و ویرایش می‌کند.">
+<meta property="og:image" content="https://gdariushahmadi.github.io/autotype-mac/og-preview.png">
+<meta property="og:image:secure_url" content="https://gdariushahmadi.github.io/autotype-mac/og-preview.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="2400">
+<meta property="og:image:height" content="1260">
+<meta property="og:image:alt" content="AutoType — ورودی هوشمند فارسی برای macOS بدون نیاز به تعویض چیدمان کیبورد">
+
+<!-- X (Twitter) Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:url" content="https://gdariushahmadi.github.io/autotype-mac/teaser.html">
+<meta name="twitter:title" content="AutoType — تیزر ورودی هوشمند فارسی برای macOS بدون تعویض کیبورد">
+<meta name="twitter:description" content="در ۵۸ ثانیه ببینید چطور AutoType بدون عوض کردن چیدمان کیبورد، فارسی و انگلیسی را خودکار تشخیص می‌دهد، نیم‌فاصله می‌گذارد و با یک Enter درجا ترجمه و ویرایش می‌کند.">
+<meta name="twitter:image" content="https://gdariushahmadi.github.io/autotype-mac/og-preview.png">
+<meta name="twitter:image:alt" content="AutoType — ورودی هوشمند فارسی برای macOS بدون نیاز به تعویض چیدمان کیبورد">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
@@ -1638,12 +1664,21 @@ const AutoType = (function () {
 
 AutoType.buildLexicon(AT_LEX.plain, AT_LEX.zwnj, AT_LEX.english);
 class KeyAudio{
-  constructor(){this.ctx=null;this.buf={};this.enabled=true;this.variant=0;}
+  constructor(){
+    this.ctx=null;
+    this.buf={};
+    this.enabled=true;
+    this.variant=0;
+    this.dest=null;
+    this.mediaRec=null;
+    this.recChunks=[];
+  }
   init(){
     if(!this.ctx){
       const AC=window.AudioContext||window.webkitAudioContext;
       if(!AC) return;
       this.ctx=new AC();
+      try{ this.dest=this.ctx.createMediaStreamDestination(); }catch(e){}
       for(const k in SOUND_DATA){
         const b64=SOUND_DATA[k].split(',')[1];
         const bin=atob(b64);
@@ -1653,6 +1688,45 @@ class KeyAudio{
       }
     }
     if(this.ctx.state==='suspended') this.ctx.resume();
+  }
+  async preload(){
+    this.init();
+    if(!this.ctx) return;
+    const promises = Object.entries(SOUND_DATA).map(([k, uri]) => {
+      if(this.buf[k]) return Promise.resolve();
+      return new Promise(resolve => {
+        const b64 = uri.split(',')[1];
+        const bin = atob(b64);
+        const buf = new Uint8Array(bin.length);
+        for(let i=0;i<bin.length;i++) buf[i]=bin.charCodeAt(i);
+        this.ctx.decodeAudioData(buf.buffer, d => {
+          this.buf[k]=d; resolve();
+        }, () => resolve());
+      });
+    });
+    await Promise.all(promises);
+  }
+  startRecording(){
+    this.init();
+    if(!this.dest) this.dest=this.ctx.createMediaStreamDestination();
+    this.recChunks=[];
+    this.mediaRec=new MediaRecorder(this.dest.stream);
+    this.mediaRec.ondataavailable=e=>{
+      if(e.data&&e.data.size) this.recChunks.push(e.data);
+    };
+    this.mediaRec.start(100);
+  }
+  async stopRecording(){
+    if(!this.mediaRec||this.mediaRec.state==='inactive') return null;
+    return new Promise(resolve=>{
+      this.mediaRec.onstop=async ()=>{
+        const blob=new Blob(this.recChunks,{type:'audio/webm'});
+        const reader=new FileReader();
+        reader.onloadend=()=>resolve(reader.result);
+        reader.readAsDataURL(blob);
+      };
+      this.mediaRec.stop();
+    });
   }
   play(kind='key',vol=1){
     if(!this.enabled) return;
@@ -1672,7 +1746,9 @@ class KeyAudio{
       g.gain.value = (kind==='enter'?0.85:kind==='space'?0.55:0.5)*vol;
       const lp=this.ctx.createBiquadFilter();
       lp.type='lowpass'; lp.frequency.value=11000;
-      src.connect(lp); lp.connect(g); g.connect(this.ctx.destination);
+      src.connect(lp); lp.connect(g);
+      g.connect(this.ctx.destination);
+      if(this.dest) g.connect(this.dest);
       src.start(0);
     }catch(e){}
   }
@@ -1699,7 +1775,9 @@ class KeyAudio{
         g.gain.exponentialRampToValueAtTime(.0001,t+.17);
         o.start(t); o.stop(t+.19);
       }
-      o.connect(g); g.connect(this.ctx.destination);
+      o.connect(g);
+      g.connect(this.ctx.destination);
+      if(this.dest) g.connect(this.dest);
     }catch(e){}
   }
 }
@@ -2573,8 +2651,13 @@ async function startRecording(){
       draw();
       outStream=canvas.captureStream(60);
       cropped=true;
-      const at=display.getAudioTracks();
-      if(at.length) outStream.addTrack(at[0]);
+      if(audio && audio.dest && audio.dest.stream){
+        const at = audio.dest.stream.getAudioTracks();
+        if(at.length) outStream.addTrack(at[0]);
+      } else {
+        const at=display.getAudioTracks();
+        if(at.length) outStream.addTrack(at[0]);
+      }
     }catch(e){ outStream=display; }
   }
 
@@ -2638,8 +2721,16 @@ el.timeLabel.textContent='00:00 / '+fmt(TOTAL);
 el.dockTime.textContent='00:00 / '+fmt(TOTAL);
 requestAnimationFrame(tick);
 
-/* expose for quick console checks */
-window.__autotype={SCENES,goScene,setPlay};
+/* expose for quick console checks and automated capture */
+window.__autotype={
+  SCENES,
+  goScene,
+  setPlay,
+  audio,
+  TOTAL,
+  isFinished: () => !playing && sceneIndex === SCENES.length - 1,
+  getState: () => ({ playing, sceneIndex, sceneT, globalT, TOTAL })
+};
 </script>
 </body>
 </html>
