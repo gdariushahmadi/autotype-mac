@@ -20,6 +20,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
     public var showPreview: Bool = false
     /// Lock the rest of the sentence/line to the language detected on the first word.
     public var lockLanguageFromSentenceStart: Bool = true
+    /// Prevent accidental Enter dispatch if suspicious typos, broken words or grammar issues are detected.
+    public var interceptSuspiciousEnter: Bool = true
     /// Automatic AI translation on Enter.
     public var translation: TranslationSettings = TranslationSettings()
 
@@ -41,6 +43,7 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         convertSelection = try container.decodeIfPresent(Bool.self, forKey: .convertSelection) ?? true
         showPreview = try container.decodeIfPresent(Bool.self, forKey: .showPreview) ?? false
         lockLanguageFromSentenceStart = try container.decodeIfPresent(Bool.self, forKey: .lockLanguageFromSentenceStart) ?? true
+        interceptSuspiciousEnter = try container.decodeIfPresent(Bool.self, forKey: .interceptSuspiciousEnter) ?? true
         translation = try container.decodeIfPresent(TranslationSettings.self, forKey: .translation) ?? TranslationSettings()
     }
 
@@ -54,6 +57,7 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         convertSelection: Bool = true,
         showPreview: Bool = false,
         lockLanguageFromSentenceStart: Bool = true,
+        interceptSuspiciousEnter: Bool = true,
         translation: TranslationSettings = TranslationSettings()
     ) {
         self.isEnabled = isEnabled
@@ -65,6 +69,7 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         self.convertSelection = convertSelection
         self.showPreview = showPreview
         self.lockLanguageFromSentenceStart = lockLanguageFromSentenceStart
+        self.interceptSuspiciousEnter = interceptSuspiciousEnter
         self.translation = translation
     }
 }

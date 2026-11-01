@@ -213,4 +213,16 @@ checker.expectEqual(engine.decide(token: "fun", context: ctxPersian), .convertTo
 checker.expectEqual(engine.decide(token: "fun", context: ctxEnglish), .keepAsTyped("fun"), "locks to English when sentence started with English")
 checker.expectEqual(engine.decide(token: ";jhf\u{200C}ih", context: ctxPersian), .convertToPersian("کتاب‌ها"), "converts word containing ZWNJ cleanly to Persian")
 
+checker.group("Typo and Enter Interception Guard")
+let badText = "این پروژع با موفغیت انجلم شود"
+let analysis = TypoDetector.analyze(badText)
+checker.expect(analysis.hasSuspiciousTokens, "flags suspicious typos in sentence")
+checker.expectEqual(analysis.suggestions["پروژع"], "پروژه", "suggests correct spelling for پروژع")
+checker.expectEqual(analysis.suggestions["موفغیت"], "موفقیت", "suggests correct spelling for موفغیت")
+checker.expectEqual(analysis.suggestions["انجلم"], "انجام", "suggests correct spelling for انجلم")
+
+let cleanText = "این پروژه با موفقیت انجام شد"
+let cleanAnalysis = TypoDetector.analyze(cleanText)
+checker.expect(!cleanAnalysis.hasSuspiciousTokens, "passes clean Persian sentence without false alerts")
+
 exit(checker.report())

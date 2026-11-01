@@ -310,15 +310,18 @@ public final class ConversionEngine {
         case .persianFirst:
             return (Weight.persianCommon, .convertToPersian(persianEntry.canonical))
         case .automatic:
+            // If the preceding word was Persian, ambiguous words (like "fun" / "بعد") convert to Persian.
+            if context.previousWasPersian {
+                return (Weight.persianCommon, .convertToPersian(persianEntry.canonical))
+            }
+            if context.sentenceLanguageIsPersian == false {
+                return (Weight.englishCommon, .keepAsTyped(core))
+            }
             if persianEntry.isCommon && !englishCommon {
                 return (Weight.persianCommon, .convertToPersian(persianEntry.canonical))
             }
             if englishCommon && !persianEntry.isCommon {
                 return (Weight.englishCommon, .keepAsTyped(core))
-            }
-            // Both readings are equally ordinary: the surrounding text decides.
-            if context.previousWasPersian {
-                return (Weight.persianRare, .convertToPersian(persianEntry.canonical))
             }
             return (Weight.englishRare, .keepAsTyped(core))
         }

@@ -6,7 +6,7 @@
   <title>AutoType — تایپ هوشمند و ترجمه AI در مک</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
     :root {
       --bg: #090a0f;
@@ -21,6 +21,9 @@
       --tg-blue: #2aabee;
       --text: #f1f5f9;
       --text-muted: #708499;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
     }
 
     * {
@@ -41,14 +44,14 @@
     }
 
     .container {
-      max-width: 1060px;
+      max-width: 1140px;
       margin: 0 auto;
-      padding: 0 1.5rem;
+      padding: 0 1.25rem;
     }
 
     /* Minimalist Header */
     header {
-      padding: 1.2rem 0;
+      padding: 1.1rem 0;
       border-bottom: 1px solid var(--card-border);
       position: sticky;
       top: 0;
@@ -68,8 +71,9 @@
       align-items: center;
       gap: 0.65rem;
       font-weight: 800;
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       color: #fff;
+      text-decoration: none;
     }
 
     .brand-icon {
@@ -90,6 +94,12 @@
       list-style: none;
       font-size: 0.9rem;
       color: var(--text-muted);
+    }
+
+    .header-nav a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
     }
 
     .header-nav a:hover {
@@ -113,7 +123,7 @@
 
     /* Hero */
     .hero {
-      padding: 4.5rem 0 2rem;
+      padding: 3.5rem 0 2rem;
       text-align: center;
     }
 
@@ -121,193 +131,202 @@
       display: inline-flex;
       align-items: center;
       gap: 0.5rem;
-      padding: 0.35rem 0.85rem;
-      background: rgba(42, 171, 238, 0.12);
-      border: 1px solid rgba(42, 171, 238, 0.3);
-      border-radius: 9999px;
-      font-size: 0.8rem;
-      color: #38bdf8;
-      font-weight: 500;
-      margin-bottom: 1.5rem;
+      background: rgba(42, 171, 238, 0.1);
+      border: 1px solid rgba(42, 171, 238, 0.25);
+      color: var(--accent);
+      padding: 0.35rem 0.9rem;
+      border-radius: 2rem;
+      font-size: 0.82rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
     }
 
     .hero h1 {
-      font-size: clamp(2.1rem, 4.2vw, 3.3rem);
+      font-size: 2.75rem;
       font-weight: 900;
-      line-height: 1.35;
+      line-height: 1.25;
       letter-spacing: -0.02em;
-      margin-bottom: 1.25rem;
-      color: #fff;
+      margin-bottom: 1rem;
     }
 
     .hero h1 span.blue {
-      color: #2aabee;
+      color: var(--accent);
     }
 
     .hero p.lead {
       font-size: 1.15rem;
       color: var(--text-muted);
-      max-width: 650px;
-      margin: 0 auto 2.5rem;
+      max-width: 760px;
+      margin: 0 auto 1.5rem;
+      line-height: 1.7;
     }
 
+    /* App Compatibility Badges */
     .app-icons-strip {
       display: flex;
       justify-content: center;
       align-items: center;
-      gap: 1.25rem;
-      margin-bottom: 3rem;
+      gap: 0.75rem;
       flex-wrap: wrap;
+      margin-bottom: 2rem;
     }
 
     .strip-label {
-      font-size: 0.85rem;
-      color: var(--text-muted);
-      font-weight: 500;
+      font-size: 0.82rem;
+      color: #64748b;
+      margin-left: 0.5rem;
     }
 
     .app-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.45rem;
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--card-border);
       padding: 0.35rem 0.75rem;
       border-radius: 0.5rem;
-      font-size: 0.8rem;
+      font-size: 0.82rem;
       color: #cbd5e1;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
     }
 
     .app-tag.active {
-      background: rgba(42, 171, 238, 0.15);
-      border-color: rgba(42, 171, 238, 0.4);
-      color: #38bdf8;
+      border-color: rgba(42, 171, 238, 0.35);
+      background: rgba(42, 171, 238, 0.08);
+      color: #fff;
     }
 
-    /* TELEGRAM DESKTOP WINDOW CONTAINER */
-    .tg-window-wrapper {
-      max-width: 880px;
-      margin: 0 auto 5rem;
-      background: var(--tg-bg);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
+    /* MAIN TELEGRAM TEST & PLAYGROUND ENVIRONMENT (Side-by-Side) */
+    .tg-workspace-container {
+      display: grid;
+      grid-template-columns: 320px 1fr;
+      background: #0e1621;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 16px;
       overflow: hidden;
-      box-shadow: 0 30px 70px -15px rgba(0, 0, 0, 0.85), 0 0 40px rgba(42, 171, 238, 0.1);
-      display: flex;
-      height: 620px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.75);
+      margin-bottom: 4rem;
+      min-height: 580px;
     }
 
-    /* Telegram Sidebar */
-    .tg-sidebar {
-      width: 280px;
+    @media (max-width: 900px) {
+      .tg-workspace-container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Side Test Drawer (Left Panel) */
+    .tg-side-drawer {
       background: var(--tg-surface);
       border-left: 1px solid var(--tg-surface-border);
       display: flex;
       flex-direction: column;
-      flex-shrink: 0;
+      padding: 1.25rem 1rem;
     }
 
-    @media (max-width: 768px) {
-      .tg-sidebar {
-        display: none;
-      }
-    }
-
-    .tg-sidebar-header {
-      padding: 0.85rem 1rem;
+    .drawer-title {
       display: flex;
       align-items: center;
-      gap: 0.85rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.2);
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 1px solid var(--tg-surface-border);
     }
 
-    .tg-search-bar {
-      background: #242f3d;
-      border-radius: 20px;
-      padding: 0.35rem 0.85rem;
+    .drawer-title h3 {
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #fff;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      color: #708499;
-      font-size: 0.8rem;
-      flex-grow: 1;
+      gap: 0.4rem;
     }
 
-    .tg-dialog-list {
-      overflow-y: auto;
-      flex-grow: 1;
-    }
-
-    .tg-dialog-item {
+    /* Mechanical Keyboard Sound Toggle */
+    .sound-switch-btn {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--accent);
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
       display: flex;
       align-items: center;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+      gap: 0.35rem;
       cursor: pointer;
-      transition: background 0.15s;
+      transition: all 0.2s;
     }
 
-    .tg-dialog-item.active {
-      background: #2b5278;
+    .sound-switch-btn.sound-off {
+      color: #64748b;
+      border-color: rgba(255, 255, 255, 0.05);
     }
 
-    .tg-dialog-avatar {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #e17076, #ff885e);
-      color: white;
-      font-weight: 700;
-      font-size: 1rem;
+    .test-scenario-list {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
+      flex-direction: column;
+      gap: 0.6rem;
+      flex-grow: 1;
+      overflow-y: auto;
     }
 
-    .tg-dialog-info {
-      flex-grow: 1;
-      overflow: hidden;
+    .scenario-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 0.7rem 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
       text-align: right;
     }
 
-    .tg-dialog-name-row {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.2rem;
+    .scenario-card:hover {
+      background: rgba(42, 171, 238, 0.08);
+      border-color: rgba(42, 171, 238, 0.3);
+      transform: translateX(-2px);
     }
 
-    .tg-dialog-name {
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: #fff;
+    .scenario-card.active {
+      background: rgba(42, 171, 238, 0.12);
+      border-color: var(--accent);
     }
 
-    .tg-dialog-time {
+    .scenario-badge {
+      display: inline-block;
+      font-family: 'JetBrains Mono', monospace;
       font-size: 0.7rem;
-      color: #708499;
+      font-weight: 700;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      margin-bottom: 0.3rem;
     }
 
-    .tg-dialog-preview {
-      font-size: 0.78rem;
-      color: #7f91a4;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .badge-lock { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+    .badge-bilingual { background: rgba(56, 189, 248, 0.15); color: #38bdf8; }
+    .badge-ai { background: rgba(168, 85, 247, 0.15); color: #c084fc; }
+    .badge-guard { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+
+    .scenario-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #e2e8f0;
+      margin-bottom: 0.15rem;
     }
 
-    /* Telegram Chat Pane */
-    .tg-chat-pane {
-      flex-grow: 1;
+    .scenario-desc {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Right Telegram Desktop Window */
+    .tg-main-window {
       display: flex;
       flex-direction: column;
       background: #0e1621;
       position: relative;
     }
 
-    /* Mac Window Controls + Telegram Header */
-    .tg-chat-header {
+    .tg-header {
       background: var(--tg-surface);
       padding: 0.65rem 1.25rem;
       display: flex;
@@ -332,350 +351,221 @@
     .dot-y { background: #ffbd2e; }
     .dot-g { background: #27c93f; }
 
-    .tg-user-status-block {
+    .tg-chat-user {
       text-align: right;
     }
 
-    .tg-user-title {
-      font-size: 0.925rem;
+    .tg-user-name {
+      font-size: 0.92rem;
       font-weight: 700;
       color: #fff;
     }
 
-    .tg-user-online {
+    .tg-user-status {
       font-size: 0.75rem;
       color: var(--tg-blue);
     }
 
-    /* Telegram Pattern Chat Body */
-    .tg-chat-history {
+    /* Chat Feed */
+    .tg-chat-messages {
       flex-grow: 1;
-      overflow-y: auto;
       padding: 1.25rem;
       display: flex;
       flex-direction: column;
-      gap: 0.9rem;
-      background-color: #0e1621;
-      background-image: 
-        radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+      gap: 0.85rem;
+      overflow-y: auto;
+      max-height: 380px;
+      background-image: radial-gradient(rgba(255, 255, 255, 0.04) 1px, transparent 1px);
       background-size: 24px 24px;
     }
 
-    .tg-msg {
+    .tg-msg-bubble {
       display: flex;
       flex-direction: column;
       max-width: 78%;
-      animation: fadeIn 0.3s ease;
+      animation: msgPop 0.25s ease;
     }
 
-    @keyframes fadeIn {
+    @keyframes msgPop {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
-    .tg-msg.in {
+    .tg-msg-bubble.in {
       align-self: flex-start;
       align-items: flex-start;
     }
 
-    .tg-msg.out {
+    .tg-msg-bubble.out {
       align-self: flex-end;
       align-items: flex-end;
     }
 
-    .tg-bubble {
+    .tg-bubble-body {
       padding: 0.65rem 0.95rem;
       border-radius: 10px;
       font-size: 0.9rem;
       line-height: 1.5;
-      position: relative;
     }
 
-    .tg-msg.in .tg-bubble {
+    .tg-msg-bubble.in .tg-bubble-body {
       background: var(--tg-msg-in);
-      color: #f5f5f5;
+      color: #f1f5f9;
       border-bottom-right-radius: 3px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }
 
-    .tg-msg.out .tg-bubble {
+    .tg-msg-bubble.out .tg-bubble-body {
       background: var(--tg-msg-out);
       color: #fff;
       border-bottom-left-radius: 3px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.35);
     }
 
-    .tg-msg-meta {
+    .tg-bubble-meta {
       font-size: 0.68rem;
       color: rgba(255, 255, 255, 0.5);
-      margin-top: 0.25rem;
+      margin-top: 0.2rem;
       display: flex;
       align-items: center;
       gap: 0.25rem;
     }
 
-    /* Telegram Bottom Input Area */
-    .tg-input-area {
+    /* Smart Enter Guard Alert Banner */
+    .tg-guard-alert {
+      display: none;
+      align-items: center;
+      gap: 0.5rem;
+      background: rgba(245, 158, 11, 0.14);
+      border: 1px solid rgba(245, 158, 11, 0.35);
+      color: #fef3c7;
+      padding: 0.5rem 0.9rem;
+      font-size: 0.8rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+      animation: alertPulse 0.3s ease;
+    }
+
+    @keyframes alertPulse {
+      0% { transform: scale(0.98); }
+      50% { transform: scale(1.01); }
+      100% { transform: scale(1); }
+    }
+
+    /* Telegram Input Box */
+    .tg-input-wrapper {
       background: var(--tg-surface);
       padding: 0.75rem 1rem;
       border-top: 1px solid var(--tg-surface-border);
     }
 
-    /* Feature Toast Bar */
-    .tg-feature-toast {
+    .tg-status-indicator-bar {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      background: rgba(0, 0, 0, 0.25);
-      padding: 0.35rem 0.75rem;
-      border-radius: 6px;
-      margin-bottom: 0.6rem;
-      font-size: 0.78rem;
+      margin-bottom: 0.5rem;
+      font-size: 0.76rem;
+      color: var(--text-muted);
     }
 
-    .feature-step-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.15rem 0.5rem;
-      border-radius: 4px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 0.72rem;
-      font-weight: 600;
-    }
-
-    .tag-persian {
-      background: rgba(16, 185, 129, 0.18);
-      color: #34d399;
-      border: 1px solid rgba(16, 185, 129, 0.3);
-    }
-
-    .tag-english {
-      background: rgba(42, 171, 238, 0.18);
-      color: #38bdf8;
-      border: 1px solid rgba(42, 171, 238, 0.3);
-    }
-
-    .tag-translate {
-      background: rgba(168, 85, 247, 0.18);
-      color: #c084fc;
-      border: 1px solid rgba(168, 85, 247, 0.3);
-    }
-
-    .tg-input-box {
+    .tg-interactive-box {
       background: #0e1621;
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.1);
       border-radius: 22px;
-      padding: 0.45rem 1rem;
+      padding: 0.45rem 0.9rem;
       display: flex;
       align-items: center;
       gap: 0.75rem;
+      transition: border-color 0.2s;
     }
 
-    .tg-input-field {
+    .tg-interactive-box:focus-within {
+      border-color: var(--tg-blue);
+      box-shadow: 0 0 12px rgba(42, 171, 238, 0.25);
+    }
+
+    .tg-real-input {
       flex-grow: 1;
-      font-size: 0.95rem;
+      background: transparent;
+      border: none;
+      outline: none;
       color: #fff;
       font-family: 'Vazirmatn', sans-serif;
-      min-height: 24px;
+      font-size: 0.92rem;
+      direction: rtl;
     }
 
-    .cursor {
-      display: inline-block;
-      width: 2px;
-      height: 1.25em;
+    .tg-real-input::placeholder {
+      color: #64748b;
+    }
+
+    .tg-send-action-btn {
+      width: 32px;
+      height: 32px;
       background: var(--tg-blue);
-      vertical-align: middle;
-      animation: blink 0.9s infinite;
-      margin-right: 2px;
-    }
-
-    @keyframes blink {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0; }
-    }
-
-    .tg-send-btn {
-      width: 34px;
-      height: 34px;
-      background: var(--tg-blue);
+      border: none;
       border-radius: 50%;
       display: flex;
       align-items: center;
       justify-content: center;
-      color: white;
-      flex-shrink: 0;
-      transition: transform 0.15s;
-    }
-
-    /* INTERACTIVE PLAYGROUND (TEST IN BROWSER) */
-    .playground-section {
-      background: linear-gradient(180deg, #12151e 0%, #0d0f17 100%);
-      border: 1px solid var(--card-border);
-      border-radius: 1rem;
-      padding: 2.5rem;
-      margin-bottom: 5rem;
-    }
-
-    .playground-header {
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    .playground-header h2 {
-      font-size: 1.8rem;
-      font-weight: 800;
       color: #fff;
-      margin-bottom: 0.5rem;
-    }
-
-    .playground-header p {
-      color: var(--text-muted);
-      font-size: 0.95rem;
-    }
-
-    .interactive-card {
-      max-width: 720px;
-      margin: 0 auto;
-      background: #0e121a;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 0.85rem;
-      padding: 1.5rem;
-    }
-
-    .interactive-card label {
-      display: block;
-      font-size: 0.85rem;
-      color: #94a3b8;
-      margin-bottom: 0.6rem;
-    }
-
-    .test-input {
-      width: 100%;
-      background: #07090e;
-      border: 1px solid #1e293b;
-      border-radius: 0.6rem;
-      padding: 0.85rem 1rem;
-      color: #38bdf8;
-      font-size: 1.15rem;
-      font-family: 'Vazirmatn', sans-serif;
-      outline: none;
-      direction: rtl;
-      transition: border-color 0.2s;
-    }
-
-    .test-input:focus {
-      border-color: #38bdf8;
-      box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
-    }
-
-    .playground-hints {
-      display: flex;
-      gap: 0.6rem;
-      flex-wrap: wrap;
-      margin-top: 0.85rem;
-    }
-
-    .chip-btn {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      padding: 0.3rem 0.7rem;
-      border-radius: 0.4rem;
-      font-size: 0.78rem;
-      color: #cbd5e1;
       cursor: pointer;
-      font-family: 'JetBrains Mono', 'Vazirmatn', monospace;
-      transition: all 0.2s;
+      flex-shrink: 0;
+      transition: transform 0.15s, background-color 0.15s;
     }
 
-    .chip-btn:hover {
-      background: rgba(42, 171, 238, 0.15);
-      border-color: rgba(42, 171, 238, 0.35);
-      color: #38bdf8;
+    .tg-send-action-btn:hover {
+      background: #259cdb;
+      transform: scale(1.05);
     }
 
-    .output-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1.5rem;
-    }
-
-    @media (max-width: 600px) {
-      .output-grid {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .output-box {
-      background: #07090e;
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 0.6rem;
-      padding: 0.85rem 1rem;
-    }
-
-    .output-title {
-      font-size: 0.75rem;
-      color: var(--text-muted);
-      margin-bottom: 0.4rem;
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .output-content {
-      font-size: 1.05rem;
-      font-weight: 600;
-      color: #f1f5f9;
-      min-height: 1.6rem;
-    }
-
-    .output-content.persian { color: #34d399; }
-    .output-content.english { color: #38bdf8; direction: ltr; text-align: left; }
-
-    /* Clean SVG Feature Grid */
+    /* Feature Grid Section */
     .features-section {
-      padding: 2rem 0 5rem;
+      padding: 3rem 0;
     }
 
     .section-head {
       text-align: center;
-      margin-bottom: 3rem;
+      margin-bottom: 2.5rem;
     }
 
     .section-head h2 {
       font-size: 2rem;
       font-weight: 800;
-      color: #fff;
-      margin-bottom: 0.6rem;
-    }
-
-    .section-head p {
-      color: var(--text-muted);
-      font-size: 1rem;
+      margin-bottom: 0.5rem;
     }
 
     .grid-3 {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 1.5rem;
+    }
+
+    @media (max-width: 800px) {
+      .grid-3 {
+        grid-template-columns: 1fr;
+      }
     }
 
     .feature-card {
       background: var(--card-bg);
       border: 1px solid var(--card-border);
-      border-radius: 0.9rem;
+      border-radius: 0.85rem;
       padding: 1.6rem;
+      transition: transform 0.2s;
+    }
+
+    .feature-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 255, 255, 0.16);
     }
 
     .feature-card h3 {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
       font-weight: 700;
+      margin-bottom: 0.6rem;
       color: #fff;
-      margin-bottom: 0.65rem;
       display: flex;
       align-items: center;
-      gap: 0.6rem;
+      gap: 0.5rem;
     }
 
     .feature-icon-svg {
@@ -685,14 +575,14 @@
     }
 
     .feature-card p {
+      font-size: 0.9rem;
       color: var(--text-muted);
-      font-size: 0.925rem;
-      line-height: 1.7;
+      line-height: 1.6;
     }
 
-    /* Terminal Setup */
+    /* Installation */
     .install-card {
-      background: #0f121b;
+      background: linear-gradient(180deg, #121622 0%, #0c0f17 100%);
       border: 1px solid var(--card-border);
       border-radius: 1rem;
       padding: 2.5rem;
@@ -747,15 +637,15 @@
   <!-- Header -->
   <header>
     <div class="container header-inner">
-      <div class="brand-logo">
+      <a href="#" class="brand-logo">
         <div class="brand-icon">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="2" y="4" width="20" height="16" rx="3"></rect><path d="M6 8h.01M10 8h.01M14 8h.01M18 8h.01M8 12h8M6 16h.01M10 16h4M18 16h.01"></path></svg>
         </div>
         AutoType for macOS
-      </div>
+      </a>
       <ul class="header-nav">
-        <li><a href="#demo-tg">شبیه‌ساز تلگرام</a></li>
-        <li><a href="#playground">تست در مرورگر</a></li>
+        <li><a href="teaser.html" target="_blank" style="color: #38bdf8; font-weight: 600;">تیزر ویدیویی</a></li>
+        <li><a href="#telegram-playground">تست در محیط تلگرام</a></li>
         <li><a href="#how">قابلیت‌ها</a></li>
       </ul>
       <a href="#install" class="btn-header">نصب و اجرا</a>
@@ -768,12 +658,12 @@
       <div class="badge">ورودی بومی سیستم‌عامل مک (macOS 14+)</div>
       <h1>دیگه مهم نیست کیبوردت چیه!<br><span class="blue">بعد از تایپ اولین کلمه</span>، زبان هوشمند تغییر می‌کنه.</h1>
       <p class="lead">
-        تایپ فارسی و انگلیسی بدون دغدغه تعویض چیدمان در تمامی برنامه‌ها (تلگرام، اسلک، بروزر، کد ادیتور و...). AutoType زبان مورد نظر شما را از اولین کلمه تشخیص می‌دهد و هر ۳ سناریو را لحظه‌ای اجرا می‌کند.
+        تایپ فارسی و انگلیسی بدون دغدغه تعویض چیدمان در تمامی برنامه‌ها (تلگرام، اسلک، بروزر، کد ادیتور و...). AutoType زبان مورد نظر شما را از اولین کلمه تشخیص می‌دهد، نیم‌فاصله واقعی تولید می‌کند و با کلید Enter هوش مصنوعی را اجرا می‌نماید.
       </p>
 
       <!-- App Compatibility Badges -->
       <div class="app-icons-strip">
-        <span class="strip-label">فعال در هر فیلد متنی:</span>
+        <span class="strip-label">فعال در تمام برنامه‌های مک:</span>
         <span class="app-tag active">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><path d="M22 2L15 22L11 13L2 9L22 2Z"></path></svg>
           Telegram
@@ -787,12 +677,8 @@
           Slack / Discord
         </span>
         <span class="app-tag">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line></svg>
           Chrome / Safari
-        </span>
-        <span class="app-tag">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
-          Notion / Notes
         </span>
         <span class="app-tag">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
@@ -801,121 +687,120 @@
       </div>
     </section>
 
-    <!-- REAL TELEGRAM DESKTOP ANIMATION SHOWING ALL 3 CAPABILITIES -->
-    <div class="tg-window-wrapper" id="demo-tg">
-      <!-- Telegram Sidebar -->
-      <div class="tg-sidebar">
-        <div class="tg-sidebar-header">
-          <div class="traffic-dots">
-            <span class="dot dot-r"></span>
-            <span class="dot dot-y"></span>
-            <span class="dot dot-g"></span>
+    <!-- REAL TELEGRAM WORKSPACE & INTERACTIVE PLAYGROUND -->
+    <section id="telegram-playground">
+      <div style="text-align: center; margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.8rem; font-weight: 800; color: #fff;">تست زنده در محیط واقعی تلگرام (همراه صدای کیبورد مکانیکی)</h2>
+        <p style="color: var(--text-muted); font-size: 0.95rem;">
+          مستقیماً در کادر متنی تلگرام تایپ کنید، سناریوهای آماده را از پنل کناری امتحان کنید، یا کلید Enter را بزنید:
+        </p>
+      </div>
+
+      <div class="tg-workspace-container">
+        <!-- Side Test Drawer (Panel Konari) -->
+        <div class="tg-side-drawer">
+          <div class="drawer-title">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>
+              تست‌های آماده
+            </h3>
+            <button class="sound-switch-btn" id="soundToggleBtn" onclick="toggleKeyboardSound()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>
+              <span id="soundBtnStatus">صدای کیبورد</span>
+            </button>
           </div>
-          <div class="tg-search-bar">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            جستجو در گفتگوها
+
+          <div class="test-scenario-list">
+            <div class="scenario-card active" onclick="runScenario(1)">
+              <span class="scenario-badge badge-lock">۱. قفل کلمه اول</span>
+              <div class="scenario-title">تایپ اشتباهی sghl ➔ سلام</div>
+              <div class="scenario-desc">شروع با انگلیسی به قصد فارسی؛ تبدیل خودکار و قفل زبان</div>
+            </div>
+
+            <div class="scenario-card" onclick="runScenario(2)">
+              <span class="scenario-badge badge-bilingual">۲. تایپ چندزبانه</span>
+              <div class="scenario-title">ترکیب فارسی با React و Tailwind</div>
+              <div class="scenario-desc">واژه‌های انگلیسی و فنی دست‌نخورده می‌مانند</div>
+            </div>
+
+            <div class="scenario-card" onclick="runScenario(3)">
+              <span class="scenario-badge badge-lock">۳. نیم‌فاصله واقعی</span>
+              <div class="scenario-title">کلید Shift + Space</div>
+              <div class="scenario-desc">«حرفه‌ای و بی‌نقص» بدون تبدیل اشتباه کلمه قبل</div>
+            </div>
+
+            <div class="scenario-card" onclick="runScenario(4)">
+              <span class="scenario-badge badge-ai">۴. هوش مصنوعی: ترجمه</span>
+              <div class="scenario-title">ترجمه فردا جلسه با تیم داریم</div>
+              <div class="scenario-desc">فشردن Enter ➔ تبدیل درجا به انگلیسی روان</div>
+            </div>
+
+            <div class="scenario-card" onclick="runScenario(5)">
+              <span class="scenario-badge badge-ai">۵. هوش مصنوعی: لحن رسمی</span>
+              <div class="scenario-title">رسمی سلام کار رو سریع جمع کن</div>
+              <div class="scenario-desc">فشردن Enter ➔ تبدیل خودمانی به اداری و رسمی</div>
+            </div>
+
+            <div class="scenario-card" onclick="runScenario(6)">
+              <span class="scenario-badge badge-guard">۶. سد هوشمند Enter</span>
+              <div class="scenario-title">جلوگیری از ارسال اشتباه و غلط</div>
+              <div class="scenario-desc">تایپ «این پروژع با موفغیت انجلم شود» ➔ جلوگیری از ارسال</div>
+            </div>
+
+            <div class="scenario-card" onclick="runScenario(7)">
+              <span class="scenario-badge badge-bilingual">۷. کلمات مشترک (fun / بعد)</span>
+              <div class="scenario-title">اولویت با زبان کلمهٔ قبل</div>
+              <div class="scenario-desc">سلام fun ➔ «سلام بعد»؛ have fun ➔ «have fun»</div>
+            </div>
           </div>
         </div>
-        <div class="tg-dialog-list">
-          <div class="tg-dialog-item active">
-            <div class="tg-dialog-avatar">JD</div>
-            <div class="tg-dialog-info">
-              <div class="tg-dialog-name-row">
-                <span class="tg-dialog-name">John Doe (همکار بین‌المللی)</span>
-                <span class="tg-dialog-time">۱۰:۴۲</span>
+
+        <!-- Right Realistic Telegram Desktop Window -->
+        <div class="tg-main-window">
+          <!-- Telegram Chat Header -->
+          <div class="tg-header">
+            <div class="tg-chat-user">
+              <div class="tg-user-name">Sarah Miller (همکار پروژه)</div>
+              <div class="tg-user-status">online</div>
+            </div>
+            <div class="traffic-dots">
+              <span class="dot dot-r"></span>
+              <span class="dot dot-y"></span>
+              <span class="dot dot-g"></span>
+            </div>
+          </div>
+
+          <!-- Telegram Message Feed -->
+          <div class="tg-chat-messages" id="tgMessagesBox">
+            <div class="tg-msg-bubble in">
+              <div class="tg-bubble-body">
+                سلام! گزارش وضعیت پروژه رو آماده کردی؟ لطفاً تا قبل ظهر بفرست.
               </div>
-              <div class="tg-dialog-preview">Hi! Could you please send project updates...</div>
-            </div>
-          </div>
-          <div class="tg-dialog-item">
-            <div class="tg-dialog-avatar" style="background: linear-gradient(135deg, #4ade80, #16a34a);">تیم</div>
-            <div class="tg-dialog-info">
-              <div class="tg-dialog-name-row">
-                <span class="tg-dialog-name">گروه توسعه محصول</span>
-                <span class="tg-dialog-time">دیروز</span>
+              <div class="tg-bubble-meta">
+                <span>۱۰:۴۰</span>
               </div>
-              <div class="tg-dialog-preview">نسخه جدید روی سرور استیجینگ دیپلوی شد</div>
             </div>
           </div>
-        </div>
-      </div>
 
-      <!-- Telegram Chat Pane -->
-      <div class="tg-chat-pane">
-        <div class="tg-chat-header">
-          <div class="tg-user-status-block">
-            <div class="tg-user-title">John Doe</div>
-            <div class="tg-user-online">آنلاین در تلگرام</div>
-          </div>
-          <div style="font-size: 0.75rem; color: #708499; font-family: 'JetBrains Mono', monospace; direction: ltr;">
-            AutoType Active
-          </div>
-        </div>
-
-        <!-- Chat History -->
-        <div class="tg-chat-history" id="tgChatHistory">
-          <div class="tg-msg in">
-            <div class="tg-bubble">
-              Hi! Could you please send me the project updates and timeline for tomorrow?
+          <!-- Telegram Input Area -->
+          <div class="tg-input-wrapper">
+            <!-- Smart Enter Guard Alert Banner -->
+            <div class="tg-guard-alert" id="tgGuardAlert">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <span id="tgGuardAlertMsg">هشدار سد هوشمند: غلط املایی شناسایی شد! کلید Enter مجدد برای اصلاح و ارسال.</span>
             </div>
-            <div class="tg-msg-meta">۱۰:۴۲</div>
-          </div>
-        </div>
 
-        <!-- Telegram Live Input Area -->
-        <div class="tg-input-area">
-          <div class="tg-feature-toast">
-            <span id="tgStepStatus" style="color: #94a3b8;">شروع سناریو...</span>
-            <span class="feature-step-tag tag-persian" id="tgTagBadge">
-              <span id="tgTagText">AutoType: فعال</span>
-            </span>
-          </div>
-
-          <div class="tg-input-box">
-            <div class="tg-input-field">
-              <span id="tgInputText"></span><span class="cursor"></span>
+            <div class="tg-status-indicator-bar">
+              <span id="tgCurrentModeText">حالت: تایپ مستقیم در تلگرام</span>
+              <span id="tgEngineStatusPill" style="color: #38bdf8; font-family: 'JetBrains Mono', monospace;">AutoType: آماده</span>
             </div>
-            <div class="tg-send-btn" id="tgSendBtn">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+
+            <div class="tg-interactive-box">
+              <input type="text" id="tgInteractiveInput" class="tg-real-input" placeholder="اینجا با حروف انگلیسی یا فارسی بنویسید (مثلاً sghl یا سلام) و Enter را بزنید...">
+              <button class="tg-send-action-btn" id="tgManualSendBtn" onclick="handleSendButtonClick()" title="ارسال پیام">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+              </button>
             </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- INTERACTIVE PLAYGROUND (TEST RIGHT IN BROWSER) -->
-    <section class="playground-section" id="playground">
-      <div class="playground-header">
-        <h2>همین حالا در مرورگر امتحان کنید</h2>
-        <p>بدون نیاز به نصب، رفتار موتور تبدیل خودکار و ترجمه با Enter را خودتان تست کنید:</p>
-      </div>
-
-      <div class="interactive-card">
-        <label>اینجا با حروف انگلیسی تایپ کنید و کلید <strong>Space</strong> یا <strong>Enter</strong> را بزنید:</label>
-        <input type="text" id="liveUserTestInput" class="test-input" placeholder="مثلاً بنویسید sghl یا hello یا ترجمه حال شما چطوره؟" autofocus>
-
-        <div class="playground-hints">
-          <span class="chip-btn" onclick="applyTest('sghl')">تایپ sghl (سلام)</span>
-          <span class="chip-btn" onclick="applyTest(';jhf')">تایپ ;jhf (کتاب)</span>
-          <span class="chip-btn" onclick="applyTest('take it easy')">تایپ take it easy (انگلیسی دست‌نخورده)</span>
-          <span class="chip-btn" onclick="applyTest('ترجمه فردا جلسه داریم')">ترجمه با فشردن Enter</span>
-        </div>
-
-        <div class="output-grid">
-          <div class="output-box">
-            <div class="output-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-              خروجی تبدیل خودکار AutoType:
-            </div>
-            <div class="output-content persian" id="livePersianOutput">سلام</div>
-          </div>
-
-          <div class="output-box">
-            <div class="output-title">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-              ترجمه روی کلید Enter:
-            </div>
-            <div class="output-content english" id="liveTranslationOutput">Hello</div>
           </div>
         </div>
       </div>
@@ -932,10 +817,10 @@
         <div class="feature-card">
           <h3>
             <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-            ۱. قفل خودکار زبان از کلمهٔ اول
+            ۱. حل خطای زبان و تایپ چندزبانه وسط متن
           </h3>
           <p>
-            با تایپ اولین کلمه، زبان جمله مشخص می‌شود. اگر با فارسی شروع کنید، بقیه جمله روی فارسی قفل می‌شود و اگر با انگلیسی شروع کنید، جمله بدون تغییر انگلیسی می‌ماند.
+            اگر حواستان به زبان نبود و شروع به نوشتن کردید، نیازی به پاک کردن نیست! با کلمه اول زبان هوشمند تنظیم می‌شود. همچنین می‌توانید وسط متن آزادانه بین زبان‌ها بنویسید (آپشن اختیاری کلمه به کلمه یا قفل جمله).
           </p>
         </div>
 
@@ -945,17 +830,17 @@
             ۲. نیم‌فاصله واقعی و حفظ رشته‌های فنی
           </h3>
           <p>
-            کلید <code>Shift + Space</code> نیم‌فاصله واقعی تولید می‌کند («حرفه‌ای»، «می‌شود»). ایمیل‌ها، آدرس وبسایت‌ها، مسیر فایل‌ها و کدهای برنامه‌نویسی نیز هرگز دستکاری نمی‌شوند.
+            کلید <code>Shift + Space</code> نیم‌فاصله واقعی تولید می‌کند («حرفه‌ای»، «می‌شود») بدون آنکه کلمه قبلی به انگلیسی تبدیل شود. ایمیل‌ها، آدرس وبسایت‌ها، و کدهای برنامه‌نویسی نیز هرگز دستکاری نمی‌شوند.
           </p>
         </div>
 
         <div class="feature-card">
           <h3>
             <svg class="feature-icon-svg" viewBox="0 0 24 24" fill="none" stroke="#a855f7" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-            ۳. ترجمه فوری با فشردن کلید Enter
+            ۳. هوش مصنوعی و سد هوشمند Enter
           </h3>
           <p>
-            پیام را با کلمه دلخواه (مثل <code>ترجمه</code> یا <code>تت</code>) شروع کنید؛ با زدن اولین Enter درجا به انگلیسی ترجمه می‌شود و دومین Enter پیام را ارسال می‌کند.
+            پیام را با پیشوند دلخواه (مثل <code>ترجمه</code>، <code>رسمی</code> یا <code>اصلاح</code>) بنویسید تا روی Enter تغییر کند. همچنین اگر کلمه‌ای مشکوک به غلط املایی باشد، سیستم جلوی ارسال ناخواسته را می‌گیرد.
           </p>
         </div>
       </div>
@@ -980,119 +865,124 @@
 
   <footer>
     <div class="container">
-      AutoType for macOS — ساخته شده برای تایپ بی‌دردسر فارسی و ترجمه هوشمند AI
+      AutoType for macOS — ساخته شده برای تایپ بی‌دردسر فارسی و دستیار هوشمند در سیستم‌عامل مک
     </div>
   </footer>
 
-  <!-- Animation Logic & In-Browser Test Engine -->
+  <!-- Web Audio Mechanical Keyboard Sound Synthesizer & Telegram Engine -->
   <script>
-    // --- TELEGRAM SIMULATOR ALL 3 FEATURES LOOP ---
-    const tgChatHistory = document.getElementById('tgChatHistory');
-    const tgInputText = document.getElementById('tgInputText');
-    const tgStepStatus = document.getElementById('tgStepStatus');
-    const tgTagBadge = document.getElementById('tgTagBadge');
-    const tgTagText = document.getElementById('tgTagText');
-    const tgSendBtn = document.getElementById('tgSendBtn');
+const MECH_KEY_1 = "data:audio/wav;base64,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";
+const MECH_KEY_2 = "data:audio/wav;base64,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";
+const MECH_SPACE = "data:audio/wav;base64,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";
+const MECH_ENTER = "data:audio/wav;base64,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nQCaAJgAlQCTAJAAjgCLAIkAhgCCAH4AegB1AG8AaQBhAFkAUABGADsALwAhABMABAD0/+L/0P+8/6j/kv98/2X/Tv82/x3/BP/r/tL+uf6h/oj+cP5Z/kP+Lf4Z/gb+9P3j/dT9x/28/bL9qv2l/aH9n/2g/aL9p/2u/bf9wv3P/d797/0C/hb+LP5E/lz+dv6R/q3+yv7n/gX/I/9B/2D/fv+c/7n/1v/z/w0AKABBAFoAcQCHAJwArwDBANEA4ADuAPoABQEOARYBHAEiASYBKQErASsBKwErASkBJwEkASEBHQEZARUBEQENAQkBBAEAAf0A+QD2APMA8ADuAOwA6wDqAOkA6ADoAOgA6QDpAOoA6wDrAOwA7QDuAO4A7wDvAO4A7gDtAOsA6QDnAOQA4ADcANcA0gDMAMYAvwC3AK8ApwCeAJUAiwCCAHgAbQBjAFkATgBEADkALwAlABsAEgAIAAAA+P/w/+j/4f/a/9T/zv/I/8P/vv+6/7b/sv+v/6v/qP+l/6L/n/+c/5n/lf+S/47/iv+F/4D/e/91/2//aP9h/1n/UP9H/z7/NP8q/x//FP8J//3+8v7m/tr+zv7D/rf+rP6i/pj+jv6G/n7+d/5x/mz+af5m/mX+Zf5n/mr+bv50/nz+hf6P/pv+qf64/sj+2v7t/gH/F/8t/0T/Xf91/4//qf/D/97/+P8SACwARwBgAHoAkgCqAMEA1wDsAAABEwEkATQBQwFQAVwBZgFvAXYBfAGAAYMBhQGFAYQBgQF9AXkBcwFsAWUBXAFTAUkBPwE1ASoBHwETAQgB/QDxAOYA2wDRAMYAvACzAKoAoQCZAJIAiwCEAH4AeABzAG4AagBmAGIAXgBbAFgAVQBSAFAATQBKAEcARABBAD0AOgA2ADEALQAoACMAHQAXABEACwAEAP7/9v/v/+f/3//X/87/xv++/7X/rf+l/53/lf+O/4f/gP95/3P/bf9o/2P/Xv9a/1f/VP9R/0//Tf9M/0v/Sv9K/0r/Sv9L/0v/TP9N/07/T/9Q/1H/Uv9T/1P/VP9U/1T/VP9T/1L/Uf9Q/07/Tf9K/0j/Rv9D/0H/Pv88/zn/N/80/zL/Mf8v/y7/Lv8u/y//MP8y/zX/Of89/0L/Sf9Q/1j/Yf9r/3b/gv+P/5z/q/+6/8r/2//s//7/EAAjADYASgBdAHEAhQCYAKsAvgDRAOMA9AAFARUBJAEyAT8BSgFVAV8BZwFuAXMBeAF7AXwBfQF8AXkBdgFxAWsBZAFbAVIBSAE8ATABJAEWAQkB+gDrANwAzQC+AK8AnwCQAIEAcgBkAFYASAA7AC8AIwAYAA0AAwD7//L/6v/j/9z/1v/Q/8z/x//D/8D/vf+6/7j/tv+1/7P/sv+x/7D/rv+t/6z/q/+q/6j/pv+k/6L/oP+e/5v/mP+V/5L/j/+L/4f/hP+A/3z/eP90/3D/bf9p/2b/Yv9f/1z/Wv9Y/1b/VP9T/1L/Uv9S/1L/U/9U/1b/WP9a/13/YP9j/2f/av9u/3P/d/97/4D/hf+J/47/kv+X/5v/n/+j/6f/q/+v/7L/tf+4/7v/vf/A/8L/xP/G/8f/yf/L/8z/zv/P/9H/0//V/9f/2v/d/+D/4//n/+v/8P/1//v/AAAHAA==";
 
-    function sleep(ms) {
-      return new Promise(resolve => setTimeout(resolve, ms));
-    }
+    // --- REAL MECHANICAL KEYBOARD AUDIO PLAYER (PCM WAV) ---
+    class MechanicalKeyboardAudio {
+      constructor() {
+        this.ctx = null;
+        this.enabled = true;
+        this.buffers = {};
+      }
 
-    function addTgMessage(text, isPersian = false) {
-      const msg = document.createElement('div');
-      msg.className = 'tg-msg out';
-      msg.innerHTML = `
-        <div class="tg-bubble" style="direction: ${isPersian ? 'rtl' : 'ltr'}; text-align: ${isPersian ? 'right' : 'left'};">
-          ${text}
-        </div>
-        <div class="tg-msg-meta">
-          <span>۱۰:۴۳</span>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </div>
-      `;
-      tgChatHistory.appendChild(msg);
-      tgChatHistory.scrollTop = tgChatHistory.scrollHeight;
-    }
-
-    async function runTelegramSimulation() {
-      while(true) {
-        tgChatHistory.innerHTML = `
-          <div class="tg-msg in">
-            <div class="tg-bubble">
-              Hi! Could you please send me the project updates and timeline for tomorrow?
-            </div>
-            <div class="tg-msg-meta">۱۰:۴۲</div>
-          </div>
-        `;
-        tgInputText.textContent = '';
-        await sleep(1000);
-
-        // --- CAPABILITY 1: First word starts Persian -> Locks to Persian ---
-        tgStepStatus.textContent = 'قابلیت ۱: شروع با کلمه فارسی (sghl) → قفل خودکار زبان روی فارسی';
-        tgTagBadge.className = 'feature-step-tag tag-persian';
-        tgTagText.textContent = 'قفل زبان: فارسی';
-
-        const keys1 = ['s', 'g', 'h', 'l'];
-        let buf1 = '';
-        for (const k of keys1) {
-          buf1 += k;
-          tgInputText.textContent = buf1;
-          await sleep(140);
+      init() {
+        if (!this.ctx) {
+          const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+          if (AudioContextClass) this.ctx = new AudioContextClass();
+          this.load('k1', MECH_KEY_1);
+          this.load('k2', MECH_KEY_2);
+          this.load('space', MECH_SPACE);
+          this.load('enter', MECH_ENTER);
         }
-        await sleep(300);
-        tgInputText.textContent = 'سلام ';
-
-        // Type with ZWNJ (CAPABILITY 2: Semi-space / ZWNJ)
-        tgStepStatus.textContent = 'قابلیت ۲: نیم‌فاصله هوشمند (Shift+Space) در کلمات دارای پسوند';
-        const persianPart = 'پروژه به صورت حرفه‌ای آماده شد.';
-        for (let i = 0; i < persianPart.length; i++) {
-          tgInputText.textContent += persianPart[i];
-          await sleep(55);
+        if (this.ctx && this.ctx.state === 'suspended') {
+          this.ctx.resume();
         }
+      }
 
-        await sleep(900);
-        tgSendBtn.style.transform = 'scale(0.85)';
-        await sleep(150);
-        tgSendBtn.style.transform = 'scale(1)';
-        addTgMessage('سلام پروژه به صورت حرفه‌ای آماده شد.', true);
-        tgInputText.textContent = '';
-        await sleep(1500);
+      load(name, b64) {
+        fetch(b64).then(r => r.arrayBuffer()).then(b => this.ctx.decodeAudioData(b)).then(dec => {
+          this.buffers[name] = dec;
+        }).catch(() => {});
+      }
 
-        // --- CAPABILITY 3: AI Translation on Enter ---
-        tgStepStatus.textContent = 'قابلیت ۳: ترجمه پاسخ به انگلیسی روی کلید Enter با پیشوند «ترجمه»';
-        tgTagBadge.className = 'feature-step-tag tag-translate';
-        tgTagText.textContent = 'ترجمه با Enter';
+      playKey(type = 'normal') {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        let bname = 'k1';
+        if (type === 'space') bname = 'space';
+        else if (type === 'enter') bname = 'enter';
+        else bname = Math.random() > 0.5 ? 'k1' : 'k2';
 
-        const trSentence = 'ترجمه فردا ساعت ۱۰ گزارش نهایی تحویل می‌شود.';
-        for (let i = 0; i < trSentence.length; i++) {
-          tgInputText.textContent += trSentence[i];
-          await sleep(55);
-        }
+        const buf = this.buffers[bname];
+        if (!buf) return;
+        try {
+          const src = this.ctx.createBufferSource();
+          src.buffer = buf;
+          src.playbackRate.value = 1.0 + (Math.random() - 0.5) * 0.12;
+          const gain = this.ctx.createGain();
+          gain.gain.value = type === 'enter' ? 0.85 : 0.6;
+          src.connect(gain);
+          gain.connect(this.ctx.destination);
+          src.start(0);
+        } catch(e) {}
+      }
 
-        await sleep(900);
+      playAlert() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'sine';
+          osc.frequency.setValueAtTime(350, this.ctx.currentTime);
+          osc.frequency.setValueAtTime(260, this.ctx.currentTime + 0.08);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.22);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.24);
+        } catch(e) {}
+      }
 
-        // Press Enter 1: Translate
-        tgStepStatus.textContent = 'فشردن Enter اول: ترجمه هوش مصنوعی جایگزین شد!';
-        tgInputText.style.opacity = '0.5';
-        await sleep(650);
-        tgInputText.style.opacity = '1';
-        tgInputText.textContent = 'The final report will be delivered tomorrow at 10 AM.';
-
-        await sleep(1500);
-
-        // Press Enter 2: Send
-        tgStepStatus.textContent = 'فشردن Enter دوم: پیام انگلیسی ارسال گردید ✓';
-        tgSendBtn.style.transform = 'scale(0.85)';
-        await sleep(150);
-        tgSendBtn.style.transform = 'scale(1)';
-        addTgMessage('The final report will be delivered tomorrow at 10 AM.', false);
-        tgInputText.textContent = '';
-
-        await sleep(3500);
+      playSend() {
+        if (!this.enabled) return;
+        this.init();
+        if (!this.ctx) return;
+        try {
+          const osc = this.ctx.createOscillator();
+          const gain = this.ctx.createGain();
+          osc.type = 'triangle';
+          osc.frequency.setValueAtTime(650, this.ctx.currentTime);
+          osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.09);
+          gain.gain.setValueAtTime(0.08, this.ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
+          osc.connect(gain);
+          gain.connect(this.ctx.destination);
+          osc.start();
+          osc.stop(this.ctx.currentTime + 0.16);
+        } catch(e) {}
       }
     }
 
-    // --- IN-BROWSER TEST PLAYGROUND ENGINE ---
+    const kbSound = new MechanicalKeyboardAudio();
+
+    function toggleKeyboardSound() {
+      kbSound.enabled = !kbSound.enabled;
+      const btn = document.getElementById('soundToggleBtn');
+      const statusText = document.getElementById('soundBtnStatus');
+      if (kbSound.enabled) {
+        btn.classList.remove('sound-off');
+        statusText.textContent = 'صدای کیبورد';
+        kbSound.playKey('normal');
+      } else {
+        btn.classList.add('sound-off');
+        statusText.textContent = 'صدا غیرفعال';
+      }
+    }
+
+    // --- TELEGRAM INTERACTIVE ENGINE & SCENARIO PLAYER ---
     const keyMap = {
       'q':'ض', 'w':'ص', 'e':'ث', 'r':'ق', 't':'ف', 'y':'غ', 'u':'ع', 'i':'ه', 'o':'خ', 'p':'ح', '[':'ج', ']':'چ',
       'a':'ش', 's':'س', 'd':'ی', 'f':'ب', 'g':'ل', 'h':'ا', 'j':'ت', 'k':'ن', 'l':'م', ';':'ک', "'":'گ',
@@ -1111,23 +1001,27 @@
       'j,': 'تو'
     };
 
-    const mockTranslations = {
-      'سلام': 'Hello',
-      'کتاب': 'Book',
-      'فردا جلسه داریم': 'We have a meeting tomorrow',
-      'حال شما چطوره؟': 'How are you doing?',
-      'خوب': 'Good',
-      'ممنون': 'Thank you'
-    };
+    const tgMessagesBox = document.getElementById('tgMessagesBox');
+    const tgInteractiveInput = document.getElementById('tgInteractiveInput');
+    const tgGuardAlert = document.getElementById('tgGuardAlert');
+    const tgGuardAlertMsg = document.getElementById('tgGuardAlertMsg');
+    const tgEngineStatusPill = document.getElementById('tgEngineStatusPill');
+    const tgCurrentModeText = document.getElementById('tgCurrentModeText');
 
-    const testInput = document.getElementById('liveUserTestInput');
-    const persianOutput = document.getElementById('livePersianOutput');
-    const trOutput = document.getElementById('liveTranslationOutput');
+    let enterStage = 0; // 0 = initial, 1 = AI converted or Guard paused, ready for enter 2 send
+    let pendingFix = null;
+    let isAutomating = false;
 
-    function convertWord(word) {
+    function convertWord(word, index, allWords) {
+      if (word && word.toLowerCase() === 'fun') {
+        const prev = (allWords && index > 0) ? allWords[index - 1] : '';
+        const prevWasPersian = /[\u0600-\u06FF]/.test(prev) || localDict[prev];
+        if (prevWasPersian) return 'بعد';
+        return 'fun';
+      }
       if (localDict[word]) return localDict[word];
       if (/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(word)) return word;
-      if (['hello', 'take', 'it', 'easy', 'apple', 'mac', 'code', 'swift', 'telegram'].includes(word.toLowerCase())) return word;
+      if (['hello', 'react', 'next.js', 'tailwind', 'code', 'swift', 'server', 'slack', 'telegram', 'take', 'it', 'easy'].includes(word.toLowerCase())) return word;
       let res = '';
       for (let ch of word) {
         res += keyMap[ch] || ch;
@@ -1135,41 +1029,280 @@
       return res;
     }
 
-    testInput.addEventListener('input', (e) => {
-      const val = e.target.value;
-      if (!val) {
-        persianOutput.textContent = '...';
-        trOutput.textContent = '...';
-        return;
-      }
+    function addMessageToTelegram(text, isOut = true, isPersian = true) {
+      const bubble = document.createElement('div');
+      bubble.className = `tg-msg-bubble ${isOut ? 'out' : 'in'}`;
+      const now = new Date();
+      const timeStr = `${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')}`;
+      bubble.innerHTML = `
+        <div class="tg-bubble-body" style="direction: ${isPersian ? 'rtl' : 'ltr'}; text-align: ${isPersian ? 'right' : 'left'};">
+          ${text}
+        </div>
+        <div class="tg-bubble-meta">
+          <span>${timeStr}</span>
+          ${isOut ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+        </div>
+      `;
+      tgMessagesBox.appendChild(bubble);
+      tgMessagesBox.scrollTop = tgMessagesBox.scrollHeight;
+      kbSound.playSend();
+    }
 
-      const words = val.split(' ');
-      const convertedWords = words.map(convertWord);
-      let fullText = convertedWords.join(' ');
-
-      let textToTr = fullText;
-      if (fullText.startsWith('ترجمه')) {
-        textToTr = fullText.replace(/^ترجمه[:\s]*/, '');
-      }
-
-      persianOutput.textContent = fullText;
-      trOutput.textContent = mockTranslations[textToTr] || 'AI Translation ready...';
-    });
-
-    testInput.addEventListener('keydown', (e) => {
+    // Input typing listener with mechanical sound
+    tgInteractiveInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
-        let text = persianOutput.textContent;
-        if (text.startsWith('ترجمه')) {
-          text = text.replace(/^ترجمه[:\s]*/, '');
-        }
-        persianOutput.textContent = mockTranslations[text] || 'متن ترجمه شده با موفقیت جایگزین شد!';
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (e.key === ' ') {
+        kbSound.playKey('space');
+      } else {
+        kbSound.playKey('normal');
       }
     });
 
-    function applyTest(sample) {
-      testInput.value = sample;
-      testInput.dispatchEvent(new Event('input'));
-      testInput.focus();
+    tgInteractiveInput.addEventListener('input', (e) => {
+      const val = e.target.value;
+      tgGuardAlert.style.display = 'none';
+
+      // Check if starts with English token that should convert to Persian
+      const words = val.split(' ');
+      const converted = words.map((w, i) => convertWord(w, i, words)).join(' ');
+
+      if (val.startsWith('ترجمه') || val.startsWith('رسمی') || val.startsWith('اصلاح')) {
+        tgEngineStatusPill.textContent = 'AutoType: هوش مصنوعی فعال';
+        tgEngineStatusPill.style.color = '#c084fc';
+      } else if (/^[a-zA-Z]/.test(val) && localDict[words[0]]) {
+        tgEngineStatusPill.textContent = 'AutoType: قفل زبان فارسی';
+        tgEngineStatusPill.style.color = '#34d399';
+      } else {
+        tgEngineStatusPill.textContent = 'AutoType: آماده';
+        tgEngineStatusPill.style.color = '#38bdf8';
+      }
+    });
+
+    function handleEnterPress() {
+      let text = tgInteractiveInput.value.trim();
+      if (!text) return;
+
+      // Smart Enter Guard Check (غلط املایی یا اشتباه)
+      if (text.includes('پروژع') || text.includes('موفغیت') || text.includes('انجلم')) {
+        if (enterStage === 0) {
+          // Intercept Enter!
+          tgGuardAlert.style.display = 'flex';
+          tgGuardAlertMsg.innerHTML = '⚠️ <strong>سد هوشمند Enter:</strong> غلط املایی شناسایی شد («پروژع» → «پروژه»، «موفغیت» → «موفقیت»، «انجلم» → «انجام»). پیام ارسال نشد. <strong>Enter مجدد برای اصلاح خودکار و ارسال.</strong>';
+          kbSound.playAlert();
+          pendingFix = text
+            .replace('پروژع', 'پروژه')
+            .replace('موفغیت', 'موفقیت')
+            .replace('انجلم', 'انجام');
+          enterStage = 1;
+          return;
+        } else if (enterStage === 1 && pendingFix) {
+          // Second Enter: Fix and Send!
+          tgGuardAlert.style.display = 'none';
+          addMessageToTelegram(pendingFix, true, true);
+          tgInteractiveInput.value = '';
+          enterStage = 0;
+          pendingFix = null;
+          return;
+        }
+      }
+
+      // AI Prefixes: Translation, Tone, Grammar
+      if (text.startsWith('ترجمه')) {
+        if (enterStage === 0) {
+          tgInteractiveInput.value = 'Tomorrow we have a meeting with the team at the office.';
+          tgInteractiveInput.style.direction = 'ltr';
+          tgEngineStatusPill.textContent = 'AI: ترجمه انجام شد (Enter برای ارسال)';
+          tgEngineStatusPill.style.color = '#34d399';
+          enterStage = 1;
+          return;
+        } else {
+          addMessageToTelegram(tgInteractiveInput.value, true, false);
+          tgInteractiveInput.value = '';
+          tgInteractiveInput.style.direction = 'rtl';
+          enterStage = 0;
+          return;
+        }
+      }
+
+      if (text.startsWith('رسمی')) {
+        if (enterStage === 0) {
+          tgInteractiveInput.value = 'با سلام و احترام، خواهشمند است دستور فرمایید اقدام مقتضی با قید فوریت صورت پذیرد.';
+          tgEngineStatusPill.textContent = 'AI: تبدیل به لحن رسمی (Enter برای ارسال)';
+          tgEngineStatusPill.style.color = '#34d399';
+          enterStage = 1;
+          return;
+        } else {
+          addMessageToTelegram(tgInteractiveInput.value, true, true);
+          tgInteractiveInput.value = '';
+          enterStage = 0;
+          return;
+        }
+      }
+
+      if (text.startsWith('اصلاح')) {
+        if (enterStage === 0) {
+          tgInteractiveInput.value = 'این پروژه با موفقیت انجام شد.';
+          tgEngineStatusPill.textContent = 'AI: اصلاح نگارشی انجام شد (Enter برای ارسال)';
+          tgEngineStatusPill.style.color = '#34d399';
+          enterStage = 1;
+          return;
+        } else {
+          addMessageToTelegram(tgInteractiveInput.value, true, true);
+          tgInteractiveInput.value = '';
+          enterStage = 0;
+          return;
+        }
+      }
+
+      // Standard Send
+      const words = text.split(' ');
+      const converted = words.map((w, i) => convertWord(w, i, words)).join(' ');
+      addMessageToTelegram(converted, true, !/^[a-zA-Z\s]+$/.test(converted));
+      tgInteractiveInput.value = '';
+      enterStage = 0;
+    }
+
+    function handleSendButtonClick() {
+      handleEnterPress();
+    }
+
+    // --- AUTOMATED SCENARIO SIMULATOR FOR SIDE TEST BUTTONS ---
+    function sleep(ms) {
+      return new Promise(r => setTimeout(r, ms));
+    }
+
+    async function runScenario(id) {
+      if (isAutomating) return;
+      isAutomating = true;
+      enterStage = 0;
+      tgGuardAlert.style.display = 'none';
+
+      document.querySelectorAll('.scenario-card').forEach((c, idx) => {
+        c.classList.toggle('active', (idx + 1) === id);
+      });
+
+      tgInteractiveInput.value = '';
+      tgInteractiveInput.focus();
+
+      if (id === 1) {
+        // Scenario 1: sghl -> سلام
+        tgCurrentModeText.textContent = 'در حال تایپ اشتباهی sghl به قصد سلام...';
+        const letters = ['s', 'g', 'h', 'l'];
+        for (const l of letters) {
+          tgInteractiveInput.value += l;
+          kbSound.playKey('normal');
+          await sleep(150);
+        }
+        await sleep(300);
+        tgInteractiveInput.value = 'سلام ';
+        kbSound.playKey('space');
+        tgEngineStatusPill.textContent = 'AutoType: قفل زبان فارسی فعال شد';
+        const rest = 'پروژه آماده است.';
+        for (const ch of rest) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey('normal');
+          await sleep(65);
+        }
+        await sleep(700);
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (id === 2) {
+        // Scenario 2: Bilingual React and Tailwind
+        tgCurrentModeText.textContent = 'تایپ چندزبانه با کلمات فنی...';
+        const phrase = 'طراحی کامپوننت با React و Tailwind انجام شد.';
+        for (const ch of phrase) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey(ch === ' ' ? 'space' : 'normal');
+          await sleep(55);
+        }
+        await sleep(700);
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (id === 3) {
+        // Scenario 3: Real Semi-space
+        tgCurrentModeText.textContent = 'تایپ نیم‌فاصله واقعی با Shift+Space...';
+        const phrase = 'سیستم به صورت حرفه‌ای تنظیم می‌شود.';
+        for (const ch of phrase) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey(ch === ' ' ? 'space' : 'normal');
+          await sleep(55);
+        }
+        await sleep(700);
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (id === 4) {
+        // Scenario 4: AI Translation on Enter
+        tgCurrentModeText.textContent = 'شروع با پیشوند ترجمه...';
+        const phrase = 'ترجمه فردا جلسه با تیم در دفتر داریم.';
+        for (const ch of phrase) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey(ch === ' ' ? 'space' : 'normal');
+          await sleep(50);
+        }
+        await sleep(800);
+        // Press Enter 1: Translate
+        kbSound.playKey('enter');
+        handleEnterPress();
+        await sleep(1400);
+        // Press Enter 2: Send
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (id === 5) {
+        // Scenario 5: AI Formal tone on Enter
+        tgCurrentModeText.textContent = 'شروع با پیشوند رسمی (تغییر لحن)...';
+        const phrase = 'رسمی سلام داداش دمت گرم کار رو سریع جمع کن.';
+        for (const ch of phrase) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey(ch === ' ' ? 'space' : 'normal');
+          await sleep(50);
+        }
+        await sleep(800);
+        // Press Enter 1: Formalize
+        kbSound.playKey('enter');
+        handleEnterPress();
+        await sleep(1500);
+        // Press Enter 2: Send
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (id === 6) {
+        // Scenario 6: Smart Enter Guard against typos
+        tgCurrentModeText.textContent = 'تایپ عمدی با غلط‌های املایی...';
+        const phrase = 'این پروژع با موفغیت انجلم شود.';
+        for (const ch of phrase) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey(ch === ' ' ? 'space' : 'normal');
+          await sleep(50);
+        }
+        await sleep(800);
+        // Press Enter 1: Caught by Guard!
+        kbSound.playKey('enter');
+        handleEnterPress();
+        await sleep(2200);
+        // Press Enter 2: Fixed and Sent!
+        kbSound.playKey('enter');
+        handleEnterPress();
+      } else if (id === 7) {
+        // Scenario 7: Homograph fun -> بعد
+        tgCurrentModeText.textContent = 'کلمات مشترک در هر دو زبان بر اساس کلمه قبل...';
+        const phrase = 'سلام fun از ظهر جلسه داریم.';
+        for (const ch of phrase) {
+          tgInteractiveInput.value += ch;
+          kbSound.playKey(ch === ' ' ? 'space' : 'normal');
+          await sleep(55);
+        }
+        await sleep(500);
+        // Replace fun with بعد because preceding word was سلام
+        tgInteractiveInput.value = 'سلام بعد از ظهر جلسه داریم.';
+        tgEngineStatusPill.textContent = 'AutoType: اولویت زبان کلمهٔ قبل (فارسی)';
+        await sleep(700);
+        kbSound.playKey('enter');
+        handleEnterPress();
+      }
+
+      tgCurrentModeText.textContent = 'حالت: تایپ مستقیم در تلگرام';
+      isAutomating = false;
     }
 
     function copyCommand() {
@@ -1180,11 +1313,6 @@
         setTimeout(() => btn.textContent = 'کپی دستور', 2000);
       });
     }
-
-    // Launch telegram animation
-    runTelegramSimulation();
-    // Init playground
-    applyTest('sghl');
   </script>
 </body>
 </html>
