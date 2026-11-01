@@ -79,6 +79,32 @@ public enum PersianLayout {
         }
         return result
     }
+
+    /// Converts the Persian letters of a text into their Latin keys, leaving
+    /// everything else alone.
+    ///
+    /// `convertToLatin(_:)` gives up as soon as it meets a character that has
+    /// no Persian form, so it cannot handle a sentence. This one keeps the
+    /// spaces, the punctuation and the numbers, and turns the zero-width
+    /// non-joiner into a space because the Latin layout has no key for it.
+    public static func latinize(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+        var result = ""
+        result.reserveCapacity(text.count)
+        // The scalars are walked one by one: a zero width non-joiner belongs
+        // to the grapheme cluster of the letter in front of it, so it would
+        // never be seen as a character of its own.
+        for scalar in text.unicodeScalars {
+            if scalar == "\u{200C}" {
+                result.append(" ")
+            } else if let latin = persianToKey[Character(String(scalar))] {
+                result.append(latin)
+            } else {
+                result.unicodeScalars.append(scalar)
+            }
+        }
+        return result
+    }
     public static let persianLetters: Set<Character> = Set(keyToPersian.values).union(shiftKeyToPersian.values)
 
     /// Checks if a character is within the Unicode Arabic/Persian blocks or ZWNJ.

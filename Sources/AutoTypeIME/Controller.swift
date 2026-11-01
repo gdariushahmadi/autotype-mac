@@ -727,6 +727,9 @@ final class Controller: IMKInputController {
     }
 
     /// Opens the settings app.
+    ///
+    /// The settings live in their own window, so the app is started with
+    /// `--open-settings` and comes up with that window in front of the user.
     @objc func showSettings(_ sender: Any?) {
         let candidates = [
             "/Applications/AutoType Settings.app",
@@ -735,10 +738,12 @@ final class Controller: IMKInputController {
         ]
         for path in candidates {
             let url = URL(fileURLWithPath: path)
-            if FileManager.default.fileExists(atPath: url.path) {
-                NSWorkspace.shared.open(url)
-                return
-            }
+            guard FileManager.default.fileExists(atPath: url.path) else { continue }
+            let configuration = NSWorkspace.OpenConfiguration()
+            configuration.arguments = ["--open-settings"]
+            configuration.activates = true
+            NSWorkspace.shared.openApplication(at: url, configuration: configuration, completionHandler: nil)
+            return
         }
         NSWorkspace.shared.open(URL(fileURLWithPath: "/Applications/"))
     }

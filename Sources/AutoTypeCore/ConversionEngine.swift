@@ -29,10 +29,10 @@ public enum EnglishModifier: String, Codable, CaseIterable, Sendable {
     public var displayName: String {
         switch self {
         case .none: return "None"
-        case .rightCommand: return "Right ⌘"
-        case .rightOption: return "Right ⌥"
-        case .rightShift: return "Right ⇧"
-        case .leftShift: return "Left ⇧"
+        case .rightCommand: return "Right Command"
+        case .rightOption: return "Right Option"
+        case .rightShift: return "Right Shift"
+        case .leftShift: return "Left Shift"
         }
     }
 }
@@ -145,6 +145,67 @@ public final class ConversionEngine {
     public func convertSelection(_ text: String) -> String {
         guard let persian = PersianLayout.convert(text) else { return text }
         return persian
+    }
+
+    /// Converts a whole passage, one word at a time.
+    ///
+    /// `convertSelection(_:)` maps every letter, so an English word comes
+    /// back as gibberish Persian letters. This walks the passage the same way
+    /// the typing path does: every word is looked up in the dictionary and
+    /// only the words that really are Persian are replaced. Whitespace,
+    /// punctuation, numbers and technical strings are kept exactly as they
+    /// were.
+    public func convertText(_ text: String) -> String {
+        guard !text.isEmpty else { return text }
+
+        var result = ""
+        var word = ""
+        var context = ConversionContext()
+
+        func commit() {
+            guard !word.isEmpty else { return }
+            let decision = decide(token: word, context: context)
+            switch decision {
+            case .convertToPersian(let persian):
+                result += persian
+                let locked = context.sentenceLanguageIsPersian ?? true
+                context = ConversionContext(
+                    previousWasPersian: true,
+                    previousPersianWord: persian,
+                    sentenceLanguageIsPersian: locked
+                )
+            case .keepAsTyped(let kept):
+                result += kept
+                let locked = context.sentenceLanguageIsPersian ?? false
+                context = ConversionContext(
+                    previousWasPersian: false,
+                    previousPersianWord: nil,
+                    sentenceLanguageIsPersian: locked
+                )
+            }
+            // A full stop ends the sentence, so the next word is judged on
+            // its own again.
+            if word.hasSuffix(".") || word.hasSuffix("!") || word.hasSuffix("?")
+                || word.hasSuffix("؟") {
+                context = ConversionContext()
+            }
+            word = ""
+        }
+
+        for character in text {
+            if character.isWhitespace {
+                commit()
+                result.append(character)
+                if character == "\n" {
+                    context = ConversionContext()
+                }
+            } else {
+                word.append(character)
+            }
+        }
+        commit()
+
+        return result
     }
 
     /// Converts the word immediately before the caret.

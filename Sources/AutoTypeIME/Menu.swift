@@ -4,16 +4,23 @@ import AutoTypeCore
 /// The commands AutoType adds to the input menu in the menu bar.
 extension Controller {
 
-    /// The menu shown when the user clicks the input menu while AutoType is
-    /// the active input source.
+    /// The menu shown when the user clicks the input menu while AutoType
+    /// is the active input source.
     override func menu() -> NSMenu! {
         let menu = NSMenu()
         menu.autoenablesItems = false
 
         let settings = makeEngine().settings
 
+        // A quiet header, so the menu says what it belongs to.
+        let header = NSMenuItem(title: "AutoType \(Self.version)", action: nil, keyEquivalent: "")
+        header.isEnabled = false
+        menu.addItem(header)
+
+        menu.addItem(.separator())
+
         let enabledItem = NSMenuItem(
-            title: "Enable AutoType (تایپ هوشمند)",
+            title: "Convert Persian words",
             action: #selector(toggleAutoTypeEnabled),
             keyEquivalent: ""
         )
@@ -90,6 +97,14 @@ extension Controller {
         menu.addItem(restart)
 
         return menu
+    }
+
+    /// The version shown in the header of the menu.
+    static var version: String {
+        let bundle = Bundle.main
+        let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
+        let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
+        return "\(short) (\(build))"
     }
 
     // The menu items carry plain `@objc` actions. InputMethodKit looks them

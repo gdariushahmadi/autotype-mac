@@ -1,5 +1,6 @@
 import Foundation
 import Carbon
+import SwiftUI
 
 /// Whether the AutoType input method is installed and switched on.
 enum InputSourceStatus {
@@ -19,6 +20,38 @@ enum InputSourceStatus {
         case .installed: return "Installed — add it to your input sources"
         case .enabled: return "Active"
         case .unknown: return "Checking…"
+        }
+    }
+
+    /// The sentence under the title: what to do about it.
+    var subtitle: String {
+        switch self {
+        case .notInstalled:
+            return "AutoType has not been added to your input sources yet."
+        case .installed:
+            return "Open Keyboard Settings → Text Input → Edit, add AutoType, and switch to it with Control + Space."
+        case .enabled:
+            return "AutoType is switched on. Keep typing on the English layout — Persian words are converted as you finish them."
+        case .unknown:
+            return "Asking macOS whether AutoType is installed…"
+        }
+    }
+
+    /// The symbol that carries the state.
+    var symbol: String {
+        switch self {
+        case .enabled: return "checkmark.circle.fill"
+        case .installed, .notInstalled: return "exclamationmark.triangle.fill"
+        case .unknown: return "questionmark.circle"
+        }
+    }
+
+    /// The colour of the symbol.
+    var tint: Color {
+        switch self {
+        case .enabled: return .green
+        case .installed, .notInstalled: return .orange
+        case .unknown: return .secondary
         }
     }
 

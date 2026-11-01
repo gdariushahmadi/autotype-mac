@@ -168,4 +168,27 @@ struct ConversionEngineTests {
         #expect(PersianText.containsZeroWidthNonJoiner("کتاب\u{200C}ها"))
         #expect(!PersianText.containsZeroWidthNonJoiner("کتابها"))
     }
+
+    // MARK: - Whole passages
+
+    @Test("A passage is converted word by word")
+    func passageConversion() throws {
+        let engine = try makeEngine()
+        #expect(engine.convertText("sghl ;jhf") == "سلام کتاب")
+        #expect(engine.convertText("hello sghl") == "hello سلام")
+    }
+
+    @Test("A passage keeps its spacing and punctuation")
+    func passageKeepsEverythingElse() throws {
+        let engine = try makeEngine()
+        #expect(engine.convertText("sghl, ;jhf!") == "سلام, کتاب!")
+        #expect(engine.convertText("a\nb") == "a\nb")
+        #expect(engine.convertText("") == "")
+    }
+
+    @Test("Persian text is left alone")
+    func passageKeepsPersian() throws {
+        let engine = try makeEngine()
+        #expect(engine.convertText("سلام دنیا") == "سلام دنیا")
+    }
 }

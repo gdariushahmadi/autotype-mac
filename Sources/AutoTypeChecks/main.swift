@@ -137,6 +137,23 @@ checker.expect(
     "ambiguous word follows Persian context"
 )
 
+checker.group("Whole passages")
+
+checker.expectEqual(engine.convertText("sghl ;jhf"), "سلام کتاب", "a passage is converted word by word")
+checker.expectEqual(engine.convertText("hello sghl"), "hello سلام", "an English word in a passage is left alone")
+checker.expectEqual(engine.convertText("sghl, ;jhf!"), "سلام, کتاب!", "punctuation is kept")
+checker.expectEqual(engine.convertText("سلام دنیا"), "سلام دنیا", "Persian text is left alone")
+checker.expectEqual(engine.convertText("می\u{200C}رود"), "می\u{200C}رود", "Persian text with a ZWNJ is left alone")
+
+checker.group("Latinizing")
+
+checker.expectEqual(PersianLayout.latinize("سلام"), "sghl", "سلام → sghl")
+checker.expectEqual(PersianLayout.latinize("کتاب"), ";jhf", "کتاب → ;jhf")
+checker.expectEqual(PersianLayout.latinize("سلام دنیا"), "sghl nkdh", "a sentence keeps its space")
+checker.expectEqual(PersianLayout.latinize("می\u{200C}رود"), "ld v,n", "the zero width non-joiner becomes a space")
+checker.expectEqual(PersianLayout.latinize("hello 123"), "hello 123", "Latin text is left alone")
+
+
 engine.settings.priority = .persianFirst
 checker.expect(isPersian("fun"), "Persian-first priority converts the homograph")
 engine.settings.priority = .englishFirst

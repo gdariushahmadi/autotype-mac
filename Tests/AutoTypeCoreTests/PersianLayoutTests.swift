@@ -48,4 +48,19 @@ struct PersianLayoutTests {
         #expect(!PersianLayout.containsInteriorPersianOnlyKey("hello,"))
         #expect(!PersianLayout.containsInteriorPersianOnlyKey("hello"))
     }
+
+    @Test("Persian text is turned back into the Latin keys that produce it")
+    func latinize() {
+        #expect(PersianLayout.latinize("سلام") == "sghl")
+        #expect(PersianLayout.latinize("کتاب") == ";jhf")
+        #expect(PersianLayout.latinize("می‌رود") == "ld v,n")
+    }
+
+    @Test("Latinizing keeps everything that is not a Persian letter")
+    func latinizeKeepsTheRest() {
+        #expect(PersianLayout.latinize("سلام دنیا") == "sghl nkdh")
+        #expect(PersianLayout.latinize("سلام، خوب!") == "sghl، o,f!")
+        #expect(PersianLayout.latinize("hello 123") == "hello 123")
+        #expect(PersianLayout.latinize("") == "")
+    }
 }

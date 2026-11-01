@@ -1,209 +1,90 @@
 import SwiftUI
-import AppKit
 import AutoTypeCore
 
+/// The parts AutoType is divided into, one per row in the sidebar.
+enum SettingsSection: String, CaseIterable, Identifiable {
+    case general
+    case dictionary
+    case translation
+    case services
+    case about
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .general: return "General"
+        case .dictionary: return "Dictionary"
+        case .translation: return "Translation"
+        case .services: return "Services"
+        case .about: return "About"
+        }
+    }
+
+    var symbol: String {
+        switch self {
+        case .general: return "gearshape"
+        case .dictionary: return "text.book.closed"
+        case .translation: return "character.bubble"
+        case .services: return "wand.and.stars"
+        case .about: return "info.circle"
+        }
+    }
+}
+
+/// The settings window.
+///
+/// The settings used to be stacked in one narrow column, which made every
+/// part of them feel crowded. They are split the way macOS splits its own
+/// settings: a sidebar that names the parts of AutoType, and a detail pane
+/// that holds the settings of the selected part.
 struct SettingsView: View {
 
     @EnvironmentObject private var model: SettingsModel
-    @State private var selectedTab = Tab.general
-
-    enum Tab: Hashable {
-        case general
-        case dictionary
-        case translation
-    }
+    @State private var selection: SettingsSection?
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Text("AutoType Settings")
-                    .font(.headline)
-                Spacer()
-                Button(action: {
-                    NSApplication.shared.terminate(nil)
-                }) {
-                    Label("خروج کامل (Quit)", systemImage: "xmark.circle.fill")
+        NavigationSplitView {
+            List(selection: $selection) {
+                ForEach(SettingsSection.allCases) { section in
+                    Label(section.title, systemImage: section.symbol)
+                        .tag(section)
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-                .controlSize(.small)
             }
-            .padding(.horizontal)
-            .padding(.top, 8)
-
-            TabView(selection: $selectedTab) {
-                GeneralView()
-                    .tabItem { Label("General", systemImage: "gearshape") }
-                    .tag(Tab.general)
-
-                DictionaryView()
-                    .tabItem { Label("Dictionary", systemImage: "text.book.closed") }
-                    .tag(Tab.dictionary)
-
-                TranslationSettingsView()
-                    .tabItem { Label("Translation", systemImage: "character.bubble") }
-                    .tag(Tab.translation)
-            }
-            .frame(height: 520)
+            .listStyle(.sidebar)
+            .navigationSplitViewColumnWidth(min: 180, ideal: 200, max: 260)
+        } detail: {
+            detail
         }
-        .frame(width: 440)
-    }
-}
-
-// MARK: - General
-
-struct GeneralView: View {
-
-    @EnvironmentObject private var model: SettingsModel
-    @State private var launchAtLogin = LaunchAtLogin.isEnabled
-
-    var body: some View {
-        Form {
-            Section {
-                StatusRow(status: model.inputSourceStatus) {
-                    model.refreshInputSourceStatus()
-                }
-            }
-
-            Section("AutoType") {
-                Toggle("Enable AutoType (تشخیص خودکار فارسی و انگلیسی)", isOn: $model.settings.isEnabled)
-                Text("وقتی تیک نخورده باشد، کیبورد مستقیماً فارسی تایپ می‌کند. با زدن تیک، کلمات انگلیسی و فارسی هوشمند تشخیص داده می‌شوند.")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-
-            if model.settings.isEnabled {
-                Section("Typing") {
-                    Picker("Mode", selection: $model.settings.mode) {
-                        Text("Detect Persian automatically").tag(TypingMode.automatic)
-                        Text("Always type Persian").tag(TypingMode.directPersian)
-                    }
-                    .pickerStyle(.radioGroup)
-
-                    Text(model.settings.mode == .automatic
-                         ? "English words stay as they are; Persian words are converted when you finish the word."
-                         : "Every key produces its Persian letter straight away.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                Section("Ambiguous words") {
-                    Toggle("تشخیص هوشمند زبان از کلمهٔ شروع جمله", isOn: $model.settings.lockLanguageFromSentenceStart)
-                    Text("اگر کلمه اول جمله فارسی باشد، بقیهٔ کلمات آن جمله ترجیحاً فارسی می‌شوند؛ و اگر با انگلیسی شروع شود، بقیهٔ جمله انگلیسی خواهد ماند.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-
-                    Picker("When a word could be either", selection: $model.settings.priority) {
-                        Text("Use the surrounding text").tag(LanguagePriority.automatic)
-                        Text("Prefer Persian").tag(LanguagePriority.persianFirst)
-                        Text("Prefer English").tag(LanguagePriority.englishFirst)
-                    }
-                    .pickerStyle(.radioGroup)
-                }
-
-                Section("Typing English") {
-                    Picker("Hold this key to type plain English", selection: $model.settings.englishModifier) {
-                        ForEach(EnglishModifier.allCases, id: \.self) { modifier in
-                            Text(modifier.displayName).tag(modifier)
-                        }
-                    }
-                }
-
-                Section("Persian text") {
-                    Toggle("Persian numerals ۱۲۳", isOn: $model.settings.usePersianDigits)
-                    Toggle("Persian punctuation ، ؛ ؟ ٪", isOn: $model.settings.usePersianPunctuation)
-                }
-            }
-
-            Section("System") {
-                Toggle("Open AutoType at login", isOn: $launchAtLogin)
-                    .onChange(of: launchAtLogin) { _, newValue in
-                        if !LaunchAtLogin.setEnabled(newValue) {
-                            launchAtLogin = LaunchAtLogin.isEnabled
-                        }
-                    }
-            }
-
-            Section {
-                HStack {
-                    Button("Open Keyboard Settings") { openKeyboardSettings() }
-                    Spacer()
-                    Text("AutoType \(Self.version)")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                HStack {
-                    Button("Restart Input Method") {
-                        let task = Process()
-                        task.launchPath = "/usr/bin/killall"
-                        task.arguments = ["AutoTypeIME"]
-                        try? task.run()
-                        model.refreshInputSourceStatus()
-                    }
-                    Spacer()
-                    Button("Quit AutoType Settings", role: .destructive) {
-                        NSApplication.shared.terminate(nil)
-                    }
-                }
-            }
-        }
-        .formStyle(.grouped)
+        .frame(minWidth: 760, minHeight: 520)
         .onAppear {
             model.reload()
             model.refreshInputSourceStatus()
-            launchAtLogin = LaunchAtLogin.isEnabled
-        }
-    }
-
-    static var version: String {
-        let bundle = Bundle.main
-        let short = bundle.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "1.0"
-        let build = bundle.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "1"
-        return "\(short) (\(build))"
-    }
-
-    private func openKeyboardSettings() {
-        let candidates = [
-            "x-apple.systempreferences:com.apple.Keyboard-Settings.extension?TextInput",
-            "x-apple.systempreferences:com.apple.preference.keyboard",
-        ]
-        for candidate in candidates {
-            if let url = URL(string: candidate), NSWorkspace.shared.open(url) { return }
-        }
-    }
-}
-
-// MARK: - Status
-
-struct StatusRow: View {
-
-    let status: InputSourceStatus
-    let refresh: () -> Void
-
-    var body: some View {
-        HStack(alignment: .firstTextBaseline, spacing: 8) {
-            Image(systemName: status.isUsable ? "checkmark.circle.fill" : "exclamationmark.triangle.fill")
-                .foregroundStyle(status.isUsable ? Color.green : Color.orange)
-                .font(.title3)
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(status.title).font(.headline)
-                if !status.isUsable {
-                    Text("Open Keyboard Settings → Text Input → Edit, then add AutoType.")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            if selection == nil {
+                // A check can ask for one part of the window, so that the
+                // layout of every part can be looked at.
+                selection = AppRouter.shared.pendingSection ?? .general
             }
-            Spacer()
-            Button {
-                refresh()
-            } label: {
-                Image(systemName: "arrow.clockwise")
-            }
-            .buttonStyle(.borderless)
-            .help("Check again")
         }
-        .padding(.vertical, 2)
+    }
+
+    @ViewBuilder
+    private var detail: some View {
+        let section = selection ?? .general
+        VStack(spacing: 0) {
+            PaneTitle(text: section.title)
+            switch section {
+            case .general:
+                GeneralSettingsView()
+            case .dictionary:
+                DictionarySettingsView()
+            case .translation:
+                TranslationSettingsView()
+            case .services:
+                ServicesSettingsView()
+            case .about:
+                AboutSettingsView()
+            }
+        }
     }
 }

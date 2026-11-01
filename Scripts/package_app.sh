@@ -29,10 +29,16 @@ APP="$DIST/$APP_NAME.app"
 CONTENTS="$APP/Contents"
 
 echo "==> Building $EXECUTABLE ($CONFIGURATION)"
+# The debug configuration is compiled without optimizations. macOS only calls
+# the @objc service methods in an optimized build, so the debug build is
+# optimized as well.
+EXTRA_FLAGS=()
+if [ "$CONFIGURATION" = "debug" ]; then EXTRA_FLAGS=(-Xswiftc -O); fi
+
 swift build --disable-sandbox \
     --cache-path "$AUTOTYPE_ROOT/.build/cache" \
     --configuration "$CONFIGURATION" \
-    --product "$EXECUTABLE"
+    --product "$EXECUTABLE" "${EXTRA_FLAGS[@]+"${EXTRA_FLAGS[@]}"}"
 
 BIN_DIR="$(swift build --disable-sandbox \
     --cache-path "$AUTOTYPE_ROOT/.build/cache" \
@@ -94,6 +100,78 @@ cat > "$CONTENTS/Info.plist" <<PLIST
     <array/>
     <key>NSHumanReadableCopyright</key>
     <string>AutoType</string>
+
+    <!-- The actions AutoType offers as macOS Services.
+         The NSMessage value is the name of the method the service provider
+         implements: <NSMessage>:userData:error:. Keep the two in step with
+         Sources/AutoTypeSettings/ServiceProvider.swift. -->
+    <key>NSServices</key>
+    <array>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>AutoType/Convert to Persian</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>convertSelectionToPersian</string>
+            <key>NSPortName</key>
+            <string>AutoType Settings</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>public.utf8-plain-text</string>
+                <string>public.plain-text</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>AutoType/Translate with AI</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>translateSelection</string>
+            <key>NSPortName</key>
+            <string>AutoType Settings</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>public.utf8-plain-text</string>
+                <string>public.plain-text</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>AutoType/Add to Dictionary</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>addSelectionToDictionary</string>
+            <key>NSPortName</key>
+            <string>AutoType Settings</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>public.utf8-plain-text</string>
+                <string>public.plain-text</string>
+            </array>
+        </dict>
+        <dict>
+            <key>NSMenuItem</key>
+            <dict>
+                <key>default</key>
+                <string>AutoType/Convert to Latin</string>
+            </dict>
+            <key>NSMessage</key>
+            <string>convertSelectionToLatin</string>
+            <key>NSPortName</key>
+            <string>AutoType Settings</string>
+            <key>NSSendTypes</key>
+            <array>
+                <string>public.utf8-plain-text</string>
+                <string>public.plain-text</string>
+            </array>
+        </dict>
+    </array>
 </dict>
 </plist>
 PLIST
