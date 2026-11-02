@@ -89,6 +89,24 @@ public final class SortedWordList {
         return index(of: Array(word.utf8)) != nil
     }
 
+    /// Checks for a word that starts with the supplied key.
+    public func containsPrefix(_ prefix: String) -> Bool {
+        let key = Array(prefix.utf8)
+        guard !key.isEmpty else { return false }
+        var low = 0
+        var high = lineStarts.count
+        while low < high {
+            let mid = (low + high) / 2
+            if Self.compare(bytes[keyRange(at: mid)], key) < 0 {
+                low = mid + 1
+            } else {
+                high = mid
+            }
+        }
+        guard low < lineStarts.count else { return false }
+        return bytes[keyRange(at: low)].starts(with: key)
+    }
+
     /// Lexicographic comparison of two byte ranges.
     private static func compare(_ lhs: ArraySlice<UInt8>, _ rhs: [UInt8]) -> Int {
         var left = lhs.startIndex
@@ -180,6 +198,12 @@ public final class Lexicon {
         persianEntry(for: word) != nil
     }
 
+    public func containsPersianPrefix(_ prefix: String) -> Bool {
+        let key = PersianText.lookupKey(prefix)
+        guard !key.isEmpty else { return false }
+        return persianList.containsPrefix(key) || personalPersian.contains { PersianText.lookupKey($0).hasPrefix(key) }
+    }
+
     // MARK: - English
 
     /// `true` when the token is a known English word.
@@ -193,6 +217,12 @@ public final class Lexicon {
             return false
         }
         return englishList.contains(key)
+    }
+
+    public func containsEnglishPrefix(_ prefix: String) -> Bool {
+        let key = prefix.lowercased()
+        guard !key.isEmpty else { return false }
+        return englishList.containsPrefix(key) || protectedEnglish.contains { $0.lowercased().hasPrefix(key) }
     }
 
     /// `true` when the token is a frequently used English word.

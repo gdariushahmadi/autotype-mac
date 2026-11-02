@@ -48,7 +48,7 @@ public enum TechnicalPatterns {
         guard tld.allSatisfy({ $0.isLetter }) else { return false }
         let host = token[..<dot]
         guard !host.isEmpty else { return false }
-        return host.contains(".")
+        return host.allSatisfy { $0.isASCII && ($0.isLetter || $0.isNumber || $0 == "-" || $0 == ".") }
     }
 
     public static func isEmail(_ token: String) -> Bool {
@@ -101,6 +101,10 @@ public enum TechnicalPatterns {
         if token.contains("()") { return true }
         if token.hasSuffix("()") { return true }
         if isKebabCase(token) { return true }
+        // Code identifiers in programming languages never contain Persian punctuation keys (comma, semicolon, brackets, apostrophe)
+        if token.contains(where: { PersianLayout.persianOnlyKeys.contains($0) }) {
+            return false
+        }
         // camelCase / PascalCase: an uppercase letter after the first character.
         if token.count > 1 {
             let characters = Array(token)
@@ -108,6 +112,21 @@ public enum TechnicalPatterns {
                 if characters[index - 1].isLowercase { return true }
             }
         }
+        return false
+    }
+
+    /// `true` when the token matches an unambiguous technical pattern
+    /// (URL, email, IP address, file path, version number, hex color, clock time, underscore, or explicit non-word character).
+    public static func isHardTechnical(_ token: String) -> Bool {
+        if containsNonPersianCharacter(token) { return true }
+        if isURL(token) { return true }
+        if isEmail(token) { return true }
+        if isIPAddress(token) { return true }
+        if isFilePath(token) { return true }
+        if isVersionNumber(token) { return true }
+        if isHexColor(token) { return true }
+        if isClockTime(token) { return true }
+        if token.contains("_") || token.contains("()") || token.hasSuffix("()") { return true }
         return false
     }
 

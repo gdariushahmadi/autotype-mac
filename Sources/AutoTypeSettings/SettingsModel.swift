@@ -10,8 +10,10 @@ import AutoTypeCore
 final class SettingsModel: ObservableObject {
 
     @Published var settings: ConversionSettings {
-        didSet { store.save(settings) }
+        didSet { saveError = store.save(settings) ? nil : "Could not save settings. Check access to the settings folder." }
     }
+
+    @Published var saveError: String?
 
     @Published var dictionary: PersonalDictionary {
         didSet { store.save(dictionary) }

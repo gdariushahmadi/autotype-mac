@@ -22,6 +22,19 @@ struct MenuBarMenu: View {
 
         Divider()
 
+        Toggle("Switch with Caps Lock (سوییچ با کپس‌لاک)", isOn: Binding(
+            get: { model.settings.englishModifier == .capsLock },
+            set: { model.settings.englishModifier = $0 ? .capsLock : .doubleShift }
+        ))
+
+        Picker("Default language", selection: $model.settings.defaultLanguage) {
+            Text("Persian (پیش‌فرض فارسی)").tag(DefaultLanguage.persian)
+            Text("English (پیش‌فرض انگلیسی)").tag(DefaultLanguage.english)
+        }
+        .pickerStyle(.inline)
+
+        Divider()
+
         Toggle("Convert Persian words", isOn: $model.settings.isEnabled)
 
         Divider()

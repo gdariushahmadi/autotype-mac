@@ -97,20 +97,27 @@ struct GeneralSettingsView: View {
                 }
 
                 Section {
-                    Picker("Hold to type plain English", selection: $model.settings.englishModifier) {
+                    Picker("Default typing language", selection: $model.settings.defaultLanguage) {
+                        ForEach(DefaultLanguage.allCases, id: \.self) { lang in
+                            Text(lang.displayName).tag(lang)
+                        }
+                    }
+
+                    Picker("Language switch shortcut", selection: $model.settings.englishModifier) {
                         ForEach(EnglishModifier.allCases, id: \.self) { modifier in
                             Text(modifier.displayName).tag(modifier)
                         }
                     }
                 } header: {
-                    Text("Typing English")
+                    Text("Language & Typing (زبان و تایپ)")
                 } footer: {
-                    InlineHelp("Hold this key while you type to get plain English, with no conversion at all.")
+                    InlineHelp("When default is Persian, the shortcut switches to English. When default is English, the shortcut switches to Persian. With Caps Lock, pressing the Caps Lock key toggles between Persian and English.")
                 }
 
                 Section {
                     Toggle("Smart numbers (۱۲۳ in Persian, 123 at start)", isOn: $model.settings.usePersianDigits)
                     Toggle("Persian punctuation ، ؛ ؟ ٪", isOn: $model.settings.usePersianPunctuation)
+                    Toggle("Fix spaces around punctuation", isOn: $model.settings.fixPunctuationSpacing)
                 } header: {
                     Text("Persian text")
                 } footer: {

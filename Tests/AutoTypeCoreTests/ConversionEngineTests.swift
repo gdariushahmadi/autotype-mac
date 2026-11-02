@@ -35,6 +35,18 @@ struct ConversionEngineTests {
         #expect(convert(";jhf", engine: engine) == "کتاب")
     }
 
+    @Test("Persian words with shifted characters (ژ and آ and hamza)")
+    func shiftedPersianWords() throws {
+        let engine = try makeEngine()
+        #expect(convert("Chgi", engine: engine) == "ژاله")
+        #expect(convert("mC,ia", engine: engine) == "پژوهش")
+        #expect(convert(",dCi", engine: engine) == "ویژه")
+        #expect(convert("lCni", engine: engine) == "مژده")
+        #expect(convert("Hf", engine: engine) == "آب")
+        #expect(convert("khHvhl", engine: engine) == "ناآرام")
+        #expect(convert("rvHk", engine: engine) == "قرآن")
+    }
+
     @Test("A Persian word typed with the comma key")
     func persianWordWithPunctuationKey() throws {
         let engine = try makeEngine()
@@ -358,6 +370,17 @@ struct ConversionEngineTests {
         #expect(engine.convertText("hello fun") == "hello fun")
     }
 
+    @Test("Offline sets English context for an ambiguous word")
+    func offlineSetsEnglishContext() throws {
+        let engine = try makeEngine()
+        let offline = engine.resolve(token: "offline")
+        #expect(offline.output == "offline")
+        #expect(offline.context.sentenceLanguage == .english)
+        #expect(engine.resolve(token: "and", context: offline.context).output == "and")
+        #expect(engine.convertText("offline and a new message") == "offline and a new message")
+        #expect(engine.convertText("sghl and") == "سلام شدی")
+    }
+
     @Test("A Persian sentence keeps the English words that have no Persian equivalent")
     func persianSentenceKeepsEnglish() throws {
         let engine = try makeEngine()
@@ -442,6 +465,8 @@ struct ConversionEngineTests {
         #expect(convert("]xv,d", engine: engine) == "چطوری")         // چطروی -> چطوری
         #expect(convert("gshl", engine: engine) == "سلام")           // لسام -> سلام
         #expect(convert(";jfh", engine: engine) == "کتاب")           // کتبا -> کتاب
+        #expect(convert("ak,k", engine: engine) == "نشون")           // شنون -> نشون
+        #expect(convert(";hfv", engine: engine) == "کاربر")          // کابر -> کاربر
 
         // Direct Persian Unicode tokens with transposed letters
         #expect(convert("انلگیس", engine: engine) == "انگلیس")
@@ -449,6 +474,15 @@ struct ConversionEngineTests {
         #expect(convert("برنماه", engine: engine) == "برنامه")
         #expect(convert("فراسی", engine: engine) == "فارسی")
         #expect(convert("مکشل", engine: engine) == "مشکل")
+        #expect(convert("شنون", engine: engine) == "نشون")
+        #expect(convert("کابر", engine: engine) == "کاربر")
+        #expect(convert("کابرر", engine: engine) == "کاربر")
+        #expect(convert("کاررب", engine: engine) == "کاربر")
+        #expect(convert("کرابر", engine: engine) == "کاربر")
+        #expect(convert("اکربر", engine: engine) == "کاربر")
+        #expect(convert("کاریب", engine: engine) == "کاربری")
+        #expect(convert("ldh,[d", engine: engine) == "ایموجی")
+        #expect(convert("میاوجی", engine: engine) == "ایموجی")
     }
 
     @Test("Valid Persian words that are anagrams of other words are never altered")
@@ -457,6 +491,15 @@ struct ConversionEngineTests {
         #expect(convert("shgl", engine: engine) == "سالم")
         #expect(convert(";hjf", engine: engine) == "کاتب")
         #expect(convert("l[gi", engine: engine) == "مجله")
+        #expect(convert("ka,k", engine: engine) == "نشون")
+        #expect(convert("نشون", engine: engine) == "نشون")
+        #expect(convert(";hvfv", engine: engine) == "کاربر")
+        #expect(convert("کاربر", engine: engine) == "کاربر")
+        #expect(convert("hdl,[d", engine: engine) == "ایموجی")
+        #expect(convert("ایموجی", engine: engine) == "ایموجی")
+        #expect(convert(",qudja", engine: engine) == "وضعیتش")
+        #expect(convert("وضعیتش", engine: engine) == "وضعیتش")
+        #expect(convert("عضویتش", engine: engine) == "عضویتش")
     }
 
     @Test("Transposed English words are corrected and preserve case")

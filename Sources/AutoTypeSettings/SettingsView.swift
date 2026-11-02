@@ -73,6 +73,12 @@ struct SettingsView: View {
         let section = selection ?? .general
         VStack(spacing: 0) {
             PaneTitle(text: section.title)
+            if let error = model.saveError {
+                Text(error)
+                    .foregroundStyle(.red)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal)
+            }
             switch section {
             case .general:
                 GeneralSettingsView()

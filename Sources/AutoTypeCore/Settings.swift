@@ -12,6 +12,10 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
     public var usePersianDigits: Bool = true
     /// Use `،` `؛` `؟` `٪` instead of their ASCII equivalents.
     public var usePersianPunctuation: Bool = true
+    /// Correct spaces around sentence punctuation.
+    public var fixPunctuationSpacing: Bool = true
+    /// The default typing language (Persian converts by default, English types plain by default).
+    public var defaultLanguage: DefaultLanguage = .persian
     /// The key that types plain English while held down.
     public var englishModifier: EnglishModifier = .rightCommand
     /// Convert the selected text when the explicit command is used.
@@ -47,6 +51,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         priority = try container.decodeIfPresent(LanguagePriority.self, forKey: .priority) ?? .automatic
         usePersianDigits = try container.decodeIfPresent(Bool.self, forKey: .usePersianDigits) ?? true
         usePersianPunctuation = try container.decodeIfPresent(Bool.self, forKey: .usePersianPunctuation) ?? true
+        fixPunctuationSpacing = try container.decodeIfPresent(Bool.self, forKey: .fixPunctuationSpacing) ?? true
+        defaultLanguage = try container.decodeIfPresent(DefaultLanguage.self, forKey: .defaultLanguage) ?? .persian
         englishModifier = try container.decodeIfPresent(EnglishModifier.self, forKey: .englishModifier) ?? .rightCommand
         convertSelection = try container.decodeIfPresent(Bool.self, forKey: .convertSelection) ?? true
         showPreview = try container.decodeIfPresent(Bool.self, forKey: .showPreview) ?? false
@@ -65,6 +71,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         priority: LanguagePriority = .automatic,
         usePersianDigits: Bool = true,
         usePersianPunctuation: Bool = true,
+        fixPunctuationSpacing: Bool = true,
+        defaultLanguage: DefaultLanguage = .persian,
         englishModifier: EnglishModifier = .rightCommand,
         convertSelection: Bool = true,
         showPreview: Bool = false,
@@ -81,6 +89,8 @@ public struct ConversionSettings: Codable, Equatable, Sendable {
         self.priority = priority
         self.usePersianDigits = usePersianDigits
         self.usePersianPunctuation = usePersianPunctuation
+        self.fixPunctuationSpacing = fixPunctuationSpacing
+        self.defaultLanguage = defaultLanguage
         self.englishModifier = englishModifier
         self.convertSelection = convertSelection
         self.showPreview = showPreview
@@ -550,35 +560,45 @@ public final class SettingsStore {
 
     private var cachedSettings: ConversionSettings?
     private var cachedDictionary: PersonalDictionary?
+    private let settingsFileURL: URL
+    private let dictionaryFileURL: URL
 
-    public init() {}
+    public convenience init() {
+        self.init(settingsURL: Self.settingsURL, dictionaryURL: Self.dictionaryURL)
+    }
+
+    init(settingsURL: URL, dictionaryURL: URL) {
+        self.settingsFileURL = settingsURL
+        self.dictionaryFileURL = dictionaryURL
+    }
 
     // MARK: - Settings
 
     /// The current settings, reading from disk the first time.
     public var settings: ConversionSettings {
-        queue.sync {
+        queue.sync(flags: .barrier) {
             if let cachedSettings { return cachedSettings }
-            let loaded = Self.readSettings()
+            let loaded = readSettings()
             cachedSettings = loaded
             return loaded
         }
     }
 
     /// Writes the settings and refreshes the cache.
-    public func save(_ settings: ConversionSettings) {
+    @discardableResult
+    public func save(_ settings: ConversionSettings) -> Bool {
         queue.sync(flags: .barrier) {
             do {
                 try FileManager.default.createDirectory(
-                    at: Self.applicationSupportDirectory,
+                    at: settingsFileURL.deletingLastPathComponent(),
                     withIntermediateDirectories: true
                 )
-                let encoder = JSONEncoder()
-                encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                try encoder.encode(settings).write(to: Self.settingsURL, options: .atomic)
+                try writeSettings(settings)
                 cachedSettings = settings
+                return true
             } catch {
                 NSLog("AutoType: could not save settings: \(error.localizedDescription)")
+                return false
             }
         }
     }
@@ -588,26 +608,31 @@ public final class SettingsStore {
     @discardableResult
     public func reload() -> ConversionSettings {
         queue.sync(flags: .barrier) {
-            let loaded = Self.readSettings()
+            let loaded = readSettings()
             cachedSettings = loaded
             return loaded
         }
     }
 
-    private static func readSettings() -> ConversionSettings {
-        guard let data = try? Data(contentsOf: settingsURL),
-              let decoded = try? JSONDecoder().decode(ConversionSettings.self, from: data) else {
-            return ConversionSettings()
-        }
-        return decoded
+    private func readSettings() -> ConversionSettings {
+        let data = try? Data(contentsOf: settingsFileURL)
+        return data.flatMap { try? JSONDecoder().decode(ConversionSettings.self, from: $0) } ?? ConversionSettings()
+    }
+
+    private func writeSettings(_ settings: ConversionSettings) throws {
+        try FileManager.default.createDirectory(at: settingsFileURL.deletingLastPathComponent(), withIntermediateDirectories: true)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
+        try encoder.encode(settings).write(to: settingsFileURL, options: .atomic)
+        try FileManager.default.setAttributes([.posixPermissions: 0o600], ofItemAtPath: settingsFileURL.path)
     }
 
     // MARK: - Personal dictionary
 
     public var dictionary: PersonalDictionary {
-        queue.sync {
+        queue.sync(flags: .barrier) {
             if let cachedDictionary { return cachedDictionary }
-            let loaded = Self.readDictionary()
+            let loaded = readDictionary()
             cachedDictionary = loaded
             return loaded
         }
@@ -617,12 +642,12 @@ public final class SettingsStore {
         queue.sync(flags: .barrier) {
             do {
                 try FileManager.default.createDirectory(
-                    at: Self.applicationSupportDirectory,
+                    at: dictionaryFileURL.deletingLastPathComponent(),
                     withIntermediateDirectories: true
                 )
                 let encoder = JSONEncoder()
                 encoder.outputFormatting = [.prettyPrinted, .sortedKeys]
-                try encoder.encode(dictionary).write(to: Self.dictionaryURL, options: .atomic)
+                try encoder.encode(dictionary).write(to: dictionaryFileURL, options: .atomic)
                 cachedDictionary = dictionary
             } catch {
                 NSLog("AutoType: could not save dictionary: \(error.localizedDescription)")
@@ -633,14 +658,14 @@ public final class SettingsStore {
     @discardableResult
     public func reloadDictionary() -> PersonalDictionary {
         queue.sync(flags: .barrier) {
-            let loaded = Self.readDictionary()
+            let loaded = readDictionary()
             cachedDictionary = loaded
             return loaded
         }
     }
 
-    private static func readDictionary() -> PersonalDictionary {
-        guard let data = try? Data(contentsOf: dictionaryURL),
+    private func readDictionary() -> PersonalDictionary {
+        guard let data = try? Data(contentsOf: dictionaryFileURL),
               let decoded = try? JSONDecoder().decode(PersonalDictionary.self, from: data) else {
             return PersonalDictionary()
         }

@@ -17,6 +17,44 @@ extension Controller {
         header.isEnabled = false
         menu.addItem(header)
 
+        let switchKey = settings.englishModifier == .capsLock ? "Caps Lock" : (settings.englishModifier == .doubleShift ? "Double Shift" : settings.englishModifier.displayName)
+        let activeStatusTitle = isEnglishOnly
+            ? "English Only (\(switchKey) to switch)"
+            : "Persian Active (\(switchKey) to switch)"
+        let status = NSMenuItem(title: activeStatusTitle, action: #selector(toggleCurrentLanguage), keyEquivalent: "")
+        status.target = self
+        status.state = isEnglishOnly ? .on : .off
+        menu.addItem(status)
+
+        menu.addItem(.separator())
+
+        let capsLockItem = NSMenuItem(
+            title: "Switch Language with Caps Lock",
+            action: #selector(toggleCapsLockShortcut),
+            keyEquivalent: ""
+        )
+        capsLockItem.target = self
+        capsLockItem.state = settings.englishModifier == .capsLock ? .on : .off
+        menu.addItem(capsLockItem)
+
+        let defaultPersian = NSMenuItem(
+            title: "Default: Persian (پیش‌فرض فارسی)",
+            action: #selector(setDefaultPersian),
+            keyEquivalent: ""
+        )
+        defaultPersian.target = self
+        defaultPersian.state = settings.defaultLanguage == .persian ? .on : .off
+        menu.addItem(defaultPersian)
+
+        let defaultEnglish = NSMenuItem(
+            title: "Default: English (پیش‌فرض انگلیسی)",
+            action: #selector(setDefaultEnglish),
+            keyEquivalent: ""
+        )
+        defaultEnglish.target = self
+        defaultEnglish.state = settings.defaultLanguage == .english ? .on : .off
+        menu.addItem(defaultEnglish)
+
         menu.addItem(.separator())
 
         let enabledItem = NSMenuItem(
@@ -118,6 +156,36 @@ extension Controller {
     @objc func toggleAutoTypeEnabled(_ sender: Any?) {
         var settings = settingsStore.settings
         settings.isEnabled.toggle()
+        settingsStore.save(settings)
+        reloadSettings()
+    }
+
+    @objc func toggleCurrentLanguage(_ sender: Any?) {
+        setEnglishOnly(!isEnglishOnly)
+        observedCapsLock = isEnglishOnly
+    }
+
+    @objc func toggleCapsLockShortcut(_ sender: Any?) {
+        var settings = settingsStore.settings
+        if settings.englishModifier == .capsLock {
+            settings.englishModifier = .doubleShift
+        } else {
+            settings.englishModifier = .capsLock
+        }
+        settingsStore.save(settings)
+        reloadSettings()
+    }
+
+    @objc func setDefaultPersian(_ sender: Any?) {
+        var settings = settingsStore.settings
+        settings.defaultLanguage = .persian
+        settingsStore.save(settings)
+        reloadSettings()
+    }
+
+    @objc func setDefaultEnglish(_ sender: Any?) {
+        var settings = settingsStore.settings
+        settings.defaultLanguage = .english
         settingsStore.save(settings)
         reloadSettings()
     }

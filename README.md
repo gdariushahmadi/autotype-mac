@@ -101,10 +101,18 @@ Two rules keep the guessing honest:
 - **A word is only converted when the Persian reading is a real word.** Anything else is
   left exactly as it was typed.
 
-### The English modifier
+### Language switching and shortcuts
 
-Hold the right **⌘** (the default) while typing to get plain English without any
-conversion. The key can be changed in the settings.
+- **Default typing language:** Choose whether AutoType starts in Persian (default) or plain English.
+- **Caps Lock (toggle):** Set the shortcut to Caps Lock to switch between English and Persian with the Caps Lock key. When Caps Lock is active, letters are typed in the alternate language without requiring Shift for lowercase typing.
+- **Double Shift (toggle):** Press Shift twice for English-only typing, and press Shift twice again to return to automatic typing. An **EN** icon appears in the menu bar while English-only typing is on.
+- **Hold modifier:** Hold the right **⌘** (or right Option / Shift) while typing to get plain English without any conversion.
+
+All these options can also be toggled and monitored directly from the menu bar menu.
+
+AutoType can also correct spaces around sentence punctuation while typing.
+Turn **Fix spaces around punctuation** off in General settings to disable it.
+Technical tokens, numbers, and direct English typing are left alone.
 
 ### Direct Persian mode
 
@@ -128,8 +136,10 @@ of AutoType, and a pane for the part you are looking at.
 | **About** | The version, the login item and the files AutoType keeps |
 
 Settings live in `~/Library/Application Support/AutoType/settings.json` and
-`dictionary.json`. The input method watches that folder, so a change takes effect
-immediately — no need to switch applications.
+`dictionary.json`. The AI service key is stored in the settings file, which
+is restricted to the current user. If the key was stored in the Keychain by an
+older version, enter it again in Translation settings. The input method watches
+the settings folder, so changes take effect immediately.
 
 ---
 

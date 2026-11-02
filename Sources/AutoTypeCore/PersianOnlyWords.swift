@@ -38,6 +38,7 @@ public enum PersianOnlyWords {
         "این",  // hdk
         "آن",   // hk
         "اب",   // hf
+        "آب",   // Hf
 
         // High-frequency Persian words whose Latin keys match non-word English abbreviations/codes
         "یک",   // d;

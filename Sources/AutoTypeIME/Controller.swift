@@ -1,4 +1,5 @@
 import AppKit
+import CoreGraphics
 import InputMethodKit
 import AutoTypeCore
 
@@ -21,6 +22,16 @@ final class Controller: IMKInputController {
     private var markedRange = NSRange(location: NSNotFound, length: 0)
     /// Context for disambiguating the next word.
     private var context = ConversionContext()
+    private static var englishOnly = false
+    private static var englishStatusItem: NSStatusItem?
+    private var shiftDown: UInt16?
+    private var shiftTapWasUsed = false
+    private var lastShiftTap: (key: UInt16, time: TimeInterval)?
+    private var shiftPollTimer: Timer?
+    private var observedShift = false
+    var observedCapsLock = false
+
+    var isEnglishOnly: Bool { Self.englishOnly }
     /// The most recent automatic conversion, so it can be undone.
     private var lastConversion: Conversion?
     /// `true` while the user asked AutoType to stand down.
@@ -30,11 +41,15 @@ final class Controller: IMKInputController {
 
     private enum TranslationState {
         case idle
-        case translating
+        case translating(id: UUID)
         case readyToSend(originalText: String, translatedText: String, range: NSRange)
     }
 
     private var translationState: TranslationState = .idle
+    private var translationTask: Task<Void, Never>?
+    var translationProcessor: (String, String, TranslationSettings) async throws -> String = { text, prompt, settings in
+        try await TranslationService.shared.process(text: text, systemPrompt: prompt, settings: settings)
+    }
     private var awaitingForbiddenConfirmation: (detectedWords: [String], line: String)? = nil
     private var sessionLineBuffer = ""
 
@@ -102,6 +117,12 @@ final class Controller: IMKInputController {
         let dictionary = settingsStore.reloadDictionary()
         let engine = makeEngine()
         engine.settings = settings
+        if settings.englishModifier == .capsLock {
+            let isCapsOn = CGEventSource.flagsState(.combinedSessionState).contains(.maskAlphaShift)
+            syncCapsLockState(isCapsOn)
+        } else if settings.englishModifier != .doubleShift {
+            setEnglishOnly(settings.defaultLanguage == .english)
+        }
         engine.lexicon.personalPersian = Set(dictionary.persianWords.map(PersianText.lookupKey))
         engine.lexicon.protectedEnglish = Set(dictionary.englishWords.map { $0.lowercased() })
     }
@@ -109,8 +130,12 @@ final class Controller: IMKInputController {
     // MARK: - IMKServerInput
 
     override func handle(_ event: NSEvent!, client sender: Any!) -> Bool {
-        guard let event, event.type == .keyDown else { return false }
+        guard let event else { return false }
         guard let client = sender as? IMKTextInput else { return false }
+        if event.type == .flagsChanged {
+            return handleFlagsChanged(event: event, client: client)
+        }
+        guard event.type == .keyDown else { return false }
         return handleKeyInput(
             characters: event.characters,
             charactersIgnoringModifiers: event.charactersIgnoringModifiers,
@@ -120,23 +145,57 @@ final class Controller: IMKInputController {
         )
     }
 
+    private func handleFlagsChanged(event: NSEvent, client: IMKTextInput) -> Bool {
+        let settings = makeEngine().settings
+        let flags = event.modifierFlags
+        if settings.englishModifier == .capsLock {
+            let isCapsOn = flags.contains(.capsLock)
+            observedCapsLock = isCapsOn
+            let targetEnglishOnly = (settings.defaultLanguage == .persian) ? isCapsOn : !isCapsOn
+            if Self.englishOnly != targetEnglishOnly {
+                if !buffer.isEmpty { flushBuffer(client: client) }
+                setEnglishOnly(targetEnglishOnly)
+            }
+            return false
+        } else if settings.englishModifier == .doubleShift {
+            let keyCode = event.keyCode
+            let timestamp = event.timestamp
+            handleModifierChange(keyCode: keyCode, flags: flags, timestamp: timestamp, client: client)
+            return false
+        }
+        return false
+    }
+
     override func activateServer(_ sender: Any!) {
         reloadSettings()
         isPaused = false
+        shiftDown = nil
+        lastShiftTap = nil
         buffer = ""
         markedRange = NSRange(location: NSNotFound, length: 0)
         context = ConversionContext()
+        translationTask?.cancel()
+        translationTask = nil
         translationState = .idle
+        lastConversion = nil
         awaitingForbiddenConfirmation = nil
         sessionLineBuffer = ""
+        startShiftMonitor()
     }
 
     override func deactivateServer(_ sender: Any!) {
+        shiftPollTimer?.invalidate()
+        shiftPollTimer = nil
         flushBuffer(client: sender as? IMKTextInput)
         buffer = ""
         markedRange = NSRange(location: NSNotFound, length: 0)
         context = ConversionContext()
+        shiftDown = nil
+        lastShiftTap = nil
+        translationTask?.cancel()
+        translationTask = nil
         translationState = .idle
+        lastConversion = nil
         awaitingForbiddenConfirmation = nil
         sessionLineBuffer = ""
     }
@@ -162,8 +221,8 @@ final class Controller: IMKInputController {
     }
 
     override func recognizedEvents(_ sender: Any!) -> Int {
-        // Ask to receive key events.
-        return Int(NSEvent.EventTypeMask.keyDown.rawValue)
+        // Ask to receive key events and modifier flag changes.
+        return Int(NSEvent.EventTypeMask.keyDown.rawValue | NSEvent.EventTypeMask.flagsChanged.rawValue)
     }
 
     override func candidates(_ sender: Any!) -> [Any]! {
@@ -172,19 +231,6 @@ final class Controller: IMKInputController {
 
     // MARK: - Key handling
 
-    private func logDebug(_ msg: String) {
-        let line = "\(Date()): \(msg)\n"
-        if let data = line.data(using: .utf8) {
-            if let handle = try? FileHandle(forWritingTo: URL(fileURLWithPath: "/tmp/autotype_debug.log")) {
-                handle.seekToEndOfFile()
-                handle.write(data)
-                try? handle.close()
-            } else {
-                try? data.write(to: URL(fileURLWithPath: "/tmp/autotype_debug.log"))
-            }
-        }
-    }
-
     private func handleKeyInput(
         characters: String?,
         charactersIgnoringModifiers: String?,
@@ -192,16 +238,77 @@ final class Controller: IMKInputController {
         modifierFlags: NSEvent.ModifierFlags,
         client: IMKTextInput
     ) -> Bool {
-        logDebug("handleKeyInput: keyCode=\(keyCode), chars=\(characters ?? ""), flags=\(modifierFlags.rawValue), buf=\(buffer)")
+
+        if shiftDown != nil || modifierFlags.contains(.shift) { shiftTapWasUsed = true }
+        lastShiftTap = nil
 
         // If the active application is in the excluded/disabled list, stand down completely
         let currentAppID = currentAppBundleIdentifier(client: client)
         let settings = makeEngine().settings
         if settings.isAppDisabled(bundleID: currentAppID) {
+            translationTask?.cancel()
+            translationTask = nil
+            translationState = .idle
             if !buffer.isEmpty {
                 flushBuffer(client: client)
             }
             return false
+        }
+
+        // A paused input method must pass all keys to the client.
+        if isPaused { return false }
+
+        if settings.englishModifier == .capsLock {
+            let isCapsOn = modifierFlags.contains(.capsLock)
+            observedCapsLock = isCapsOn
+            let targetEnglishOnly = (settings.defaultLanguage == .persian) ? isCapsOn : !isCapsOn
+            if Self.englishOnly != targetEnglishOnly {
+                if !buffer.isEmpty { flushBuffer(client: client) }
+                setEnglishOnly(targetEnglishOnly)
+            }
+        } else if settings.englishModifier != .doubleShift {
+            let targetEnglishOnly = (settings.defaultLanguage == .english)
+            if Self.englishOnly != targetEnglishOnly {
+                if !buffer.isEmpty { flushBuffer(client: client) }
+                setEnglishOnly(targetEnglishOnly)
+            }
+        }
+
+        if Self.englishOnly {
+            // When Caps Lock is the active shortcut and physically engaged, macOS emits uppercase characters.
+            // If Shift is NOT held, insert lowercase letters so the user gets normal English typing.
+            if settings.englishModifier == .capsLock && modifierFlags.contains(.capsLock) {
+                if !modifierFlags.contains(.shift) && !modifierFlags.contains(.command) && !modifierFlags.contains(.control) {
+                    if let characters, characters.count == 1, let ch = characters.first, ch.isLetter {
+                        let lower = String(ch).lowercased()
+                        client.insertText(lower, replacementRange: NSRange(location: NSNotFound, length: 0))
+                        sessionLineBuffer.append(Character(lower))
+                        return true
+                    }
+                }
+            }
+
+            // Let the client handle the keys, including shortcuts, numbers,
+            // punctuation, deletion and capital letters, without conversion.
+            if !modifierFlags.contains(.command) && !modifierFlags.contains(.control),
+               let characters, characters.count == 1,
+               let character = characters.first, !character.isNewline,
+               !character.isASCII || (character.asciiValue ?? 0) >= 32 {
+                sessionLineBuffer.append(character)
+            } else {
+                sessionLineBuffer = ""
+            }
+            return false
+        }
+
+        // An edit or caret move invalidates the pending request.
+        if case .translating = translationState, keyCode != 36 && keyCode != 76 && keyCode != 53 {
+            translationTask?.cancel()
+            translationTask = nil
+            translationState = .idle
+        }
+        if keyCode != 51 && keyCode != 49 {
+            lastConversion = nil
         }
 
         // Handle readyToSend state for non-Return/non-Escape keys:
@@ -262,6 +369,7 @@ final class Controller: IMKInputController {
             } else {
                 fixLastDirectPersianWordIfNeeded(client: client)
             }
+            if !isEnglishModifierActive(modifierFlags) { applyPunctuationSpacing(client: client) }
             sessionLineBuffer.append(" ")
             return false
         default:
@@ -307,12 +415,11 @@ final class Controller: IMKInputController {
                 } else {
                     fixLastDirectPersianWordIfNeeded(client: client)
                 }
+                if !isEnglishModifierActive(modifierFlags) { applyPunctuationSpacing(client: client) }
                 sessionLineBuffer.append(" ")
                 return false
             }
         }
-
-        guard !isPaused else { return false }
 
         guard settings.isEnabled else {
             if !buffer.isEmpty {
@@ -355,8 +462,16 @@ final class Controller: IMKInputController {
         }
 
         guard let characters, characters.count == 1,
-              let character = characters.first else {
+              var character = characters.first else {
             return false
+        }
+
+        if modifierFlags.contains(.capsLock) && !modifierFlags.contains(.shift) {
+            // If Caps Lock is physically on, normalize Latin keys to lowercase
+            // so they convert to base Persian characters (e.g. 'h' -> 'ا', not shifted 'آ')
+            if let lowered = character.lowercased().first {
+                character = lowered
+            }
         }
 
         if let ascii = character.asciiValue, (ascii < 32 || ascii == 127) {
@@ -364,6 +479,11 @@ final class Controller: IMKInputController {
                 flushBuffer(client: client)
             }
             return false
+        }
+
+        if buffer.isEmpty && (character.isLetter || character.isNumber) {
+            applyPunctuationSpacing(client: client)
+            insertSpaceAfterPunctuationIfNeeded(before: character, client: client)
         }
 
         if settings.mode == .directPersian {
@@ -380,20 +500,15 @@ final class Controller: IMKInputController {
                 return true
             }
             fixLastDirectPersianWordIfNeeded(client: client)
+            sessionLineBuffer.append(character)
             return false
         }
 
-        // Handle numeric digits according to context (start/English -> English digits; inside Persian -> Persian digits)
-        if character.isNumber {
-            if !buffer.isEmpty {
-                flushBuffer(client: client)
-            }
-            return handleDigitInput(character, client: client)
-        }
-
-        // A word can only end at a word boundary, so a character that can be
-        // part of a Persian word keeps the buffer open.
-        if isWordCharacter(character) {
+        // Keep a complete technical token until a boundary. This lets the
+        // engine see the digits and symbols before it converts a word.
+        let technicalSymbol = "@/\\_#.:+~=&".contains(character)
+        let technicalQuery = character == "?" && TechnicalPatterns.isHardTechnical(buffer)
+        if isWordCharacter(character) || character.isNumber || technicalSymbol || technicalQuery {
             buffer.append(character)
             updateMarkedText(client: client)
             return true
@@ -439,6 +554,7 @@ final class Controller: IMKInputController {
             }
             return true
         }
+        if undoLastConversion(client: client) { return true }
         if !sessionLineBuffer.isEmpty {
             sessionLineBuffer.removeLast()
         }
@@ -448,10 +564,10 @@ final class Controller: IMKInputController {
     /// The raw modifier masks for the right-hand keys. AppKit exposes the
     /// left-hand flags as named constants but not the right-hand ones.
     private enum ModifierMask {
-        static let rightCommand = NSEvent.ModifierFlags(rawValue: 1 << 18)
-        static let rightOption = NSEvent.ModifierFlags(rawValue: 1 << 19)
-        static let rightShift = NSEvent.ModifierFlags(rawValue: 1 << 17)
-        static let leftShift = NSEvent.ModifierFlags(rawValue: 1 << 16)
+        static let rightCommand = NSEvent.ModifierFlags(rawValue: 0x10)
+        static let rightOption = NSEvent.ModifierFlags(rawValue: 0x40)
+        static let rightShift = NSEvent.ModifierFlags(rawValue: 0x04)
+        static let leftShift = NSEvent.ModifierFlags(rawValue: 0x02)
     }
 
     private func isEnglishModifierActive(_ flags: NSEvent.ModifierFlags) -> Bool {
@@ -461,7 +577,112 @@ final class Controller: IMKInputController {
         case .rightOption: return flags.contains(ModifierMask.rightOption)
         case .rightShift: return flags.contains(ModifierMask.rightShift)
         case .leftShift: return flags.contains(ModifierMask.leftShift)
+        case .doubleShift, .capsLock: return false
         }
+    }
+
+    private func startShiftMonitor() {
+        shiftPollTimer?.invalidate()
+        let initialFlags = CGEventSource.flagsState(.combinedSessionState)
+        observedShift = initialFlags.contains(.maskShift)
+        observedCapsLock = initialFlags.contains(.maskAlphaShift)
+        shiftTapWasUsed = observedShift
+        let timer = Timer(timeInterval: 0.02, repeats: true) { [weak self] _ in
+            guard let self else { return }
+            let flags = CGEventSource.flagsState(.combinedSessionState)
+            let modifier = self.makeEngine().settings.englishModifier
+            if modifier == .doubleShift {
+                if let client = self.client() {
+                    self.pollShiftState(flags, timestamp: ProcessInfo.processInfo.systemUptime, client: client)
+                }
+            } else if modifier == .capsLock {
+                self.pollCapsLockState(flags)
+            }
+        }
+        shiftPollTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+    }
+
+    func syncCapsLockState(_ isCapsOn: Bool, client: IMKTextInput? = nil) {
+        observedCapsLock = isCapsOn
+        let settings = makeEngine().settings
+        let targetEnglishOnly = (settings.defaultLanguage == .persian) ? isCapsOn : !isCapsOn
+        if Self.englishOnly != targetEnglishOnly {
+            if !buffer.isEmpty, let c = client ?? self.client() {
+                flushBuffer(client: c)
+            }
+            setEnglishOnly(targetEnglishOnly)
+        }
+    }
+
+    func pollCapsLockState(_ flags: CGEventFlags) {
+        let isCapsOn = flags.contains(.maskAlphaShift)
+        guard isCapsOn != observedCapsLock else { return }
+        syncCapsLockState(isCapsOn)
+    }
+
+    func pollShiftState(_ flags: CGEventFlags, timestamp: TimeInterval, client: IMKTextInput) {
+        let isShiftDown = flags.contains(.maskShift)
+        let hasOtherModifier = !flags.intersection([.maskCommand, .maskControl, .maskAlternate]).isEmpty
+        if hasOtherModifier {
+            lastShiftTap = nil
+            if isShiftDown { shiftTapWasUsed = true }
+        }
+        guard isShiftDown != observedShift else { return }
+        observedShift = isShiftDown
+        var modifierFlags: NSEvent.ModifierFlags = isShiftDown ? [.shift, ModifierMask.leftShift] : []
+        if flags.contains(.maskCommand) { modifierFlags.insert(.command) }
+        if flags.contains(.maskControl) { modifierFlags.insert(.control) }
+        if flags.contains(.maskAlternate) { modifierFlags.insert(.option) }
+        handleModifierChange(keyCode: 56, flags: modifierFlags, timestamp: timestamp, client: client)
+    }
+
+    func handleModifierChange(keyCode: UInt16, flags: NSEvent.ModifierFlags, timestamp: TimeInterval, client: IMKTextInput) {
+        guard makeEngine().settings.englishModifier == .doubleShift, !isPaused,
+              !makeEngine().settings.isAppDisabled(bundleID: currentAppBundleIdentifier(client: client)) else {
+            shiftDown = nil
+            lastShiftTap = nil
+            shiftTapWasUsed = false
+            return
+        }
+        guard keyCode == 56 || keyCode == 60 else {
+            if shiftDown != nil { shiftTapWasUsed = true }
+            lastShiftTap = nil
+            return
+        }
+        let mask = keyCode == 56 ? ModifierMask.leftShift : ModifierMask.rightShift
+        let isDown = flags.contains(mask)
+        if isDown {
+            guard shiftDown == nil else { shiftTapWasUsed = true; return }
+            shiftDown = keyCode
+            shiftTapWasUsed = shiftTapWasUsed || !flags.intersection([.command, .control, .option]).isEmpty
+        } else {
+            guard shiftDown == keyCode else { lastShiftTap = nil; shiftTapWasUsed = false; return }
+            shiftDown = nil
+            let wasUsed = shiftTapWasUsed
+            shiftTapWasUsed = false
+            guard !wasUsed else { lastShiftTap = nil; return }
+            if let previous = lastShiftTap, previous.key == keyCode,
+               timestamp >= previous.time, timestamp - previous.time <= 0.4 {
+                lastShiftTap = nil
+                if !buffer.isEmpty { flushBuffer(client: client) }
+                translationTask?.cancel()
+                translationTask = nil
+                translationState = .idle
+                awaitingForbiddenConfirmation = nil
+                lastConversion = nil
+                context = ConversionContext()
+                sessionLineBuffer = ""
+                setEnglishOnly(!Self.englishOnly)
+            } else {
+                lastShiftTap = (keyCode, timestamp)
+            }
+        }
+    }
+
+    func setEnglishOnly(_ enabled: Bool) {
+        guard Self.englishOnly != enabled else { return }
+        Self.englishOnly = enabled
     }
 
     private func insertEnglishCharacter(_ characters: String?, client: IMKTextInput) -> Bool {
@@ -565,7 +786,7 @@ final class Controller: IMKInputController {
         // The preview shows the word the way it is going to be committed, so
         // an English word is never shown as Persian letters and a Persian word
         // is shown as Persian while it is being typed.
-        let displayText = makeEngine().decide(token: buffer, context: context).output
+        let displayText = resolvePunctuationSeparatedToken(buffer)?.output ?? makeEngine().decide(token: buffer, context: context).output
         let length = (displayText as NSString).length
         client.setMarkedText(
             displayText,
@@ -587,10 +808,12 @@ final class Controller: IMKInputController {
         // Whether the text around the word is Persian — the digits and the
         // punctuation that belong to it follow the sentence, not the word.
         let persianContext = context.isPersian
-        let outcome = makeEngine().resolve(token: token, context: context)
+        let outcome = resolvePunctuationSeparatedToken(token) ?? makeEngine().resolve(token: token, context: context)
+        let composing = client.markedRange()
+        let selected = client.selectedRange()
+        let insertionStart = composing.location != NSNotFound ? composing.location : selected.location
         let decision = outcome.decision
         let targetRange = NSRange(location: NSNotFound, length: 0)
-        logDebug("flushBuffer: token=\(token), decision=\(decision), mode=\(settings.mode)")
 
         switch decision {
         case .convertToPersian(let persian):
@@ -604,13 +827,16 @@ final class Controller: IMKInputController {
             client.insertText(output, replacementRange: targetRange)
             sessionLineBuffer.append(output)
             context = outcome.context
-            lastConversion = nil
+            if insertionStart != NSNotFound {
+                lastConversion = Conversion(latin: token, persian: output,
+                                            range: NSRange(location: insertionStart, length: (output as NSString).length))
+            }
         case .keepAsTyped(let text):
             var output = text
-            if settings.usePersianDigits, persianContext {
+            if settings.usePersianDigits, persianContext, token.allSatisfy(\.isNumber) {
                 output = PersianText.persianDigits(output)
             }
-            if settings.usePersianPunctuation, persianContext {
+            if settings.usePersianPunctuation, persianContext, !TechnicalPatterns.isTechnical(token) {
                 output = persianPunctuation(inSuffix: output)
             }
             client.insertText(output, replacementRange: targetRange)
@@ -618,6 +844,77 @@ final class Controller: IMKInputController {
             context = outcome.context
             lastConversion = nil
         }
+        if !TechnicalPatterns.isTechnical(token), token.hasSuffix(".") {
+            context = ConversionContext()
+        }
+    }
+
+    /// Resolve words separated by a dot or colon when the token is not a URL,
+    /// path, number, or another protected technical string.
+    private func resolvePunctuationSeparatedToken(_ token: String) -> WordOutcome? {
+        guard makeEngine().settings.fixPunctuationSpacing, !TechnicalPatterns.isTechnical(token) else { return nil }
+        let characters = Array(token)
+        guard characters.count >= 3,
+              characters.indices.contains(where: { $0 > 0 && $0 + 1 < characters.count &&
+                  ".:".contains(characters[$0]) && characters[$0 - 1].isLetter && characters[$0 + 1].isLetter }) else { return nil }
+        var localContext = context
+        var output = ""
+        var word = ""
+        for character in characters {
+            if ".:".contains(character) {
+                guard !word.isEmpty else { return nil }
+                let outcome = makeEngine().resolve(token: word, context: localContext)
+                output += outcome.output
+                output.append(character)
+                localContext = character == "." ? ConversionContext() : outcome.context
+                word = ""
+            } else {
+                word.append(character)
+            }
+        }
+        guard !word.isEmpty else { return nil }
+        let last = makeEngine().resolve(token: word, context: localContext)
+        output += last.output
+        return WordOutcome(decision: .keepAsTyped(output), context: last.context)
+    }
+
+    /// Only edit text this controller just inserted and the client can verify.
+    private func applyPunctuationSpacing(client: IMKTextInput) {
+        let settings = makeEngine().settings
+        guard settings.isEnabled, settings.fixPunctuationSpacing, !sessionLineBuffer.isEmpty,
+              sessionLineBuffer.contains(where: { ".,،;؛:؟?!".contains($0) }),
+              sessionLineBuffer.utf16.count <= 4096 else { return }
+        let normalized = PunctuationSpacing.normalize(sessionLineBuffer, lexicon: makeEngine().lexicon)
+        guard normalized != sessionLineBuffer else { return }
+        let selection = client.selectedRange()
+        let length = (sessionLineBuffer as NSString).length
+        guard selection.location != NSNotFound, selection.length == 0, selection.location >= length else { return }
+        let range = NSRange(location: selection.location - length, length: length)
+        if let existing = client.attributedSubstring(from: range)?.string {
+            guard existing == sessionLineBuffer else { return }
+        }
+        client.insertText(normalized, replacementRange: range)
+        sessionLineBuffer = normalized
+        lastConversion = nil
+    }
+
+    private func insertSpaceAfterPunctuationIfNeeded(before character: Character, client: IMKTextInput) {
+        let settings = makeEngine().settings
+        guard settings.isEnabled, settings.fixPunctuationSpacing,
+              let last = sessionLineBuffer.last, ".,،;؛:؟?!".contains(last),
+              sessionLineBuffer.utf16.count <= 4096 else { return }
+        let proposed = sessionLineBuffer + String(character)
+        let formatted = PunctuationSpacing.normalize(proposed, lexicon: makeEngine().lexicon)
+        guard formatted == sessionLineBuffer + " " + String(character) else { return }
+        let selection = client.selectedRange()
+        let length = (sessionLineBuffer as NSString).length
+        guard selection.location != NSNotFound, selection.length == 0, selection.location >= length else { return }
+        let range = NSRange(location: selection.location - length, length: length)
+        if let existing = client.attributedSubstring(from: range)?.string {
+            guard existing == sessionLineBuffer else { return }
+        }
+        client.insertText(" ", replacementRange: NSRange(location: NSNotFound, length: 0))
+        sessionLineBuffer.append(" ")
     }
 
     /// In direct Persian mode (or when Persian characters were inserted directly),
@@ -652,10 +949,11 @@ final class Controller: IMKInputController {
         let oldNSLen = (lastWord as NSString).length
         guard caret != NSNotFound, caret >= oldNSLen else { return }
         let replaceRange = NSRange(location: caret - oldNSLen, length: oldNSLen)
-        if let existing = client.attributedSubstring(from: replaceRange)?.string, existing == lastWord {
-            client.insertText(corrected, replacementRange: replaceRange)
-            sessionLineBuffer.replaceSubrange(wordStart..., with: corrected)
+        if let existing = client.attributedSubstring(from: replaceRange)?.string {
+            guard existing == lastWord else { return }
         }
+        client.insertText(corrected, replacementRange: replaceRange)
+        sessionLineBuffer.replaceSubrange(wordStart..., with: corrected)
     }
 
     /// Rewrites the punctuation that trails a word, leaving the word itself
@@ -677,7 +975,14 @@ final class Controller: IMKInputController {
     private func undoLastConversion(client: IMKTextInput) -> Bool {
         guard let conversion = lastConversion else { return false }
         let caret = client.selectedRange().location
-        guard caret == conversion.range.location + conversion.range.length else { return false }
+        guard caret != NSNotFound, caret == conversion.range.location + conversion.range.length else { return false }
+        if let existing = client.attributedSubstring(from: conversion.range)?.string {
+            guard existing == conversion.persian else { return false }
+        }
+        if sessionLineBuffer.hasSuffix(conversion.persian) {
+            sessionLineBuffer.removeLast(conversion.persian.count)
+            sessionLineBuffer.append(conversion.latin)
+        }
         client.insertText(conversion.latin, replacementRange: conversion.range)
         lastConversion = nil
         context = ConversionContext(previousWasPersian: false, previousPersianWord: nil)
@@ -705,6 +1010,8 @@ final class Controller: IMKInputController {
             fixLastDirectPersianWordIfNeeded(client: client)
         }
 
+        applyPunctuationSpacing(client: client)
+
         let lineText = extractCurrentLineText(client: client)
         let settings = makeEngine().settings
         let dictionary = settingsStore.dictionary
@@ -713,7 +1020,6 @@ final class Controller: IMKInputController {
         if settings.checkForForbiddenWords && !dictionary.forbiddenWords.isEmpty {
             let matched = ForbiddenWordsDetector.findMatches(in: lineText, forbiddenWords: dictionary.forbiddenWords)
             if !matched.isEmpty {
-                logDebug("handleReturn: forbidden words detected: \(matched), action=\(settings.forbiddenWordsAction), line='\(lineText)'")
                 switch settings.forbiddenWordsAction {
                 case .block:
                     NSSound.beep()
@@ -721,7 +1027,6 @@ final class Controller: IMKInputController {
                 case .requireConfirmation:
                     if let pending = awaitingForbiddenConfirmation, pending.line == lineText {
                         // Second Enter: user confirmed sending despite forbidden words!
-                        logDebug("handleReturn: forbidden words confirmed on second Enter for: \(matched)")
                         awaitingForbiddenConfirmation = nil
                         // Proceed below to translation or dispatch
                     } else {
@@ -745,7 +1050,6 @@ final class Controller: IMKInputController {
         }
 
         guard let candidate = extractTextForTranslation(client: client, translationSettings: settings.translation) else {
-            logDebug("handleReturn: no candidate for translation (sessionLineBuffer='\(sessionLineBuffer)')")
             sessionLineBuffer = ""
             return false
         }
@@ -754,25 +1058,34 @@ final class Controller: IMKInputController {
         let originalLineText = candidate.originalLine
         let rangeToReplace = candidate.range
         let action = candidate.action
-        logDebug("handleReturn: executing AI action '\(action.name)' on '\(textToTranslate)', range=\(rangeToReplace)")
 
-        translationState = .translating
+        // Do not replace a range the client cannot verify.
+        guard rangeToReplace.location != NSNotFound,
+              client.selectedRange() == NSRange(location: rangeToReplace.location + rangeToReplace.length, length: 0),
+              client.attributedSubstring(from: rangeToReplace)?.string == originalLineText else {
+            NSSound.beep()
+            return true
+        }
+        let requestID = UUID()
+        translationState = .translating(id: requestID)
 
-        Task { @MainActor [weak self, weak client] in
+        translationTask = Task { @MainActor [weak self, weak client] in
             guard let self = self else { return }
             do {
-                let processed = try await TranslationService.shared.process(
-                    text: textToTranslate,
-                    systemPrompt: action.systemPrompt,
-                    settings: settings.translation
-                )
-                guard case .translating = self.translationState else { return }
-                guard let currentClient = client ?? self.client() else {
+                let processed = try await self.translationProcessor(textToTranslate, action.systemPrompt, settings.translation)
+                guard case .translating(let activeID) = self.translationState, activeID == requestID, !Task.isCancelled else { return }
+                guard let currentClient = client else {
                     self.translationState = .idle
+                    self.translationTask = nil
                     return
                 }
 
-                self.logDebug("handleReturn: action '\(action.name)' succeeded -> '\(processed)', replacing range=\(rangeToReplace)")
+                guard currentClient.selectedRange() == NSRange(location: rangeToReplace.location + rangeToReplace.length, length: 0),
+                      currentClient.attributedSubstring(from: rangeToReplace)?.string == originalLineText else {
+                    self.translationState = .idle
+                    self.translationTask = nil
+                    return
+                }
                 currentClient.insertText(processed, replacementRange: rangeToReplace)
 
                 let newLength = (processed as NSString).length
@@ -791,9 +1104,11 @@ final class Controller: IMKInputController {
                     range: newRange
                 )
                 self.sessionLineBuffer = processed
+                self.translationTask = nil
             } catch {
-                self.logDebug("handleReturn: action failed: \(error.localizedDescription)")
-                NSLog("AutoType: action failed: \(error.localizedDescription)")
+                guard case .translating(let activeID) = self.translationState, activeID == requestID else { return }
+                self.translationTask = nil
+                NSLog("AutoType: AI action failed")
                 self.translationState = .idle
                 NSSound.beep()
             }
@@ -809,10 +1124,17 @@ final class Controller: IMKInputController {
             return true
         }
         if case .translating = translationState {
+            translationTask?.cancel()
+            translationTask = nil
             translationState = .idle
             return true
         }
-        if case .readyToSend(let originalText, _, let range) = translationState {
+        if case .readyToSend(let originalText, let translatedText, let range) = translationState {
+            guard client.selectedRange() == NSRange(location: range.location + range.length, length: 0),
+                  client.attributedSubstring(from: range)?.string == translatedText else {
+                translationState = .idle
+                return false
+            }
             client.insertText(originalText, replacementRange: range)
             translationState = .idle
             sessionLineBuffer = originalText
@@ -847,7 +1169,6 @@ final class Controller: IMKInputController {
         translationSettings: TranslationSettings
     ) -> (text: String, originalLine: String, range: NSRange, action: AIAction)? {
         let caret = client.selectedRange().location
-        logDebug("extractTextForTranslation: caret=\(caret), sessionLineBuffer='\(sessionLineBuffer)'")
         if caret != NSNotFound && caret > 0 {
             let maxSearch = min(caret, 2000)
             let searchStart = caret - maxSearch
@@ -940,7 +1261,15 @@ final class Controller: IMKInputController {
 
     /// Toggles AutoType on and off.
     @objc func togglePause(_ sender: Any?) {
+        if !isPaused && !buffer.isEmpty { flushBuffer(client: client()) }
         isPaused.toggle()
+        translationTask?.cancel()
+        translationTask = nil
+        translationState = .idle
+        awaitingForbiddenConfirmation = nil
+        lastConversion = nil
+        context = ConversionContext()
+        sessionLineBuffer = ""
     }
 
     /// Switches between automatic detection and direct Persian typing.

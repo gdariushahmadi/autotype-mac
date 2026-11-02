@@ -96,6 +96,13 @@ checker.expectEqual(convert("ldv,n"), "می\u{200C}رود", "ldv,n → می‌ر
 checker.expectEqual(convert("khnj"), "نادت", "a non-English token converts to Persian")
 checker.expectEqual(convert("o,f"), "خوب", "o,f → خوب")
 checker.expectEqual(convert(";jhfih"), "کتاب\u{200C}ها", "the plural keeps its ZWNJ")
+checker.expectEqual(convert("Chgi"), "ژاله", "Chgi → ژاله")
+checker.expectEqual(convert("mC,ia"), "پژوهش", "mC,ia → پژوهش")
+checker.expectEqual(convert(",dCi"), "ویژه", ",dCi → ویژه")
+checker.expectEqual(convert("lCni"), "مژده", "lCni → مژده")
+checker.expectEqual(convert("Hf"), "آب", "Hf → آب")
+checker.expectEqual(convert("khHvhl"), "ناآرام", "khHvhl → ناآرام")
+checker.expectEqual(convert("rvHk"), "قرآن", "rvHk → قرآن")
 
 checker.group("English words")
 
@@ -402,5 +409,79 @@ checker.expectEqual(convert("adn"), "and", "adn → and")
 checker.expectEqual(convert("recieve"), "receive", "recieve → receive")
 checker.expectEqual(convert("freind"), "friend", "freind → friend")
 checker.expectEqual(convert("enlgish"), "english", "enlgish → english")
+checker.expectEqual(convert("ka,k"), "نشون", "ka,k (نشون) stays نشون and is not turned into شنون")
+checker.expectEqual(convert("ak,k"), "نشون", "ak,k (شنون) → نشون")
+checker.expectEqual(convert("نشون"), "نشون", "direct Persian نشون stays نشون")
+checker.expectEqual(convert("شنون"), "نشون", "direct Persian شنون → نشون")
+checker.expectEqual(convert(";hvfv"), "کاربر", ";hvfv → کاربر")
+checker.expectEqual(convert("کاربر"), "کاربر", "direct Persian کاربر stays کاربر")
+checker.expectEqual(convert("کابر"), "کاربر", "کابر → کاربر")
+checker.expectEqual(convert("کابرر"), "کاربر", "کابرر → کاربر")
+checker.expectEqual(convert("کاررب"), "کاربر", "کاررب → کاربر")
+checker.expectEqual(convert("کرابر"), "کاربر", "کرابر → کاربر")
+checker.expectEqual(convert("اکربر"), "کاربر", "اکربر → کاربر")
+checker.expectEqual(convert("کاریب"), "کاربری", "کاریب → کاربری")
+checker.expectEqual(convert("hdl,[d"), "ایموجی", "hdl,[d → ایموجی")
+checker.expectEqual(convert("ldh,[d"), "ایموجی", "ldh,[d (میاوجی) → ایموجی")
+checker.expectEqual(convert("میاوجی"), "ایموجی", "direct Persian میاوجی → ایموجی")
+checker.expectEqual(convert("ایموجی"), "ایموجی", "direct Persian ایموجی stays ایموجی")
+checker.expectEqual(convert(",qudja"), "وضعیتش", ",qudja → وضعیتش")
+checker.expectEqual(convert("وضعیتش"), "وضعیتش", "direct Persian وضعیتش stays وضعیتش")
+checker.expectEqual(convert("عضویتش"), "عضویتش", "direct Persian عضویتش stays عضویتش")
+
+
+
+
+
+
+
+
+checker.group("Punctuation spacing")
+checker.expectEqual(PunctuationSpacing.normalize("سلام .خوبی ؟بگو ،درسته ؛بله :ممنون !", lexicon: engine.lexicon),
+                    "سلام. خوبی؟ بگو، درسته؛ بله: ممنون!", "sentence punctuation spacing")
+checker.expectEqual(PunctuationSpacing.normalize("سلام؟!خوبی", lexicon: engine.lexicon), "سلام؟! خوبی", "punctuation groups")
+checker.expectEqual(PunctuationSpacing.normalize("سلام.\nخوبی", lexicon: engine.lexicon), "سلام.\nخوبی", "newlines stay unchanged")
+for token in ["3.14", "12:30", "test@example.com", "https://example.com/a?x=1", "/usr/local/bin", "o,f", "سلام(خوب)"] {
+    checker.expectEqual(PunctuationSpacing.normalize(token, lexicon: engine.lexicon), token, "protect \(token)")
+}
+
+checker.group("Language from word prefixes")
+checker.expectEqual(engine.resolve(token: "offline").context.sentenceLanguage, .english, "offline sets English context")
+checker.expectEqual(engine.convertText("offline and"), "offline and", "and stays English after offline")
+checker.expectEqual(engine.convertText("offline and a new message"), "offline and a new message", "English sentence stays English")
+checker.expectEqual(engine.convertText("sghl and"), "سلام شدی", "and converts in Persian context")
+do {
+    let directory = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+    defer { try? FileManager.default.removeItem(at: directory) }
+    let persian = directory.appendingPathComponent("persian.tsv")
+    let english = directory.appendingPathComponent("english.txt")
+    let common = directory.appendingPathComponent("common.txt")
+    try "سلاله\t\t1\nسلام\t\t1\n".write(to: persian, atomically: true, encoding: .utf8)
+    try "hello\nsghabc\n".write(to: english, atomically: true, encoding: .utf8)
+    try "hello\n".write(to: common, atomically: true, encoding: .utf8)
+    let prefixLexicon = try Lexicon(persianURL: persian, englishURL: english, englishCommonURL: common)
+    var prefixSettings = ConversionSettings()
+    prefixSettings.fixTransposedCharacters = false
+    let prefixEngine = ConversionEngine(lexicon: prefixLexicon, settings: prefixSettings)
+    let englishResult = prefixEngine.resolve(token: "helx")
+    checker.expectEqual(englishResult.output, "helx", "English prefix keeps later characters")
+    checker.expectEqual(englishResult.context.sentenceLanguage, .english, "English prefix sets context")
+    let persianResult = prefixEngine.resolve(token: "sghgx")
+    checker.expectEqual(persianResult.output, "سلالط", "Persian prefix converts later characters")
+    checker.expectEqual(persianResult.context.sentenceLanguage, .persian, "Persian prefix sets context")
+    checker.expectEqual(prefixEngine.resolve(token: "sgh").context.sentenceLanguage, .unknown, "shared prefix stays undecided")
+    checker.expectEqual(prefixEngine.resolve(token: "he").context.sentenceLanguage, .unknown, "short prefix stays undecided")
+    checker.expectEqual(prefixEngine.resolve(token: "zzz").context.sentenceLanguage, .unknown, "unknown prefix stays undecided")
+    prefixLexicon.protectedEnglish = ["zebra"]
+    prefixLexicon.personalPersian = ["طظظظ"]
+    checker.expect(prefixLexicon.containsEnglishPrefix("ZEB"), "protected words are included")
+    checker.expect(prefixLexicon.containsPersianPrefix("طظظ"), "personal words are included")
+    prefixSettings.lockLanguageFromSentenceStart = false
+    prefixEngine.settings = prefixSettings
+    checker.expectEqual(prefixEngine.resolve(token: "helx").context.sentenceLanguage, .unknown, "disabled lock does not set context")
+} catch {
+    checker.expect(false, "prefix test setup: \(error)")
+}
 
 exit(checker.report())

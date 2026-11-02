@@ -27,8 +27,10 @@ struct SettingsTests {
         let settings = try JSONDecoder().decode(ConversionSettings.self, from: data)
         #expect(settings.mode == .directPersian)
         #expect(settings.priority == .automatic)
+        #expect(settings.defaultLanguage == .persian)
         #expect(settings.englishModifier == .rightCommand)
         #expect(settings.usePersianPunctuation == true)
+        #expect(settings.fixPunctuationSpacing == true)
         #expect(settings.checkForForbiddenWords == true)
         #expect(settings.forbiddenWordsAction == .requireConfirmation)
     }

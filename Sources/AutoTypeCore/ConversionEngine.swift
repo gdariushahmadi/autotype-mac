@@ -18,13 +18,15 @@ public enum LanguagePriority: String, Codable, CaseIterable, Sendable {
     case englishFirst
 }
 
-/// The key that, while held, types plain English without conversion.
+/// The key that, while held or toggled, switches language.
 public enum EnglishModifier: String, Codable, CaseIterable, Sendable {
     case none
     case rightCommand
     case rightOption
     case rightShift
     case leftShift
+    case doubleShift
+    case capsLock
 
     public var displayName: String {
         switch self {
@@ -33,6 +35,21 @@ public enum EnglishModifier: String, Codable, CaseIterable, Sendable {
         case .rightOption: return "Right Option"
         case .rightShift: return "Right Shift"
         case .leftShift: return "Left Shift"
+        case .doubleShift: return "Double Shift (toggle)"
+        case .capsLock: return "Caps Lock (toggle)"
+        }
+    }
+}
+
+/// The default language orientation before toggling.
+public enum DefaultLanguage: String, Codable, CaseIterable, Sendable {
+    case persian
+    case english
+
+    public var displayName: String {
+        switch self {
+        case .persian: return "Persian (فارسی)"
+        case .english: return "English (انگلیسی)"
         }
     }
 }
@@ -166,21 +183,33 @@ public final class ConversionEngine {
         // sentence has not been decided yet — a URL in the middle of a
         // Persian sentence does not turn it into an English one.
         if TechnicalPatterns.isTechnical(token) && !token.contains("\u{200C}") {
-            let isPureNumber = token.allSatisfy(\.isNumber)
-            if settings.lockLanguageFromSentenceStart, context.sentenceLanguage == .unknown, !isPureNumber {
-                context.sentenceLanguage = .english
+            // Words with Persian shifted keys (such as ژ via Shift+C, آ via Shift+H, or hamza forms)
+            // can match camelCase or acronym heuristic patterns. If the token converts to a valid
+            // Persian dictionary word (or clitic) and is not a hard technical pattern (URL, email, etc.),
+            // let it proceed to normal evaluation instead of forcing English.
+            let isRealPersianWord: Bool = {
+                guard !TechnicalPatterns.isHardTechnical(token) else { return false }
+                guard let persian = PersianLayout.convert(token) else { return false }
+                return lexicon.containsPersian(persian) || cliticConversion(of: persian) != nil
+            }()
+
+            if !isRealPersianWord {
+                let isPureNumber = token.allSatisfy(\.isNumber)
+                if settings.lockLanguageFromSentenceStart, context.sentenceLanguage == .unknown, !isPureNumber {
+                    context.sentenceLanguage = .english
+                }
+                if !isPureNumber {
+                    context.previousWasPersian = false
+                    context.previousPersianWord = nil
+                }
+                let outputText: String
+                if isPureNumber && settings.usePersianDigits && context.isPersian {
+                    outputText = PersianText.persianDigits(token)
+                } else {
+                    outputText = token
+                }
+                return WordOutcome(decision: .keepAsTyped(outputText), context: context)
             }
-            if !isPureNumber {
-                context.previousWasPersian = false
-                context.previousPersianWord = nil
-            }
-            let outputText: String
-            if isPureNumber && settings.usePersianDigits && context.isPersian {
-                outputText = PersianText.persianDigits(token)
-            } else {
-                outputText = token
-            }
-            return WordOutcome(decision: .keepAsTyped(outputText), context: context)
         }
 
         // Hyphenated compound words, slugs, and kebab-case identifiers.
@@ -414,7 +443,7 @@ public final class ConversionEngine {
                 let key = PersianText.lookupKey(persian)
                 if let override = Self.persianTranspositionOverrides[key] {
                     transposedPersian = PersianEntry(canonical: override, isCommon: true)
-                } else if (rawPersianEntry == nil || !rawPersianEntry!.isCommon) && exactClitic == nil {
+                } else if rawPersianEntry == nil && exactClitic == nil {
                     transposedPersian = findTransposedPersianEntry(for: persian)
                 } else {
                     transposedPersian = nil
@@ -558,7 +587,7 @@ public final class ConversionEngine {
         // Not a dictionary word. Try the Persian clitic rules: "کتاب‌ها" and
         // "می‌رفت" are built by attaching a suffix or prefix to a known word.
         if let clitic = exactClitic ?? cliticConversion(of: persian) {
-            return Evaluation(score: Weight.persianRare, decision: .convertToPersian(clitic), evidence: .none)
+            return Evaluation(score: Weight.persianRare, decision: .convertToPersian(clitic), evidence: .persian)
         }
 
         if englishHit {
@@ -573,9 +602,35 @@ public final class ConversionEngine {
             return Evaluation(score: Weight.englishCommon, decision: .keepAsTyped(core), evidence: .english)
         }
 
+        // Use the first prefix that exists in only one dictionary. Recompute
+        // it from the current word so backspace can also remove the evidence.
+        switch prefixEvidence(for: core) {
+        case .english:
+            return Evaluation(score: Weight.heuristic, decision: .keepAsTyped(core), evidence: .english)
+        case .persian:
+            return Evaluation(score: Weight.heuristic, decision: .convertToPersian(persian), evidence: .persian)
+        case .none:
+            break
+        }
+
         // Unknown to both dictionaries. Since it is not an English dictionary
         // word and converts cleanly to Persian characters, it should convert to Persian.
         return Evaluation(score: Weight.heuristic, decision: .convertToPersian(persian), evidence: .none)
+    }
+
+    private func prefixEvidence(for word: String) -> Evidence {
+        guard word.count >= 3 else { return .none }
+        for length in 3...word.count {
+            let prefix = String(word.prefix(length))
+            guard let persian = PersianLayout.convert(prefix) else { return .none }
+            let englishMatch = lexicon.containsEnglishPrefix(prefix)
+            let persianMatch = lexicon.containsPersianPrefix(persian)
+            if englishMatch != persianMatch {
+                return englishMatch ? .english : .persian
+            }
+            if !englishMatch { return .none }
+        }
+        return .none
     }
 
     /// Resolves a word that both dictionaries recognise.
@@ -650,6 +705,19 @@ public final class ConversionEngine {
         "اشتابه": "اشتباه",
         "کاراتکر": "کاراکتر",
         "کارکاتر": "کاراکتر",
+        "شنون": "نشون",
+        "کابرر": "کاربر",
+        "کاررب": "کاربر",
+        "کرابر": "کاربر",
+        "اکربر": "کاربر",
+        "کابر": "کاربر",
+        "کاریب": "کاربری",
+        "کابری": "کاربری",
+        "کابران": "کاربران",
+        "میاوجی": "ایموجی",
+        "می‌اوجی": "ایموجی",
+        "امیوجی": "ایموجی",
+        "یاموجی": "ایموجی",
     ]
 
     /// High-priority English transposition overrides for frequent fast-typing character swaps.
@@ -691,7 +759,7 @@ public final class ConversionEngine {
         if let override = Self.persianTranspositionOverrides[key] {
             return override
         }
-        if let exact = lexicon.persianEntry(for: persian), exact.isCommon {
+        if lexicon.persianEntry(for: persian) != nil {
             return nil
         }
         if cliticConversion(of: persian) != nil {
@@ -707,6 +775,18 @@ public final class ConversionEngine {
             return PersianEntry(canonical: override, isCommon: true)
         }
 
+        // Direct clitic forms of an override word (e.g. "برنماه‌ها" -> stem "برنماه" -> "برنامه" + ZWNJ + "ها")
+        if let (stem, suffix) = PersianText.splitCliticSuffix(key),
+           let override = Self.persianTranspositionOverrides[stem] {
+            let canonical = override + String(PersianText.zeroWidthNonJoiner) + suffix
+            return PersianEntry(canonical: canonical, isCommon: true)
+        }
+        if let (prefix, stem) = PersianText.splitCliticPrefix(key),
+           let override = Self.persianTranspositionOverrides[stem] {
+            let canonical = prefix + String(PersianText.zeroWidthNonJoiner) + override
+            return PersianEntry(canonical: canonical, isCommon: true)
+        }
+
         let candidates = Self.transpositionCandidates(of: key)
 
         // 1. Check direct common Persian dictionary hits
@@ -718,15 +798,25 @@ public final class ConversionEngine {
 
         // 2. Check clitics (plural/prefix forms like "برنماه‌ها" -> "برنامه‌ها")
         for candidate in candidates {
-            if let (stem, suffix) = PersianText.splitCliticSuffix(candidate),
-               let entry = lexicon.persianEntry(for: stem), entry.isCommon {
-                let canonical = entry.canonical + String(PersianText.zeroWidthNonJoiner) + suffix
-                return PersianEntry(canonical: canonical, isCommon: true)
+            if let (stem, suffix) = PersianText.splitCliticSuffix(candidate) {
+                if let override = Self.persianTranspositionOverrides[stem] {
+                    let canonical = override + String(PersianText.zeroWidthNonJoiner) + suffix
+                    return PersianEntry(canonical: canonical, isCommon: true)
+                }
+                if let entry = lexicon.persianEntry(for: stem), entry.isCommon {
+                    let canonical = entry.canonical + String(PersianText.zeroWidthNonJoiner) + suffix
+                    return PersianEntry(canonical: canonical, isCommon: true)
+                }
             }
-            if let (prefix, stem) = PersianText.splitCliticPrefix(candidate),
-               let entry = lexicon.persianEntry(for: stem), entry.isCommon {
-                let canonical = prefix + String(PersianText.zeroWidthNonJoiner) + entry.canonical
-                return PersianEntry(canonical: canonical, isCommon: true)
+            if let (prefix, stem) = PersianText.splitCliticPrefix(candidate) {
+                if let override = Self.persianTranspositionOverrides[stem] {
+                    let canonical = prefix + String(PersianText.zeroWidthNonJoiner) + override
+                    return PersianEntry(canonical: canonical, isCommon: true)
+                }
+                if let entry = lexicon.persianEntry(for: stem), entry.isCommon {
+                    let canonical = prefix + String(PersianText.zeroWidthNonJoiner) + entry.canonical
+                    return PersianEntry(canonical: canonical, isCommon: true)
+                }
             }
         }
 
@@ -763,44 +853,21 @@ public final class ConversionEngine {
         return nil
     }
 
-    /// Generates transposition candidates ordered by likelihood:
-    /// 1) Single adjacent character swaps `(i, i + 1)`
-    /// 2) Gapped distance-2 character swaps `(i, i + 2)` for words of length >= 4
-    /// 3) Two disjoint adjacent swaps `(i, i + 1)` and `(j, j + 1)` for words of length >= 5
+    /// Generates transposition candidates:
+    /// Single adjacent character swaps `(i, i + 1)`, the standard definition of typing transposition.
     static func transpositionCandidates(of text: String) -> [String] {
         let chars = Array(text)
         let n = chars.count
         guard n >= 3 else { return [] }
 
         var results: [String] = []
-        results.reserveCapacity(n * 2)
+        results.reserveCapacity(n - 1)
 
-        // 1. Single adjacent swaps
+        // Single adjacent swaps (i, i + 1): the standard definition of fast-typing transposition
         for i in 0..<(n - 1) where chars[i] != chars[i + 1] {
             var c = chars
             c.swapAt(i, i + 1)
             results.append(String(c))
-        }
-
-        // 2. Distance-2 swaps (when a middle key was struck between two swapped keys)
-        if n >= 4 {
-            for i in 0..<(n - 2) where chars[i] != chars[i + 2] {
-                var c = chars
-                c.swapAt(i, i + 2)
-                results.append(String(c))
-            }
-        }
-
-        // 3. Two disjoint adjacent swaps in longer words
-        if n >= 5 {
-            for i in 0..<(n - 3) where chars[i] != chars[i + 1] {
-                for j in (i + 2)..<(n - 1) where chars[j] != chars[j + 1] {
-                    var c = chars
-                    c.swapAt(i, i + 1)
-                    c.swapAt(j, j + 1)
-                    results.append(String(c))
-                }
-            }
         }
 
         return results
@@ -853,7 +920,7 @@ public final class ConversionEngine {
         for part in parts {
             if let persian = PersianLayout.convert(part) {
                 let exactEntry = lexicon.persianEntry(for: persian)
-                let transposedEntry = (settings.fixTransposedCharacters && (exactEntry == nil || !exactEntry!.isCommon))
+                let transposedEntry = (settings.fixTransposedCharacters && exactEntry == nil)
                     ? findTransposedPersianEntry(for: persian)
                     : nil
                 let resolvedEntry = transposedEntry ?? exactEntry
